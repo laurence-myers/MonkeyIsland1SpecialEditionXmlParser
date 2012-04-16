@@ -23,6 +23,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
+		/// Gets or sets the list of animation headers.
+		/// </summary>
+		public List<AnimationHeader> AnimationHeaderList
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Gets or sets the list of unknown entries before the sprite sheets.
 		/// </summary>
 		public List<UnknownBeforeSpriteSheets> UnknownBeforeSpriteSheetsList
@@ -32,9 +41,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the list of sprite sheets.
+		/// Gets or sets the list of sprite group headers.
 		/// </summary>
-		public List<SpriteSheet> SpriteSheetList
+		public List<SpriteGroupHeader> SpriteGroupHeaderList
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the list of texture file names.
+		/// </summary>
+		public List<TextureFileName> TextureFileNameList
 		{
 			get;
 			set;

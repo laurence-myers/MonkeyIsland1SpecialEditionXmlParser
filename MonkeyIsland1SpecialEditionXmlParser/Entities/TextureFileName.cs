@@ -1,10 +1,10 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 {
-	public class SpriteSheet
+	public class TextureFileName
 	{
 		/// <summary>
-		/// Gets or sets the index of the sprite sheet.
+		/// Gets or sets the index of the texture file name.
 		/// </summary>
 		public int Index
 		{
@@ -13,7 +13,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the relative path to the sprite sheet file.
+		/// Gets or sets the relative texture file name.
 		/// </summary>
 		public string Path
 		{

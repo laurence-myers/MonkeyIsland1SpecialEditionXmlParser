@@ -46,15 +46,18 @@
   <ItemGroup>
     <Compile Include="Entities\Animation.cs" />
     <Compile Include="Entities\AnimationFrame.cs" />
+    <Compile Include="Entities\AnimationHeader.cs" />
     <Compile Include="Entities\Costume.cs" />
     <Compile Include="Entities\Header.cs" />
-    <Compile Include="Entities\SpriteSheet.cs" />
+    <Compile Include="Entities\SpriteGroupHeader.cs" />
+    <Compile Include="Entities\TextureFileName.cs" />
     <Compile Include="Entities\UnknownAfterName.cs" />
     <Compile Include="Entities\UnknownBeforeSpriteSheets.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SanityChecker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Data\Costumes\124_test-object.costume.xml">

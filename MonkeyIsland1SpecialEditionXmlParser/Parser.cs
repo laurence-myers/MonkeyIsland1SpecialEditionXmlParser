@@ -41,8 +41,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			var costume = new Costume();
 			costume.Header = Parser.ReadHeader( reader, costume );
 			costume.UnknownAfterNameList = Parser.ReadUnknownAfterNameList( reader, costume );
+			costume.AnimationHeaderList = Parser.ReadAnimationHeaderList( reader, costume );
+			costume.SpriteGroupHeaderList = Parser.ReadSpriteGroupHeaderList( reader, costume );
 			costume.UnknownBeforeSpriteSheetsList = Parser.ReadUnknownBeforeSpriteSheetsList( reader, costume );
-			costume.SpriteSheetList = Parser.ReadSpriteSheetList( reader, costume );
+			costume.TextureFileNameList = Parser.ReadTextureFileNameList( reader, costume );
 			costume.AnimationList = Parser.ReadAnimationList( reader, costume );
 			return costume;
 		}
@@ -51,18 +53,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		{
 			var header = new Header()
 			{
-				ID = reader.ReadInt32(),
-				NameAddress = reader.ReadInt32(),
-				SpriteSheetFileNameCount = reader.ReadInt32(),
-				AfterNameOffset = reader.ReadInt32(),
+				Identifier = reader.ReadInt32(),
+				NameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
+				TextureFileNameCount = reader.ReadInt32(),
+				AfterNameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				AnimationCount = reader.ReadInt32(),
-				UnknownAddress1 = reader.ReadInt32(),
+				AnimationHeaderAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				UnknownInteger1 = reader.ReadInt32(),
-				UnknownInteger2 = reader.ReadInt32(),
-				UnknownInteger3 = reader.ReadInt32(),
+				PointsOnPathCount = reader.ReadInt32(),
+				PathAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				UnknownInteger4 = reader.ReadInt32(),
 				UnknownCount1 = reader.ReadInt32(),
-				UnknownAddress2 = (int)reader.BaseStream.Position + reader.ReadInt32(),
+				TextureFileNameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				UnknownInteger5 = reader.ReadInt32(),
 				UnknownInteger6 = reader.ReadInt32(),
 				UnknownInteger7 = reader.ReadInt32(),
@@ -80,7 +82,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		{
 			var list = new List<UnknownAfterName>();
 
-			while( reader.BaseStream.Position < costume.Header.UnknownAddress2 )
+			while( reader.BaseStream.Position < costume.Header.AnimationHeaderAddress )
 			{
 				var unknownAfterName = new UnknownAfterName()
 				{
@@ -95,38 +97,78 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return list;
 		}
 
-		private static List<UnknownBeforeSpriteSheets> ReadUnknownBeforeSpriteSheetsList( BinaryReader reader, Costume costume )
+		private static List<AnimationHeader> ReadAnimationHeaderList( BinaryReader reader, Costume costume )
 		{
-			var list = new List<UnknownBeforeSpriteSheets>();
+			var list = new List<AnimationHeader>();
 
-			for( var index = 0; index < costume.Header.UnknownCount1; index++ )
+			for( var index = 0; index < costume.Header.AnimationCount; index++ )
 			{
-				var unknownAfterName = new UnknownBeforeSpriteSheets()
+				var animationHeader = new AnimationHeader()
 				{
-					UnknownInteger = reader.ReadInt32(),
-					UnknownColor1 = reader.ReadColor(),
-					UnknownColor2 = reader.ReadColor(),
+					NameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
+					Identifier = reader.ReadInt32(),
+					AnimationFrameCount = reader.ReadInt32(),
+					AnimationFrameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				};
-				list.Add( unknownAfterName );
+				list.Add( animationHeader );
 			}
-
-			reader.PadTheMonkey();
 
 			return list;
 		}
 
-		private static List<SpriteSheet> ReadSpriteSheetList( BinaryReader reader, Costume costume )
+		private static List<SpriteGroupHeader> ReadSpriteGroupHeaderList( BinaryReader reader, Costume costume )
 		{
-			var list = new List<SpriteSheet>();
+			var list = new List<SpriteGroupHeader>();
 
-			for( var index = 0; index < costume.Header.SpriteSheetFileNameCount; index++ )
+			for( var index = 0; index < costume.Header.PointsOnPathCount; index++ )
 			{
-				var spriteSheet = new SpriteSheet()
+				var spriteGroupHeader = new SpriteGroupHeader()
+				{
+					Identifier = reader.ReadInt32(),
+					UnkownInteger1 = reader.ReadInt32(),
+					SpriteCount = reader.ReadInt32(),
+					SpriteAddress = reader.ReadInt32(),
+				};
+				list.Add( spriteGroupHeader );
+			}
+
+			return list;
+		}
+
+		private static List<UnknownBeforeSpriteSheets> ReadUnknownBeforeSpriteSheetsList( BinaryReader reader, Costume costume )
+		{
+			var list = new List<UnknownBeforeSpriteSheets>();
+
+			if( costume.Header.UnknownCount1 > 0 )
+			{
+				for( var index = 0; index < costume.Header.UnknownCount1; index++ )
+				{
+					var unknownAfterName = new UnknownBeforeSpriteSheets()
+					{
+						UnknownInteger = reader.ReadInt32(),
+						UnknownColor1 = reader.ReadColor(),
+						UnknownColor2 = reader.ReadColor(),
+					};
+					list.Add( unknownAfterName );
+				}
+				reader.PadTheMonkey();
+			}
+
+			return list;
+		}
+
+		private static List<TextureFileName> ReadTextureFileNameList( BinaryReader reader, Costume costume )
+		{
+			var list = new List<TextureFileName>();
+
+			for( var index = 0; index < costume.Header.TextureFileNameCount; index++ )
+			{
+				var textureFileName = new TextureFileName()
 				{
 					Index = index,
 					Path = reader.ReadStringMonkey(),
 				};
-				list.Add( spriteSheet );
+				list.Add( textureFileName );
 			}
 
 			return list;

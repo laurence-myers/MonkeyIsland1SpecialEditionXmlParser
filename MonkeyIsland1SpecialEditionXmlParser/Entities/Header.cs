@@ -6,7 +6,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		/// <summary>
 		/// Gets or sets the numerical identification of the file.
 		/// </summary>
-		public int ID
+		public int Identifier
 		{
 			get;
 			set;
@@ -22,9 +22,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the number of sprite sheet file names in the file.
+		/// Gets or sets the number of texture file names in the file.
 		/// </summary>
-		public int SpriteSheetFileNameCount
+		public int TextureFileNameCount
 		{
 			get;
 			set;
@@ -33,7 +33,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		/// <summary>
 		/// Gets or sets the byte address of the section after the Name of the file.
 		/// </summary>
-		public int AfterNameOffset
+		public int AfterNameAddress
 		{
 			get;
 			set;
@@ -49,9 +49,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the byte address to some section.
+		/// Gets or sets the byte address to the first animation header.
 		/// </summary>
-		public int UnknownAddress1
+		public int AnimationHeaderAddress
 		{
 			get;
 			set;
@@ -63,13 +63,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 			set;
 		}
 
-		public int UnknownInteger2
+		/// <summary>
+		/// Gets or sets the number of points on the path.
+		/// </summary>
+		public int PointsOnPathCount
 		{
 			get;
 			set;
 		}
 
-		public int UnknownInteger3
+		/// <summary>
+		/// Gets or sets the byte address of the first path.
+		/// </summary>
+		public int PathAddress
 		{
 			get;
 			set;
@@ -92,9 +98,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the byte address to the 12 byte records before the sprite sheet file names.
+		/// Gets or sets the byte address to the first texture file name.
 		/// </summary>
-		public int UnknownAddress2
+		public int TextureFileNameAddress
 		{
 			get;
 			set;
