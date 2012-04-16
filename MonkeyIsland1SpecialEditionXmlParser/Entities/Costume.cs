@@ -32,9 +32,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the list of unknown entries before the sprite sheets.
+		/// Gets or sets the list of unknown entries before the texture file names.
 		/// </summary>
-		public List<UnknownBeforeSpriteSheets> UnknownBeforeSpriteSheetsList
+		public List<PathPoint> PathPointList
 		{
 			get;
 			set;

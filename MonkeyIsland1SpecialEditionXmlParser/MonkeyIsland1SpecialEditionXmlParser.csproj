@@ -52,7 +52,7 @@
     <Compile Include="Entities\SpriteGroupHeader.cs" />
     <Compile Include="Entities\TextureFileName.cs" />
     <Compile Include="Entities\UnknownAfterName.cs" />
-    <Compile Include="Entities\UnknownBeforeSpriteSheets.cs" />
+    <Compile Include="Entities\PathPoint.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />

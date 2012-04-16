@@ -64,18 +64,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the number of points on the path.
+		/// Gets or sets the number of sprite group headers.
 		/// </summary>
-		public int PointsOnPathCount
+		public int SpriteGroupHeaderCount
 		{
 			get;
 			set;
 		}
 
 		/// <summary>
-		/// Gets or sets the byte address of the first path.
+		/// Gets or sets the byte address of the first sprite group header.
 		/// </summary>
-		public int PathAddress
+		public int SpriteGroupHeaderAddress
 		{
 			get;
 			set;
@@ -89,18 +89,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 
 
 		/// <summary>
-		/// Gets or sets the number of 12 byte records before the sprite sheet file names.
+		/// Gets or sets the number of 12 byte records before the texture file names.
 		/// </summary>
-		public int UnknownCount1
+		public int PathPointCount
 		{
 			get;
 			set;
 		}
 
 		/// <summary>
-		/// Gets or sets the byte address to the first texture file name.
+		/// Gets or sets the byte address to the first path point.
 		/// </summary>
-		public int TextureFileNameAddress
+		public int PathPointAddress
 		{
 			get;
 			set;

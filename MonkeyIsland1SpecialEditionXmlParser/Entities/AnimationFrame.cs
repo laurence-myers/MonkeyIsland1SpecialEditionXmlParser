@@ -3,6 +3,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 {
 	public class AnimationFrame
 	{
+		/// <summary>
+		/// Gets or sets the index of the animation frame.
+		/// </summary>
+		public int Index
+		{
+			get;
+			set;
+		}
+
+		public int SpriteGroupIdentifier
+		{
+			get;
+			set;
+		}
+
 		public int UnknownInteger1
 		{
 			get;
@@ -15,13 +30,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 			set;
 		}
 
-		public int UnknownInteger3
-		{
-			get;
-			set;
-		}
-
-		public int UnknownInteger4
+		public int FrameAddress
 		{
 			get;
 			set;
@@ -30,10 +39,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		public override string ToString()
 		{
 			return string.Concat(
+				this.SpriteGroupIdentifier, "; ",
 				this.UnknownInteger1, "; ",
 				this.UnknownInteger2, "; ",
-				this.UnknownInteger3, "; ",
-				this.UnknownInteger4
+				this.FrameAddress
 				);
 		}
 	}
