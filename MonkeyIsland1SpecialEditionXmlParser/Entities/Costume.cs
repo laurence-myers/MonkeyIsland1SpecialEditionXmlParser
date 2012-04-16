@@ -67,6 +67,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 			set;
 		}
 
+		/// <summary>
+		/// Gets or sets the list of sprite groups.
+		/// </summary>
+		public List<SpriteGroup> SpriteGroupList
+		{
+			get;
+			set;
+		}
+
 		public override string ToString()
 		{
 			return this.Header.Name;

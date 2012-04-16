@@ -10,7 +10,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			var costume72 = Parser.Parse( @"Data\Costumes\72_test.costume.xml" );
 			var costume124 = Parser.Parse( @"Data\Costumes\124_test-object.costume.xml" );
 
-			SanityChecker.IsSane21( costume21 );
+			SanityChecker.Check( costume21, costume44, costume72, costume124 );
 		}
 	}
 }

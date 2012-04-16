@@ -46,6 +46,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			costume.PathPointList = Parser.ReadPathPointList( reader, costume );
 			costume.TextureFileNameList = Parser.ReadTextureFileNameList( reader, costume );
 			costume.AnimationList = Parser.ReadAnimationList( reader, costume );
+			costume.SpriteGroupList = Parser.ReadSpriteGroupList( reader, costume );
 			return costume;
 		}
 
@@ -127,7 +128,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 					Identifier = reader.ReadInt32(),
 					UnkownInteger1 = reader.ReadInt32(),
 					SpriteCount = reader.ReadInt32(),
-					SpriteAddress = reader.ReadInt32(),
+					SpriteAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				};
 				list.Add( spriteGroupHeader );
 			}
@@ -205,21 +206,89 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		{
 			var list = new List<AnimationFrame>();
 
-			// position reader at the first animation frame
-			reader.BaseStream.Position = animationHeader.AnimationFrameAddress;
-			
 			// read animation frames
 			for( var index = 0; index < animationHeader.AnimationFrameCount; index++ )
 			{
+				// position reader at the first animation frame
+				reader.BaseStream.Position = animationHeader.AnimationFrameAddress + index * 16;
+
 				var animationFrame = new AnimationFrame()
 				{
 					Index = index,
 					SpriteGroupIdentifier = reader.ReadInt32(),
 					UnknownInteger1 = reader.ReadInt32(),
-					UnknownInteger2 = reader.ReadInt32(),
+					FrameCount = reader.ReadInt32(),
 					FrameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				};
+				animationFrame.FrameList = Parser.ReadFrameList( reader, costume, animationFrame );
 				list.Add( animationFrame );
+			}
+
+			return list;
+		}
+
+		private static List<Frame> ReadFrameList( BinaryReader reader, Costume costume, AnimationFrame animationFrame )
+		{
+			var list = new List<Frame>();
+
+			reader.BaseStream.Position = animationFrame.FrameAddress;
+
+			for( var index = 0; index < animationFrame.FrameCount; index++ )
+			{
+				var frame = new Frame()
+				{
+					UnknownInteger1 = reader.ReadInt32(),
+					UnknownInteger2 = reader.ReadInt32(),
+					UnknownInteger3 = reader.ReadInt32(),
+				};
+				list.Add( frame );
+			}
+
+			return list;
+		}
+
+		private static List<SpriteGroup> ReadSpriteGroupList( BinaryReader reader, Costume costume )
+		{
+			var list = new List<SpriteGroup>();
+
+			for( var index = 0; index < costume.SpriteGroupHeaderList.Count; index++ )
+			{
+				var spriteGroupHeader = costume.SpriteGroupHeaderList[index];
+				var spriteGroup = new SpriteGroup()
+				{
+					Index = index,
+					Identifier = spriteGroupHeader.Identifier,
+					SpriteList = Parser.ReadSpriteList( reader, costume, spriteGroupHeader ),
+				};
+				list.Add( spriteGroup );
+			}
+
+			return list;
+		}
+
+		private static List<Sprite> ReadSpriteList( BinaryReader reader, Costume costume, SpriteGroupHeader spriteGroupHeader )
+		{
+			var list = new List<Sprite>();
+
+			// position the reader at the first sprite
+			reader.BaseStream.Position = spriteGroupHeader.SpriteAddress;
+
+			for( var index = 0; index < spriteGroupHeader.SpriteCount; index++ )
+			{
+				var sprite = new Sprite()
+				{
+					TextureNumber = reader.ReadInt32(),
+					TextureX = reader.ReadInt32(),
+					TextureY = reader.ReadUInt32(),
+					TextureWidth = reader.ReadInt32(),
+					TextureHeight = reader.ReadInt32(),
+					ScreenX = reader.ReadSingle(),
+					ScreenY = reader.ReadSingle(),
+					UnknownInteger1 = reader.ReadInt32(),
+					UnknownInteger2 = reader.ReadInt32(),
+					UnknownInteger3 = reader.ReadInt32(),
+				};
+				list.Add( sprite );
 			}
 
 			return list;

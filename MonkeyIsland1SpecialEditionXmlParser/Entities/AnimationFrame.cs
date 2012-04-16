@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Generic;
 namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 {
 	public class AnimationFrame
@@ -12,6 +13,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 			set;
 		}
 
+		/// <summary>
+		/// Gets or sets the identifier of the sprite group.
+		/// </summary>
 		public int SpriteGroupIdentifier
 		{
 			get;
@@ -24,13 +28,28 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 			set;
 		}
 
-		public int UnknownInteger2
+		/// <summary>
+		/// Gets or sets the number of frames.
+		/// </summary>
+		public int FrameCount
 		{
 			get;
 			set;
 		}
 
+		/// <summary>
+		/// Gets or sets the byte address of the first frame.
+		/// </summary>
 		public int FrameAddress
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the list of frame.
+		/// </summary>
+		public List<Frame> FrameList
 		{
 			get;
 			set;
@@ -41,7 +60,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 			return string.Concat(
 				this.SpriteGroupIdentifier, "; ",
 				this.UnknownInteger1, "; ",
-				this.UnknownInteger2, "; ",
+				this.FrameCount, "; ",
 				this.FrameAddress
 				);
 		}

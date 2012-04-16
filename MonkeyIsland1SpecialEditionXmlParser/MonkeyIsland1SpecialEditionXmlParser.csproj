@@ -48,7 +48,10 @@
     <Compile Include="Entities\AnimationFrame.cs" />
     <Compile Include="Entities\AnimationHeader.cs" />
     <Compile Include="Entities\Costume.cs" />
+    <Compile Include="Entities\Frame.cs" />
     <Compile Include="Entities\Header.cs" />
+    <Compile Include="Entities\Sprite.cs" />
+    <Compile Include="Entities\SpriteGroup.cs" />
     <Compile Include="Entities\SpriteGroupHeader.cs" />
     <Compile Include="Entities\TextureFileName.cs" />
     <Compile Include="Entities\UnknownAfterName.cs" />
