@@ -5,10 +5,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 	{
 		static void Main( string[] args )
 		{
-			var stanFile = Parser.Parse( @"C:\Users\robin\Desktop\LucasRipper\MI1SE\art\costumes\21_stan-skin.costume.xml" );
-			var guyFighting = Parser.Parse( @"C:\Users\robin\Desktop\LucasRipper\MI1SE\art\costumes\44_guy-fighting-skin.costume.xml" );
-			var guybrushButt = Parser.Parse( @"C:\Users\robin\Desktop\LucasRipper\MI1SE\art\costumes\72_guybrush-butt.costume.xml" );
-			var paralax2 = Parser.Parse( @"C:\Users\robin\Desktop\LucasRipper\MI1SE\art\costumes\124_paralax2-object.costume.xml" );
+			var costume21 = Parser.Parse( @"Data\Costumes\21_test-skin.costume.xml" );
+			var costume44 = Parser.Parse( @"Data\Costumes\44_test-skin.costume.xml" );
+			var costume72 = Parser.Parse( @"Data\Costumes\72_test.costume.xml" );
+			var costume124 = Parser.Parse( @"Data\Costumes\124_test-object.costume.xml" );
 		}
 	}
 }
