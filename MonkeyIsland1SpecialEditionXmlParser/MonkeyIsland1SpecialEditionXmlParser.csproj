@@ -97,6 +97,7 @@
   <ItemGroup>
     <Content Include="Changes.txt">
       <SubType>Code</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Collaboration readme.txt" />
     <Content Include="Data\Costumes\124_test-object.costume.xml">
