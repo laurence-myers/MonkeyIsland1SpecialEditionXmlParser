@@ -38,6 +38,7 @@
 			this.asPNGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
 			this.recentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.dummyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -52,8 +53,6 @@
 			this.spritesColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.framesColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.exportButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
-			this.exportAsPngFilesDialog = new System.Windows.Forms.SaveFileDialog();
-			this.dummyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
 			this.SuspendLayout();
@@ -88,20 +87,21 @@
 			this.openToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.costumeToolStripMenuItem});
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			// 
 			// costumeToolStripMenuItem
 			// 
 			this.costumeToolStripMenuItem.Name = "costumeToolStripMenuItem";
-			this.costumeToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+			this.costumeToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+			this.costumeToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
 			this.costumeToolStripMenuItem.Text = "&Costume file...";
 			this.costumeToolStripMenuItem.Click += new System.EventHandler(this.ShowOpenCostumeFileDialog);
 			// 
 			// toolStripMenuItem2
 			// 
 			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-			this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
+			this.toolStripMenuItem2.Size = new System.Drawing.Size(115, 6);
 			// 
 			// exportToolStripMenuItem
 			// 
@@ -110,7 +110,7 @@
             this.asPNGToolStripMenuItem});
 			this.exportToolStripMenuItem.Enabled = false;
 			this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-			this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exportToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
 			this.exportToolStripMenuItem.Text = "&Export";
 			// 
 			// asXMLToolStripMenuItem
@@ -132,26 +132,33 @@
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(115, 6);
 			// 
 			// recentToolStripMenuItem
 			// 
 			this.recentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dummyToolStripMenuItem});
 			this.recentToolStripMenuItem.Name = "recentToolStripMenuItem";
-			this.recentToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.recentToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
 			this.recentToolStripMenuItem.Text = "&Recent";
 			this.recentToolStripMenuItem.DropDownOpening += new System.EventHandler(this.UpdateRecentMenuItems);
+			// 
+			// dummyToolStripMenuItem
+			// 
+			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
+			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(105, 22);
+			this.dummyToolStripMenuItem.Text = "dummy";
 			// 
 			// toolStripMenuItem4
 			// 
 			this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-			this.toolStripMenuItem4.Size = new System.Drawing.Size(149, 6);
+			this.toolStripMenuItem4.Size = new System.Drawing.Size(115, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitApplication);
 			// 
@@ -251,19 +258,6 @@
 			this.exportButtonColumn.Name = "exportButtonColumn";
 			this.exportButtonColumn.ReadOnly = true;
 			// 
-			// exportAsPngFilesDialog
-			// 
-			this.exportAsPngFilesDialog.DefaultExt = "png";
-			this.exportAsPngFilesDialog.Filter = "PNG files|*.png|All files|*.*";
-			this.exportAsPngFilesDialog.SupportMultiDottedExtensions = true;
-			this.exportAsPngFilesDialog.Title = "Export as PNG files";
-			// 
-			// dummyToolStripMenuItem
-			// 
-			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
-			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.dummyToolStripMenuItem.Text = "dummy";
-			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -299,7 +293,6 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn spritesColumn;
 		private System.Windows.Forms.DataGridViewTextBoxColumn framesColumn;
 		private System.Windows.Forms.DataGridViewButtonColumn exportButtonColumn;
-		private System.Windows.Forms.SaveFileDialog exportAsPngFilesDialog;
 		private System.Windows.Forms.ToolStripMenuItem asPNGToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem mISEExplorerLinkToolStripMenuItem;

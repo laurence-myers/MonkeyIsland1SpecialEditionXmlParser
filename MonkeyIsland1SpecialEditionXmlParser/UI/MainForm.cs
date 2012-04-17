@@ -13,6 +13,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private string costumeFileName;
 		private Costume costume;
 		private XmlExportDialog xmlExportDialog;
+		private ImageExportDialog imageExportDialog;
 
 		public MainForm()
 		{
@@ -22,11 +23,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				Text = "XML Export",
 			};
+			this.imageExportDialog = new ImageExportDialog()
+			{
+				Text = "Image Export",
+			};
 
 			this.openFileDialog1.InitialDirectory
-				= this.exportAsPngFilesDialog.InitialDirectory
 				= this.xmlExportDialog.ExportFileDialog.InitialDirectory
 				= this.xmlExportDialog.XsltFileDialog.InitialDirectory
+				= this.imageExportDialog.FolderBrowserDialog.SelectedPath
 				= Environment.CurrentDirectory
 				;
 			this.dataGridView1.CellContentClick += this.ExportAsPngFiles;
@@ -54,7 +59,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			SanityChecker.Check( this.costume );
-			this.PooulateGridView();
+			this.PopulateGridView();
 			this.SetTitle();
 			this.EnableExportOptions();
 
@@ -71,7 +76,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		private void PooulateGridView()
+		private void PopulateGridView()
 		{
 			this.dataGridView1.DataSource = null;
 			Application.DoEvents();
@@ -100,15 +105,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			if( this.exportAsPngFilesDialog.ShowDialog( this ) != DialogResult.OK )
+			this.imageExportDialog.FilePrefix = string.Concat( this.costume.Header.Name, this.costume.Header.Identifier );
+			if( this.imageExportDialog.ShowDialog( this ) != DialogResult.OK )
 			{
 				return;
 			}
 
-			var exportFileName = this.exportAsPngFilesDialog.FileName;
+			var directory = this.imageExportDialog.Directory;
+			var filePrefix = this.imageExportDialog.FilePrefix;
+			var spritePadding = this.imageExportDialog.SpritePadding;
 			var animationName = this.dataGridView1.Rows[args.RowIndex].Cells["animationColumn"].Value as string;
 
-			this.ExportAsPngFiles( exportFileName, animationName );
+			this.ExportAsPngFiles( directory, filePrefix, animationName, spritePadding );
 		}
 
 		private void SetTitle()
@@ -118,21 +126,28 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAllAsPngFiles( object sender, EventArgs e )
 		{
-			if( this.exportAsPngFilesDialog.ShowDialog( this ) != DialogResult.OK )
+			this.imageExportDialog.FilePrefix = string.Concat( this.costume.Header.Name, this.costume.Header.Identifier );
+			if( this.imageExportDialog.ShowDialog( this ) != DialogResult.OK )
 			{
 				return;
 			}
-			var exportFileName = this.exportAsPngFilesDialog.FileName;
+			var directory = this.imageExportDialog.Directory;
+			var filePrefix = this.imageExportDialog.FilePrefix;
+			var spritePadding = this.imageExportDialog.SpritePadding;
 
 			foreach( var animation in this.costume.AnimationList )
 			{
-				this.ExportAsPngFiles( exportFileName, animation.Name );
+				this.ExportAsPngFiles( directory, filePrefix, animation.Name, spritePadding );
 			}
+
+			UserSettings.Instance.RecentImageExportDirectories = UserSettings.Instance.RecentImageExportDirectories.UpdateRecentList( directory, 10 );
+			UserSettings.Instance.RecentImageExportFilePrefixes = UserSettings.Instance.RecentImageExportFilePrefixes.UpdateRecentList( filePrefix, 10 );
+			UserSettings.Instance.Save();
 		}
 
-		private void ExportAsPngFiles( string fileName, string animationName )
+		private void ExportAsPngFiles( string directory, string filePrefix, string animationName, Padding spritePadding )
 		{
-			Renderer.Render( this.costume, animationName, fileName );
+			Renderer.Render( this.costume, animationName, directory, filePrefix, spritePadding );
 		}
 
 		private void ExitApplication( object sender, EventArgs e )

@@ -67,6 +67,12 @@
     <Compile Include="UI\AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\ImageExportDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\ImageExportDialog.Designer.cs">
+      <DependentUpon>ImageExportDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -89,6 +95,9 @@
     <Compile Include="SanityChecker.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Changes.txt">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="Collaboration readme.txt" />
     <Content Include="Data\Costumes\124_test-object.costume.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -111,7 +120,9 @@
     <Content Include="art\costumes\images\21_test-skin\costumes_a2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Readme.txt" />
+    <Content Include="Readme.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="XSLT\Cleanup.xslt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -119,6 +130,9 @@
   <ItemGroup>
     <EmbeddedResource Include="UI\AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\ImageExportDialog.resx">
+      <DependentUpon>ImageExportDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

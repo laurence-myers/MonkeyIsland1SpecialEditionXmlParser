@@ -52,6 +52,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			set;
 		}
 
+		public string[] RecentImageExportDirectories
+		{
+			get;
+			set;
+		}
+
+		public string[] RecentImageExportFilePrefixes
+		{
+			get;
+			set;
+		}
+
 		public void Save()
 		{
 			Helper.WriteObjectToFile( UserSettings.UserSettingsFileName, this );

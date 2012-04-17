@@ -3,13 +3,14 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Entities;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
 {
 	public static class Renderer
 	{
-		public static void Render( Costume costume, string animationName, string fileName )
+		public static void Render( Costume costume, string animationName, string directory, string filePrefix, Padding spritePadding )
 		{
 			var animation = costume.AnimationList.FirstOrDefault( a => a.Name == animationName );
 			if( animation == null )
@@ -22,6 +23,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			{
 				throw new Exception( "Unable to load one or more textures" );
 			}
+
+			var flip = animationName.EndsWith( "Left" );
 
 			foreach( var animationFrame in animation.AnimationFrameList )
 			{
@@ -42,8 +45,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 					continue;
 				}
 
-				var width = sprites.Max( s => s.TextureWidth );
-				var height = sprites.Sum( s => s.TextureHeight );
+				var width = sprites.Max( s => s.TextureWidth ) + spritePadding.Horizontal;
+				var height = sprites.Sum( s => s.TextureHeight ) + sprites.Length * spritePadding.Vertical;
 
 				var image = new Bitmap( width, height );
 				var imageGraphics = Graphics.FromImage( image );
@@ -54,16 +57,26 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				foreach( var sprite in sprites )
 				{
 					var texture = textures[sprite.TextureNumber];
-					var destRect = new Rectangle(0, y, sprite.TextureWidth, sprite.TextureHeight);
+					var destPoints
+						= flip
+						? new[] { new Point( sprite.TextureWidth + spritePadding.Right, y + spritePadding.Top ), new Point( 0 + spritePadding.Left, y + spritePadding.Top ), new Point( sprite.TextureWidth + spritePadding.Right, y + sprite.TextureHeight + spritePadding.Top ) }
+						: new[] { new Point( 0 + spritePadding.Left, y + spritePadding.Top ), new Point( sprite.TextureWidth + spritePadding.Right, y + spritePadding.Top ), new Point( 0 + spritePadding.Left, y + sprite.TextureHeight + spritePadding.Top ) }
+						;
+						new Rectangle( 0, y, sprite.TextureWidth, sprite.TextureHeight );
 					var srcRect = new Rectangle(sprite.TextureX, sprite.TextureY, sprite.TextureWidth, sprite.TextureHeight);
-					imageGraphics.DrawImage( texture, destRect, srcRect, GraphicsUnit.Pixel );
-					y += srcRect.Height;
+					imageGraphics.DrawImage( texture, destPoints, srcRect, GraphicsUnit.Pixel );
+					y += srcRect.Height + spritePadding.Vertical;
 				}
 
-				var directory = Path.GetDirectoryName( fileName );
-				var fileNameNoExt = Path.GetFileNameWithoutExtension( fileName );
-				var ext = Path.GetExtension( fileName );
-				var currentFileName = Path.Combine( directory, string.Concat( fileNameNoExt, "-", animation.Name, "-", animationFrame.Index, ext ) );
+				if( !Directory.Exists( directory ) )
+				{
+					Directory.CreateDirectory( directory );
+				}
+
+				var currentFileName = Path.Combine(
+					directory,
+					string.Concat( filePrefix, "-", animation.Name, "-", animationFrame.Index, ".png" )
+					);
 
 				image.Save( currentFileName, ImageFormat.Png );
 				image.Dispose();

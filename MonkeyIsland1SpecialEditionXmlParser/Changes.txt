@@ -1,0 +1,7 @@
+﻿[ 2012/04/18 ]
+---------------------------------------------------------------
+- New dialog for PNG export with padding options
+- Fixed XSLT tranformation
+- Fixed LEFT support for PNG export
+- Updated parser with new file format knowledge
+- Some minor tweaks
