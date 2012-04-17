@@ -1,19 +1,27 @@
-﻿using MonkeyIsland1SpecialEditionXmlParser.Entities;
+﻿using System;
+using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Forms;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
 {
 	class Program
 	{
+		[STAThread]
 		static void Main( string[] args )
 		{
-			var costume21 = Parser.Parse( @"Data\Costumes\21_test-skin.costume.xml" );
-			var costume44 = Parser.Parse( @"Data\Costumes\44_test-skin.costume.xml" );
-			var costume72 = Parser.Parse( @"Data\Costumes\72_test.costume.xml" );
-			var costume124 = Parser.Parse( @"Data\Costumes\124_test-object.costume.xml" );
+			Application.EnableVisualStyles();
 
-			SanityChecker.Check( costume21, costume44, costume72, costume124 );
+			using( var mainForm = new MainForm() )
+			{
+				Application.Run( mainForm );
+			}
 
-			Renderer.Render( costume21, "WalkLeft", "costume21" );
+			//var costume21 = Parser.Parse( @"Data\Costumes\21_test-skin.costume.xml" );
+			//var costume44 = Parser.Parse( @"Data\Costumes\44_test-skin.costume.xml" );
+			//var costume72 = Parser.Parse( @"Data\Costumes\72_test.costume.xml" );
+			//var costume124 = Parser.Parse( @"Data\Costumes\124_test-object.costume.xml" );
+
+			//SanityChecker.Check( costume21, costume44, costume72, costume124 );
 		}
 	}
 }

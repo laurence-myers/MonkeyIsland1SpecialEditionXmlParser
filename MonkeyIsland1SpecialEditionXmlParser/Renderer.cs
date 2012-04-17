@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Entities;
 
@@ -59,7 +60,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 					y += srcRect.Height;
 				}
 
-				image.Save( fileName + "-" + animation.Name + "-" + animationFrame.Index + ".png", ImageFormat.Png );
+				var directory = Path.GetDirectoryName( fileName );
+				var fileNameNoExt = Path.GetFileNameWithoutExtension( fileName );
+				var ext = Path.GetExtension( fileName );
+				var currentFileName = Path.Combine( directory, string.Concat( fileNameNoExt, "-", animation.Name, "-", animationFrame.Index, ext ) );
+
+				image.Save( currentFileName, ImageFormat.Png );
 				image.Dispose();
 			}
 		}
