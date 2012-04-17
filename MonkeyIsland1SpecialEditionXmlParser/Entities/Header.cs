@@ -31,9 +31,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the byte address of the section after the Name of the file.
+		/// Gets or sets the byte address of the first texture header.
 		/// </summary>
-		public int AfterNameAddress
+		public int TextureHeaderAddress
 		{
 			get;
 			set;

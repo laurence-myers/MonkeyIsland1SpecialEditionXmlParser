@@ -2,9 +2,9 @@
 using System.Reflection;
 using System.Windows.Forms;
 
-namespace MonkeyIsland1SpecialEditionXmlParser.Forms
+namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
-	partial class AboutBox : Form
+	partial class AboutBox : System.Windows.Forms.Form
 	{
 		public AboutBox()
 		{

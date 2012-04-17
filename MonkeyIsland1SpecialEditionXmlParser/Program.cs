@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using MonkeyIsland1SpecialEditionXmlParser.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
 {

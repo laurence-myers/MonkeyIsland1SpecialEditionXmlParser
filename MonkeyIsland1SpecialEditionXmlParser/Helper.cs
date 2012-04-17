@@ -1,6 +1,10 @@
-﻿using System.IO;
+﻿using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
-using System.Drawing;
+using System.Xml.Serialization;
+using System;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
 {
@@ -25,7 +29,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 			// figure out how long the string is
 			int @byte;
-			while( ( @byte = reader.BaseStream.ReadByte() ) != 0 );
+			while( ( @byte = reader.BaseStream.ReadByte() ) != 0 ) ;
 			var endPosition = reader.BaseStream.Position - 1;
 			var length = (int)( endPosition - position );
 
@@ -103,6 +107,98 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		public static bool IsInRange( this int value, int min, int max )
 		{
 			return value >= min && value < max;
+		}
+
+		public static void WriteObjectToFile( string fileName, object value )
+		{
+			Stream stream = null;
+			XmlSerializer serializer = null;
+
+			try
+			{
+				stream = File.Create( fileName );
+				serializer = new XmlSerializer( value.GetType() );
+				serializer.Serialize( stream, value );
+			}
+			finally
+			{
+				if( stream != null )
+				{
+					stream.Close();
+					stream.Dispose();
+					stream = null;
+				}
+			}
+		}
+
+		public static T ReadObjectFromFile<T>( string fileName )
+		{
+			Stream stream = null;
+			XmlSerializer serializer = null;
+
+			try
+			{
+				stream = File.OpenRead( fileName );
+				serializer = new XmlSerializer( typeof( T ) );
+				var value = serializer.Deserialize( stream );
+				return (T)value;
+			}
+			finally
+			{
+				if( stream != null )
+				{
+					stream.Close();
+					stream.Dispose();
+					stream = null;
+				}
+			}
+		}
+
+		public static string[] UpdateRecentList( this string[] array, string entry, int maxEntries )
+		{
+			if( array == null )
+			{
+				array = new[] { entry };
+				return array;
+			}
+
+			array = new[] { entry }.Union( array.Where( e => e != entry ) ).Take( maxEntries ).ToArray();
+			return array;
+		}
+
+		/// <summary>
+		/// Gets the full path to the assembly that is currently executing,
+		/// which would always be the one holding this class.
+		/// </summary>
+		/// <returns>
+		/// Full path to the executing assembly.
+		/// </returns>
+		public static string GetExecutingAssemblyDirectory()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var location = assembly.Location;
+			var directory = Path.GetDirectoryName( location );
+			return directory;
+		}
+
+		/// <summary>
+		/// Reads a Int32 from the current stream and adds the byte position to the Int32 if predicate is meet.
+		/// </summary>
+		/// <param name="reader">
+		/// The reader to read from.
+		/// </param>
+		/// <returns>
+		/// The Int32 being read.
+		/// </returns>
+		public static int ReadInt32PlusBytePosition( this BinaryReader reader, Func<int, bool> predicate )
+		{
+			var position = (int)reader.BaseStream.Position;
+			var value = reader.ReadInt32();
+			if( predicate( value ) )
+			{
+				value += position;
+			}
+			return value;
 		}
 	}
 }

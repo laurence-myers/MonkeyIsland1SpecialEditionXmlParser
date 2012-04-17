@@ -85,7 +85,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		{
 			costume.Header.NameAddress.Is( 80 );
 			costume.Header.TextureFileNameCount.Is( 3 );
-			costume.Header.AfterNameAddress.Is( 96 );
+			costume.Header.TextureHeaderAddress.Is( 96 );
 			costume.Header.AnimationCount.Is( 27 );
 			costume.Header.Name.Is( "test-skin" );
 

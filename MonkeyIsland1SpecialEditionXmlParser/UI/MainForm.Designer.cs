@@ -1,4 +1,4 @@
-﻿namespace MonkeyIsland1SpecialEditionXmlParser.Forms
+﻿namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
 	partial class MainForm
 	{
@@ -37,7 +37,15 @@
 			this.asXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.asPNGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
+			this.recentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.mISEExplorerLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.mISEExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.forumLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
+			this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
 			this.dataGridView1 = new System.Windows.Forms.DataGridView();
 			this.animationColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -45,13 +53,7 @@
 			this.framesColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.exportButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
 			this.exportAsPngFilesDialog = new System.Windows.Forms.SaveFileDialog();
-			this.exportAsXmlFileDialog = new System.Windows.Forms.SaveFileDialog();
-			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.mISEExplorerLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.mISEExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.forumLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
-			this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.dummyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
 			this.SuspendLayout();
@@ -74,6 +76,8 @@
             this.toolStripMenuItem2,
             this.exportToolStripMenuItem,
             this.toolStripMenuItem1,
+            this.recentToolStripMenuItem,
+            this.toolStripMenuItem4,
             this.exitToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(31, 20);
@@ -84,7 +88,7 @@
 			this.openToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.costumeToolStripMenuItem});
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			// 
 			// costumeToolStripMenuItem
@@ -97,7 +101,7 @@
 			// toolStripMenuItem2
 			// 
 			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-			this.toolStripMenuItem2.Size = new System.Drawing.Size(95, 6);
+			this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
 			// 
 			// exportToolStripMenuItem
 			// 
@@ -113,7 +117,7 @@
 			// 
 			this.asXMLToolStripMenuItem.Enabled = false;
 			this.asXMLToolStripMenuItem.Name = "asXMLToolStripMenuItem";
-			this.asXMLToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.asXMLToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
 			this.asXMLToolStripMenuItem.Text = "As &XML...";
 			this.asXMLToolStripMenuItem.Click += new System.EventHandler(this.ExportAsXmlFile);
 			// 
@@ -121,21 +125,80 @@
 			// 
 			this.asPNGToolStripMenuItem.Enabled = false;
 			this.asPNGToolStripMenuItem.Name = "asPNGToolStripMenuItem";
-			this.asPNGToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.asPNGToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
 			this.asPNGToolStripMenuItem.Text = "As &PNG...";
 			this.asPNGToolStripMenuItem.Click += new System.EventHandler(this.ExportAllAsPngFiles);
 			// 
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(95, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
+			// 
+			// recentToolStripMenuItem
+			// 
+			this.recentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dummyToolStripMenuItem});
+			this.recentToolStripMenuItem.Name = "recentToolStripMenuItem";
+			this.recentToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.recentToolStripMenuItem.Text = "&Recent";
+			this.recentToolStripMenuItem.DropDownOpening += new System.EventHandler(this.UpdateRecentMenuItems);
+			// 
+			// toolStripMenuItem4
+			// 
+			this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+			this.toolStripMenuItem4.Size = new System.Drawing.Size(149, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitApplication);
+			// 
+			// helpToolStripMenuItem
+			// 
+			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mISEExplorerLinkToolStripMenuItem,
+            this.forumLinkToolStripMenuItem,
+            this.toolStripMenuItem3,
+            this.aboutToolStripMenuItem});
+			this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+			this.helpToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+			this.helpToolStripMenuItem.Text = "&Help";
+			// 
+			// mISEExplorerLinkToolStripMenuItem
+			// 
+			this.mISEExplorerLinkToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mISEExplorerToolStripMenuItem});
+			this.mISEExplorerLinkToolStripMenuItem.Name = "mISEExplorerLinkToolStripMenuItem";
+			this.mISEExplorerLinkToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+			this.mISEExplorerLinkToolStripMenuItem.Text = "3rd Party links";
+			// 
+			// mISEExplorerToolStripMenuItem
+			// 
+			this.mISEExplorerToolStripMenuItem.Name = "mISEExplorerToolStripMenuItem";
+			this.mISEExplorerToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
+			this.mISEExplorerToolStripMenuItem.Text = "MISE Explorer";
+			this.mISEExplorerToolStripMenuItem.Click += new System.EventHandler(this.NavigateToMISEExplorer);
+			// 
+			// forumLinkToolStripMenuItem
+			// 
+			this.forumLinkToolStripMenuItem.Name = "forumLinkToolStripMenuItem";
+			this.forumLinkToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+			this.forumLinkToolStripMenuItem.Text = "Forum thread link";
+			this.forumLinkToolStripMenuItem.Click += new System.EventHandler(this.NavigateToForumThread);
+			// 
+			// toolStripMenuItem3
+			// 
+			this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+			this.toolStripMenuItem3.Size = new System.Drawing.Size(145, 6);
+			// 
+			// aboutToolStripMenuItem
+			// 
+			this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+			this.aboutToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+			this.aboutToolStripMenuItem.Text = "About";
+			this.aboutToolStripMenuItem.Click += new System.EventHandler(this.ShowAboutForm);
 			// 
 			// openFileDialog1
 			// 
@@ -195,57 +258,11 @@
 			this.exportAsPngFilesDialog.SupportMultiDottedExtensions = true;
 			this.exportAsPngFilesDialog.Title = "Export as PNG files";
 			// 
-			// exportAsXmlFileDialog
+			// dummyToolStripMenuItem
 			// 
-			this.exportAsXmlFileDialog.DefaultExt = "xml";
-			this.exportAsXmlFileDialog.Filter = "XML files|*.xml|All files|*.*";
-			this.exportAsXmlFileDialog.SupportMultiDottedExtensions = true;
-			this.exportAsXmlFileDialog.Title = "Export as XML file";
-			// 
-			// helpToolStripMenuItem
-			// 
-			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mISEExplorerLinkToolStripMenuItem,
-            this.forumLinkToolStripMenuItem,
-            this.toolStripMenuItem3,
-            this.aboutToolStripMenuItem});
-			this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-			this.helpToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
-			this.helpToolStripMenuItem.Text = "&Help";
-			// 
-			// mISEExplorerLinkToolStripMenuItem
-			// 
-			this.mISEExplorerLinkToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mISEExplorerToolStripMenuItem});
-			this.mISEExplorerLinkToolStripMenuItem.Name = "mISEExplorerLinkToolStripMenuItem";
-			this.mISEExplorerLinkToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.mISEExplorerLinkToolStripMenuItem.Text = "3rd Party links";
-			// 
-			// mISEExplorerToolStripMenuItem
-			// 
-			this.mISEExplorerToolStripMenuItem.Name = "mISEExplorerToolStripMenuItem";
-			this.mISEExplorerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.mISEExplorerToolStripMenuItem.Text = "MISE Explorer";
-			this.mISEExplorerToolStripMenuItem.Click += new System.EventHandler(this.NavigateToMISEExplorer);
-			// 
-			// forumLinkToolStripMenuItem
-			// 
-			this.forumLinkToolStripMenuItem.Name = "forumLinkToolStripMenuItem";
-			this.forumLinkToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.forumLinkToolStripMenuItem.Text = "Forum thread link";
-			this.forumLinkToolStripMenuItem.Click += new System.EventHandler(this.NavigateToForumThread);
-			// 
-			// toolStripMenuItem3
-			// 
-			this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-			this.toolStripMenuItem3.Size = new System.Drawing.Size(149, 6);
-			// 
-			// aboutToolStripMenuItem
-			// 
-			this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-			this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.aboutToolStripMenuItem.Text = "About";
-			this.aboutToolStripMenuItem.Click += new System.EventHandler(this.ShowAboutForm);
+			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
+			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.dummyToolStripMenuItem.Text = "dummy";
 			// 
 			// MainForm
 			// 
@@ -284,12 +301,14 @@
 		private System.Windows.Forms.DataGridViewButtonColumn exportButtonColumn;
 		private System.Windows.Forms.SaveFileDialog exportAsPngFilesDialog;
 		private System.Windows.Forms.ToolStripMenuItem asPNGToolStripMenuItem;
-		private System.Windows.Forms.SaveFileDialog exportAsXmlFileDialog;
 		private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem mISEExplorerLinkToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem mISEExplorerToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem forumLinkToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
 		private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem recentToolStripMenuItem;
+		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
+		private System.Windows.Forms.ToolStripMenuItem dummyToolStripMenuItem;
 	}
 }

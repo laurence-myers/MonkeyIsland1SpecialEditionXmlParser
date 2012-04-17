@@ -1,25 +1,32 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using System.Xml.Serialization;
+using System.Xml.Xsl;
 using MonkeyIsland1SpecialEditionXmlParser.Entities;
-using System.IO;
-using System.Diagnostics;
 
-namespace MonkeyIsland1SpecialEditionXmlParser.Forms
+namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
-	public partial class MainForm : Form
+	public partial class MainForm : System.Windows.Forms.Form
 	{
 		private string costumeFileName;
 		private Costume costume;
+		private XmlExportDialog xmlExportDialog;
 
 		public MainForm()
 		{
 			InitializeComponent();
 
+			this.xmlExportDialog = new XmlExportDialog()
+			{
+				Text = "XML Export",
+			};
+
 			this.openFileDialog1.InitialDirectory
 				= this.exportAsPngFilesDialog.InitialDirectory
-				= this.exportAsXmlFileDialog.InitialDirectory
+				= this.xmlExportDialog.ExportFileDialog.InitialDirectory
+				= this.xmlExportDialog.XsltFileDialog.InitialDirectory
 				= Environment.CurrentDirectory
 				;
 			this.dataGridView1.CellContentClick += this.ExportAsPngFiles;
@@ -32,12 +39,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Forms
 				return;
 			}
 
-			this.costumeFileName = this.openFileDialog1.FileName;
-			this.OpenCostumeFile();
+			var costumeFileName = this.openFileDialog1.FileName;
+			this.OpenCostumeFile( costumeFileName );
 		}
 
-		private void OpenCostumeFile()
+		private void OpenCostumeFile( string costumeFileName )
 		{
+			this.costumeFileName = costumeFileName;
 			this.costume = Parser.Parse( this.costumeFileName );
 			if( this.costume == null )
 			{
@@ -49,6 +57,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Forms
 			this.PooulateGridView();
 			this.SetTitle();
 			this.EnableExportOptions();
+
+			UserSettings.Instance.RecentCostumeFileNames = Helper.UpdateRecentList( UserSettings.Instance.RecentCostumeFileNames, this.costumeFileName, 10 );
+			UserSettings.Instance.Save();
 		}
 
 		private void EnableExportOptions()
@@ -131,27 +142,35 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Forms
 
 		private void ExportAsXmlFile( object sender, EventArgs e )
 		{
-			if( this.exportAsXmlFileDialog.ShowDialog( this ) != DialogResult.OK )
+			this.xmlExportDialog.ExportFileDialog.FileName = this.costume.Header.Name + this.costume.Header.Identifier + ".xml";
+			if( this.xmlExportDialog.ShowDialog( this ) != DialogResult.OK )
 			{
 				return;
 			}
-			var exportFileName = this.exportAsXmlFileDialog.FileName;
+			var exportFileName = this.xmlExportDialog.ExportFileName;
+			var xsltFileName = this.xmlExportDialog.XsltFileName;
 
-			Stream stream = null;
+			Helper.WriteObjectToFile( exportFileName, this.costume );
+			UserSettings.Instance.RecentExportFileNames = UserSettings.Instance.RecentExportFileNames.UpdateRecentList( exportFileName, 10 );
+			UserSettings.Instance.Save();
 
-			try
+			var isXsltFileNameValid
+				= !string.IsNullOrWhiteSpace( xsltFileName )
+				&& File.Exists( xsltFileName )
+				;
+			if( isXsltFileNameValid )
 			{
-				stream = File.Create( exportFileName );
-				var serializer = new XmlSerializer( typeof( Costume ) );
-				serializer.Serialize( stream, this.costume );
-			}
-			finally
-			{
-				if( stream != null )
+				var tempFileName = Path.GetTempFileName();
+				var transform = new XslCompiledTransform();
+				transform.Load( xsltFileName );
+				transform.Transform( exportFileName, tempFileName );
+				File.Copy( tempFileName, exportFileName, overwrite: true );
+				File.Delete( tempFileName );
+
+				if( !StandardXsltFiles.Contains( xsltFileName ) )
 				{
-					stream.Close();
-					stream.Dispose();
-					stream = null;
+					UserSettings.Instance.RecentXsltFileNames = UserSettings.Instance.RecentXsltFileNames.UpdateRecentList( xsltFileName, 10 );
+					UserSettings.Instance.Save();
 				}
 			}
 		}
@@ -171,6 +190,28 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Forms
 			using( var aboutForm = new AboutBox() )
 			{
 				aboutForm.ShowDialog( this );
+			}
+		}
+
+		private void UpdateRecentMenuItems( object sender, EventArgs args )
+		{
+			this.recentToolStripMenuItem.DropDownItems.Clear();
+			if( UserSettings.Instance.RecentCostumeFileNames != null )
+			{
+				foreach( var costumeFileName in UserSettings.Instance.RecentCostumeFileNames )
+				{
+					var item = new ToolStripMenuItem()
+					{
+						Text = costumeFileName,
+						Tag = "recent",
+					};
+					item.Click += delegate { this.OpenCostumeFile( item.Text ); };
+					this.recentToolStripMenuItem.DropDownItems.Add( item );
+				}
+			}
+			else
+			{
+				this.recentToolStripMenuItem.DropDownItems.Add( "dummy" );
 			}
 		}
 	}

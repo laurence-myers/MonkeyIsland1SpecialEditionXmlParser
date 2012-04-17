@@ -1,4 +1,4 @@
-﻿namespace MonkeyIsland1SpecialEditionXmlParser.Forms
+﻿namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
 	partial class AboutBox
 	{

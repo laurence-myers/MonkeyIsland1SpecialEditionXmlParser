@@ -14,9 +14,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the list of unknown entries after the costume name.
+		/// Gets or sets the list of texture headers.
 		/// </summary>
-		public List<UnknownAfterName> UnknownAfterNameList
+		public List<TextureHeader> TextureHeaderList
 		{
 			get;
 			set;

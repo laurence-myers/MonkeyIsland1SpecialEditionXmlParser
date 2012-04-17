@@ -40,7 +40,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		{
 			var costume = new Costume();
 			costume.Header = Parser.ReadHeader( reader, costume );
-			costume.UnknownAfterNameList = Parser.ReadUnknownAfterNameList( reader, costume );
+			costume.TextureHeaderList = Parser.ReadTextureHeaderList( reader, costume );
 			costume.AnimationHeaderList = Parser.ReadAnimationHeaderList( reader, costume );
 			costume.SpriteGroupHeaderList = Parser.ReadSpriteGroupHeaderList( reader, costume );
 			costume.PathPointList = Parser.ReadPathPointList( reader, costume );
@@ -57,7 +57,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				Identifier = reader.ReadInt32(),
 				NameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				TextureFileNameCount = reader.ReadInt32(),
-				AfterNameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
+				TextureHeaderAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				AnimationCount = reader.ReadInt32(),
 				AnimationHeaderAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
 				UnknownInteger1 = reader.ReadInt32(),
@@ -79,20 +79,20 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return header;
 		}
 
-		private static List<UnknownAfterName> ReadUnknownAfterNameList( BinaryReader reader, Costume costume )
+		private static List<TextureHeader> ReadTextureHeaderList( BinaryReader reader, Costume costume )
 		{
-			var list = new List<UnknownAfterName>();
+			var list = new List<TextureHeader>();
 
 			while( reader.BaseStream.Position < costume.Header.AnimationHeaderAddress )
 			{
-				var unknownAfterName = new UnknownAfterName()
+				var textureHeader = new TextureHeader()
 				{
-					UnknownInteger1 = reader.ReadInt32(),
-					UnknownInteger2 = reader.ReadInt32(),
-					UnknownInteger3 = reader.ReadInt32(),
-					UnknownInteger4 = reader.ReadInt32(),
+					TextureSpriteCount1 = reader.ReadInt32(),
+					TextureFileNameAddress1 = reader.ReadInt32PlusBytePosition( value => value > 0 ),
+					TextureSpriteCount2 = reader.ReadInt32(),
+					TextureFileNameAddress2 = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				};
-				list.Add( unknownAfterName );
+				list.Add( textureHeader );
 			}
 
 			return list;
