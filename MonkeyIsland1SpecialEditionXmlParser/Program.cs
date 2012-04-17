@@ -1,4 +1,5 @@
-﻿
+﻿using MonkeyIsland1SpecialEditionXmlParser.Entities;
+
 namespace MonkeyIsland1SpecialEditionXmlParser
 {
 	class Program
@@ -11,6 +12,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			var costume124 = Parser.Parse( @"Data\Costumes\124_test-object.costume.xml" );
 
 			SanityChecker.Check( costume21, costume44, costume72, costume124 );
+
+			Renderer.Render( costume21, "WalkLeft", "costume21" );
 		}
 	}
 }

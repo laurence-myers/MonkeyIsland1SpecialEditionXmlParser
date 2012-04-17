@@ -15,7 +15,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 			set;
 		}
 
-		public uint TextureY
+		public int TextureY
 		{
 			get;
 			set;

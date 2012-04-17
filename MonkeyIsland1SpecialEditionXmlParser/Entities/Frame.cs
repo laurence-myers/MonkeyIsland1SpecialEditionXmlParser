@@ -3,7 +3,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 {
 	public class Frame
 	{
-		public int UnknownInteger1
+		public int SpriteIdentifier
 		{
 			get;
 			set;
@@ -24,7 +24,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Entities
 		public override string ToString()
 		{
 			return string.Concat(
-				this.UnknownInteger1, "; ",
+				this.SpriteIdentifier, "; ",
 				this.UnknownInteger2, "; ",
 				this.UnknownInteger3
 				);

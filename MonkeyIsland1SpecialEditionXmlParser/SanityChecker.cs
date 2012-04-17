@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Entities;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
@@ -25,6 +26,40 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 						}
 					}
 				}
+
+				foreach( var animation in costume.AnimationList )
+				{
+					foreach(var animationFrame in animation.AnimationFrameList)
+					{
+						if( animationFrame.FrameList.All( f => f.SpriteIdentifier == -1 ) )
+						{
+							continue;
+						}
+						if( animationFrame.SpriteGroupIdentifier > costume.SpriteGroupList.Max( sg => sg.Identifier ) )
+						{
+							throw new Exception( "An animation frame references a sprite group that is not defined" );
+						}
+					}
+				}
+
+				//foreach( var animation in costume.AnimationList )
+				//{
+				//    foreach( var animationFrame in animation.AnimationFrameList )
+				//    {
+				//        foreach( var frame in animationFrame.FrameList )
+				//        {
+				//            if( frame.SpriteIdentifier == -1 )
+				//            {
+				//                continue;
+				//            }
+				//            var spriteGroup = costume.SpriteGroupList.First( sg => sg.Identifier == animationFrame.SpriteGroupIdentifier);
+				//            if( frame.SpriteIdentifier >= spriteGroup.SpriteList.Count )
+				//            {
+				//                throw new Exception( "An animation frame references a sprite that is not defined" );
+				//            }
+				//        }
+				//    }
+				//}
 
 				switch( costume.Header.Identifier )
 				{

@@ -237,7 +237,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			{
 				var frame = new Frame()
 				{
-					UnknownInteger1 = reader.ReadInt32(),
+					SpriteIdentifier = reader.ReadInt32(),
 					UnknownInteger2 = reader.ReadInt32(),
 					UnknownInteger3 = reader.ReadInt32(),
 				};
@@ -279,7 +279,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				{
 					TextureNumber = reader.ReadInt32(),
 					TextureX = reader.ReadInt32(),
-					TextureY = reader.ReadUInt32(),
+					TextureY = reader.ReadInt32(),
 					TextureWidth = reader.ReadInt32(),
 					TextureHeight = reader.ReadInt32(),
 					ScreenX = reader.ReadSingle(),
