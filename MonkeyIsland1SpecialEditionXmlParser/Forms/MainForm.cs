@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using MonkeyIsland1SpecialEditionXmlParser.Entities;
 using System.IO;
+using System.Diagnostics;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Forms
 {
@@ -152,6 +153,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Forms
 					stream.Dispose();
 					stream = null;
 				}
+			}
+		}
+
+		private void NavigateToMISEExplorer( object sender, EventArgs e )
+		{
+			Process.Start( "http://quick.mixnmojo.com/software/monkey-island-explorer" );
+		}
+
+		private void NavigateToForumThread( object sender, EventArgs e )
+		{
+			Process.Start( "http://www.lucasforums.com/showthread.php?p=2809988#post2809988" );
+		}
+
+		private void ShowAboutForm( object sender, EventArgs e )
+		{
+			using( var aboutForm = new AboutBox() )
+			{
+				aboutForm.ShowDialog( this );
 			}
 		}
 	}
