@@ -4,14 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using System.Xml.Xsl;
-using MonkeyIsland1SpecialEditionXmlParser.Entities;
+using rooms = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
+using costumes = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes;
+using System.Xml;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
 	public partial class MainForm : System.Windows.Forms.Form
 	{
-		private string costumeFileName;
-		private Costume costume;
+		private string openFileName;
+		private object entity;
 		private XmlExportDialog xmlExportDialog;
 		private ImageExportDialog imageExportDialog;
 
@@ -28,7 +30,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				Text = "Image Export",
 			};
 
-			this.openFileDialog1.InitialDirectory
+			this.openFileDialog.InitialDirectory
 				= this.xmlExportDialog.ExportFileDialog.InitialDirectory
 				= this.xmlExportDialog.XsltFileDialog.InitialDirectory
 				= this.imageExportDialog.FolderBrowserDialog.SelectedPath
@@ -37,33 +39,50 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.dataGridView1.CellContentClick += this.ExportAsPngFiles;
 		}
 
-		private void ShowOpenCostumeFileDialog( object sender, EventArgs e )
+		private void ShowOpenFileDialog( object sender, EventArgs e )
 		{
-			if( this.openFileDialog1.ShowDialog( this ) != DialogResult.OK )
+			if( this.openFileDialog.ShowDialog( this ) != DialogResult.OK )
 			{
 				return;
 			}
-
-			var costumeFileName = this.openFileDialog1.FileName;
-			this.OpenCostumeFile( costumeFileName );
+			var openFileName = this.openFileDialog.FileName;
+			this.OpenFile( openFileName );
 		}
 
-		private void OpenCostumeFile( string costumeFileName )
+		private void OpenFile( string openFileName )
 		{
-			this.costumeFileName = costumeFileName;
-			this.costume = Parser.Parse( this.costumeFileName );
-			if( this.costume == null )
+			// get a reference to the method that will parse the file
+			Func<string, object> openFileMethod = null;
+			if( openFileName.EndsWith( ".room.xml", StringComparison.OrdinalIgnoreCase ) )
 			{
-				MessageBox.Show( "Unable to parse costume file." );
+				MessageBox.Show( "Rooms not yet supported." );
+				return;
+				//openFileMethod = rooms.Parser.Parse;
+			}
+			else if( openFileName.EndsWith( ".costume.xml", StringComparison.OrdinalIgnoreCase ) )
+			{
+				openFileMethod = costumes.Parser.Parse;
+			}
+			else
+			{
+				MessageBox.Show( @"File must end with "".costume.xml"" or "".room.xml""." );
 				return;
 			}
 
-			SanityChecker.Check( this.costume );
+			var entity = openFileMethod( openFileName );
+			if( entity == null )
+			{
+				MessageBox.Show( "Unable to parse room file." );
+				return;
+			}
+
+			this.openFileName = openFileName;
+			this.entity = entity;
 			this.PopulateGridView();
 			this.SetTitle();
 			this.EnableExportOptions();
 
-			UserSettings.Instance.RecentCostumeFileNames = Helper.UpdateRecentList( UserSettings.Instance.RecentCostumeFileNames, this.costumeFileName, 10 );
+			UserSettings.Instance.RecentCostumeFileNames = Helper.UpdateRecentList( UserSettings.Instance.RecentCostumeFileNames, this.openFileName, 10 );
 			UserSettings.Instance.Save();
 		}
 
@@ -81,7 +100,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.dataGridView1.DataSource = null;
 			Application.DoEvents();
 
-			foreach( var animation in this.costume.AnimationList )
+			var costume = this.entity as costumes.Entities.Costume;
+			foreach( var animation in costume.AnimationList )
 			{
 				var rowIndex = this.dataGridView1.Rows.Add();
 				var row = this.dataGridView1.Rows[rowIndex];
@@ -105,7 +125,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			this.imageExportDialog.FilePrefix = string.Concat( this.costume.Header.Name, this.costume.Header.Identifier );
+			var costume = this.entity as costumes.Entities.Costume;
+			this.imageExportDialog.FilePrefix = string.Concat( costume.Header.Name, costume.Header.Identifier );
 			if( this.imageExportDialog.ShowDialog( this ) != DialogResult.OK )
 			{
 				return;
@@ -121,12 +142,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void SetTitle()
 		{
-			this.Text = this.costumeFileName;
+			this.Text = this.openFileName;
 		}
 
 		private void ExportAllAsPngFiles( object sender, EventArgs e )
 		{
-			this.imageExportDialog.FilePrefix = string.Concat( this.costume.Header.Name, this.costume.Header.Identifier );
+			var costume = this.entity as costumes.Entities.Costume;
+			this.imageExportDialog.FilePrefix = string.Concat( costume.Header.Name, costume.Header.Identifier );
 			if( this.imageExportDialog.ShowDialog( this ) != DialogResult.OK )
 			{
 				return;
@@ -135,7 +157,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var filePrefix = this.imageExportDialog.FilePrefix;
 			var spritePadding = this.imageExportDialog.SpritePadding;
 
-			foreach( var animation in this.costume.AnimationList )
+			foreach( var animation in costume.AnimationList )
 			{
 				this.ExportAsPngFiles( directory, filePrefix, animation.Name, spritePadding );
 			}
@@ -147,7 +169,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsPngFiles( string directory, string filePrefix, string animationName, Padding spritePadding )
 		{
-			Renderer.Render( this.costume, animationName, directory, filePrefix, spritePadding );
+			costumes.Renderer.Render( this.entity as costumes.Entities.Costume, animationName, directory, filePrefix, spritePadding );
 		}
 
 		private void ExitApplication( object sender, EventArgs e )
@@ -157,7 +179,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsXmlFile( object sender, EventArgs e )
 		{
-			this.xmlExportDialog.ExportFileDialog.FileName = this.costume.Header.Name + this.costume.Header.Identifier + ".xml";
+			var costume = this.entity as costumes.Entities.Costume;
+			this.xmlExportDialog.ExportFileDialog.FileName = costume.Header.Name + costume.Header.Identifier + ".xml";
 			if( this.xmlExportDialog.ShowDialog( this ) != DialogResult.OK )
 			{
 				return;
@@ -165,7 +188,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var exportFileName = this.xmlExportDialog.ExportFileName;
 			var xsltFileName = this.xmlExportDialog.XsltFileName;
 
-			Helper.WriteObjectToFile( exportFileName, this.costume );
+			Helper.WriteObjectToFile( exportFileName, this.entity );
 			UserSettings.Instance.RecentExportFileNames = UserSettings.Instance.RecentExportFileNames.UpdateRecentList( exportFileName, 10 );
 			UserSettings.Instance.Save();
 
@@ -175,12 +198,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				;
 			if( isXsltFileNameValid )
 			{
-				var tempFileName = Path.GetTempFileName();
-				var transform = new XslCompiledTransform();
-				transform.Load( xsltFileName );
-				transform.Transform( exportFileName, tempFileName );
-				File.Copy( tempFileName, exportFileName, overwrite: true );
-				File.Delete( tempFileName );
+				var xmlReaderSettings = new XmlReaderSettings()
+				{
+					DtdProcessing = DtdProcessing.Parse,
+				};
+				using( var reader = XmlReader.Create( xsltFileName, xmlReaderSettings ) )
+				{
+					var tempFileName = Path.GetTempFileName();
+					var transform = new XslCompiledTransform();
+					transform.Load( reader );
+					transform.Transform( exportFileName, tempFileName );
+					File.Copy( tempFileName, exportFileName, overwrite: true );
+					File.Delete( tempFileName );
+				}
 
 				if( !StandardXsltFiles.Contains( xsltFileName ) )
 				{
@@ -220,7 +250,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 						Text = costumeFileName,
 						Tag = "recent",
 					};
-					item.Click += delegate { this.OpenCostumeFile( item.Text ); };
+					item.Click += delegate { this.OpenFile( item.Text ); };
 					this.recentToolStripMenuItem.DropDownItems.Add( item );
 				}
 			}

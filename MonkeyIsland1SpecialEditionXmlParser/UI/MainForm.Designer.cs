@@ -31,7 +31,6 @@
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.costumeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
 			this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.asXMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,7 +46,7 @@
 			this.forumLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
 			this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+			this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
 			this.dataGridView1 = new System.Windows.Forms.DataGridView();
 			this.animationColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.spritesColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -84,24 +83,16 @@
 			// 
 			// openToolStripMenuItem
 			// 
-			this.openToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.costumeToolStripMenuItem});
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+			this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.openToolStripMenuItem.Text = "&Open";
-			// 
-			// costumeToolStripMenuItem
-			// 
-			this.costumeToolStripMenuItem.Name = "costumeToolStripMenuItem";
-			this.costumeToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-			this.costumeToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
-			this.costumeToolStripMenuItem.Text = "&Costume file...";
-			this.costumeToolStripMenuItem.Click += new System.EventHandler(this.ShowOpenCostumeFileDialog);
+			this.openToolStripMenuItem.Click += new System.EventHandler(this.ShowOpenFileDialog);
 			// 
 			// toolStripMenuItem2
 			// 
 			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-			this.toolStripMenuItem2.Size = new System.Drawing.Size(115, 6);
+			this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
 			// 
 			// exportToolStripMenuItem
 			// 
@@ -110,7 +101,7 @@
             this.asPNGToolStripMenuItem});
 			this.exportToolStripMenuItem.Enabled = false;
 			this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-			this.exportToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+			this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.exportToolStripMenuItem.Text = "&Export";
 			// 
 			// asXMLToolStripMenuItem
@@ -132,14 +123,14 @@
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(115, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
 			// 
 			// recentToolStripMenuItem
 			// 
 			this.recentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dummyToolStripMenuItem});
 			this.recentToolStripMenuItem.Name = "recentToolStripMenuItem";
-			this.recentToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+			this.recentToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.recentToolStripMenuItem.Text = "&Recent";
 			this.recentToolStripMenuItem.DropDownOpening += new System.EventHandler(this.UpdateRecentMenuItems);
 			// 
@@ -152,13 +143,13 @@
 			// toolStripMenuItem4
 			// 
 			this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-			this.toolStripMenuItem4.Size = new System.Drawing.Size(115, 6);
+			this.toolStripMenuItem4.Size = new System.Drawing.Size(149, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
 			this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(118, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitApplication);
 			// 
@@ -207,14 +198,13 @@
 			this.aboutToolStripMenuItem.Text = "About";
 			this.aboutToolStripMenuItem.Click += new System.EventHandler(this.ShowAboutForm);
 			// 
-			// openFileDialog1
+			// openFileDialog
 			// 
-			this.openFileDialog1.AddExtension = false;
-			this.openFileDialog1.DefaultExt = "xml";
-			this.openFileDialog1.FileName = "openFileDialog1";
-			this.openFileDialog1.Filter = "XML files|*.xml|All files|*.*";
-			this.openFileDialog1.SupportMultiDottedExtensions = true;
-			this.openFileDialog1.Title = "Open Costume file";
+			this.openFileDialog.AddExtension = false;
+			this.openFileDialog.DefaultExt = "costume.xml";
+			this.openFileDialog.Filter = "XML files|*.xml|All files|*.*";
+			this.openFileDialog.SupportMultiDottedExtensions = true;
+			this.openFileDialog.Title = "Open file";
 			// 
 			// dataGridView1
 			// 
@@ -281,13 +271,12 @@
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem costumeToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
 		private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem asXMLToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-		private System.Windows.Forms.OpenFileDialog openFileDialog1;
+		private System.Windows.Forms.OpenFileDialog openFileDialog;
 		private System.Windows.Forms.DataGridView dataGridView1;
 		private System.Windows.Forms.DataGridViewTextBoxColumn animationColumn;
 		private System.Windows.Forms.DataGridViewTextBoxColumn spritesColumn;

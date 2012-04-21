@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MonkeyIsland1SpecialEditionXmlParser.Entities
+namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
 	public class SpriteGroup
 	{

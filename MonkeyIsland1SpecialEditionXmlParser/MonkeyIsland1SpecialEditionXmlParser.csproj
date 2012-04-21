@@ -49,18 +49,34 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Animation.cs" />
-    <Compile Include="Entities\AnimationFrame.cs" />
-    <Compile Include="Entities\AnimationHeader.cs" />
-    <Compile Include="Entities\Costume.cs" />
-    <Compile Include="Entities\Frame.cs" />
-    <Compile Include="Entities\Header.cs" />
-    <Compile Include="Entities\Sprite.cs" />
-    <Compile Include="Entities\SpriteGroup.cs" />
-    <Compile Include="Entities\SpriteGroupHeader.cs" />
-    <Compile Include="Entities\TextureFileName.cs" />
-    <Compile Include="Entities\TextureHeader.cs" />
-    <Compile Include="Entities\PathPoint.cs" />
+    <Compile Include="Formats\Costumes\Entities\Animation.cs" />
+    <Compile Include="Formats\Costumes\Entities\AnimationFrame.cs" />
+    <Compile Include="Formats\Costumes\Entities\AnimationHeader.cs" />
+    <Compile Include="Formats\Costumes\Entities\Costume.cs" />
+    <Compile Include="Formats\Costumes\Entities\Frame.cs" />
+    <Compile Include="Formats\Costumes\Entities\Header.cs" />
+    <Compile Include="Formats\Costumes\Entities\PathPoint.cs" />
+    <Compile Include="Formats\Costumes\Entities\Sprite.cs" />
+    <Compile Include="Formats\Costumes\Entities\SpriteGroup.cs" />
+    <Compile Include="Formats\Costumes\Entities\SpriteGroupHeader.cs" />
+    <Compile Include="Formats\Costumes\Entities\TextureFileName.cs" />
+    <Compile Include="Formats\Costumes\Entities\TextureHeader.cs" />
+    <Compile Include="Formats\Costumes\Parser.cs" />
+    <Compile Include="Formats\Costumes\Renderer.cs" />
+    <Compile Include="Formats\Costumes\SanityChecker.cs" />
+    <Compile Include="Formats\Rooms\Entities\Sprite.cs" />
+    <Compile Include="Formats\Rooms\Entities\StaticTexture.cs" />
+    <Compile Include="Formats\Rooms\Entities\SpriteGroup.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown5.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown4.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown3.cs" />
+    <Compile Include="Formats\Rooms\Entities\SpriteHeader.cs" />
+    <Compile Include="Formats\Rooms\Entities\Header.cs" />
+    <Compile Include="Formats\Rooms\Entities\Room.cs" />
+    <Compile Include="Formats\Rooms\Entities\TextureHeader.cs" />
+    <Compile Include="Formats\Rooms\Entities\StaticTextureHeader.cs" />
+    <Compile Include="Formats\Rooms\Parser.cs" />
+    <Compile Include="Formats\Rooms\SanityChecker.cs" />
     <Compile Include="UI\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -88,11 +104,8 @@
       <DependentUpon>XmlExportDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Helper.cs" />
-    <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Renderer.cs" />
-    <Compile Include="SanityChecker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Changes.txt">
@@ -121,11 +134,16 @@
     <Content Include="art\costumes\images\21_test-skin\costumes_a2.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Data\Rooms\28_test.room.xml" />
     <Content Include="Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="TODO.txt" />
     <Content Include="XSLT\Cleanup.xslt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="XSLT\ToUnity.xslt">
+      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <ItemGroup>
@@ -145,6 +163,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

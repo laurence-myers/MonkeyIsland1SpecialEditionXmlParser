@@ -1,0 +1,3 @@
+﻿Extract XML transformation into a helper method and pretty up the code
+Finish the room parser
+Add room GUI support

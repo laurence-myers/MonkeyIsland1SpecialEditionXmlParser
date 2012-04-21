@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
 using System;
+using System.Collections.Generic;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
 {
@@ -199,6 +200,27 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				value += position;
 			}
 			return value;
+		}
+
+		public static int[] FindOffsets( this BinaryReader reader, int targetAddress )
+		{
+			var originalPosition = reader.BaseStream.Position;
+			reader.BaseStream.Position = 0;
+
+			var offsets = new List<int>();
+
+			while( reader.BaseStream.Position < targetAddress )
+			{
+				var currentPosition = (int)reader.BaseStream.Position;
+				var currentOffset = reader.ReadInt32();
+				if( currentOffset + currentPosition == targetAddress )
+				{
+					offsets.Add( currentPosition );
+				}
+			}
+
+			reader.BaseStream.Position = originalPosition;
+			return offsets.ToArray();
 		}
 	}
 }

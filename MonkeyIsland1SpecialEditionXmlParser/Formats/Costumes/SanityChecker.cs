@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using MonkeyIsland1SpecialEditionXmlParser.Entities;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
 
-namespace MonkeyIsland1SpecialEditionXmlParser
+namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class SanityChecker
 	{
@@ -76,7 +76,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 						SanityChecker.Check124( costume );
 						break;
 					default:
-						throw new Exception( "costume.Header.Identifier not expected" );
+						//throw new Exception( "costume.Header.Identifier not expected" );
+						// do nothing
+						break;
 				}
 			}
 		}

@@ -4,9 +4,9 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
-using MonkeyIsland1SpecialEditionXmlParser.Entities;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
 
-namespace MonkeyIsland1SpecialEditionXmlParser
+namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class Renderer
 	{

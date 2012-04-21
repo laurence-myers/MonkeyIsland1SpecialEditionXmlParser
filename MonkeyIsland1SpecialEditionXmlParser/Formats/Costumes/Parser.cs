@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using MonkeyIsland1SpecialEditionXmlParser.Entities;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
 
-namespace MonkeyIsland1SpecialEditionXmlParser
+namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class Parser
 	{
-		public static Costume Parse( string fileName )
+		public static object Parse( string fileName )
 		{
 			Stream stream = null;
 			BinaryReader reader = null;
@@ -33,6 +33,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				}
 			}
 
+			SanityChecker.Check( costume );
 			return costume;
 		}
 

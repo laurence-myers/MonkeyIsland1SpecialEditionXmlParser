@@ -9,19 +9,32 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		[STAThread]
 		static void Main( string[] args )
 		{
+			//var room28 = Formats.Rooms.Parser.Parse( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms\28_bar.room.xml" );
+			//var room10 = Formats.Rooms.Parser.Parse( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms\10_logo.room.xml" );
+			//var room12 = Formats.Rooms.Parser.Parse( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms\12_monkey-he.room.xml" );
+			//var room33 = Formats.Rooms.Parser.Parse( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms\33_dock.room.xml" );
+			//var room88 = Formats.Rooms.Parser.Parse( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms\88_fighting.room.xml" );
+
+			//var layers = new int[0];
+			//var fileNames = System.IO.Directory.GetFiles( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms" );
+			//foreach( var fileName in fileNames )
+			//{
+			//    var room = Formats.Rooms.Parser.Parse( fileName ) as Formats.Rooms.Entities.Room;
+			//    layers = layers
+			//        .Union( room.SpriteGroupList
+			//            .SelectMany( g => g.SpriteList.Select( u => u.Layer ).Distinct()
+			//            ).Distinct().ToArray() )
+			//        .Distinct()
+			//        .ToArray();
+			//}
+
+
 			Application.EnableVisualStyles();
 
 			using( var mainForm = new MainForm() )
 			{
 				Application.Run( mainForm );
 			}
-
-			//var costume21 = Parser.Parse( @"Data\Costumes\21_test-skin.costume.xml" );
-			//var costume44 = Parser.Parse( @"Data\Costumes\44_test-skin.costume.xml" );
-			//var costume72 = Parser.Parse( @"Data\Costumes\72_test.costume.xml" );
-			//var costume124 = Parser.Parse( @"Data\Costumes\124_test-object.costume.xml" );
-
-			//SanityChecker.Check( costume21, costume44, costume72, costume124 );
 		}
 	}
 }
