@@ -1,4 +1,9 @@
-﻿[ 2012/04/18 ]
+﻿[ 2012/04/21 ]
+---------------------------------------------------------------
+- Fixed a bug that only allowed for 4 specific costume files to be parsed
+- Started adding support for room files, nothing visible yet though
+
+[ 2012/04/18 ]
 ---------------------------------------------------------------
 - New dialog for PNG export with padding options
 - Fixed XSLT tranformation
