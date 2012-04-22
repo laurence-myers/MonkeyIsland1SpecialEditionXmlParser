@@ -1,10 +1,10 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class StaticTexture
+	public class StaticSprite
 	{
 		/// <summary>
-		/// Gets or sets the static texture index.
+		/// Gets or sets the static sprite index.
 		/// </summary>
 		public int Index
 		{

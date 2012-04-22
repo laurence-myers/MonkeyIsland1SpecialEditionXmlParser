@@ -2,10 +2,10 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class StaticTextureHeader
+	public class StaticSpriteHeader
 	{
 		/// <summary>
-		/// Gets or sets the index of the static texture header.
+		/// Gets or sets the index of the static sprite header.
 		/// </summary>
 		public int Index
 		{
@@ -35,18 +35,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the number of static textures.
+		/// Gets or sets the number of static sprites.
 		/// </summary>
-		public int StaticTextureCount
+		public int StaticSpriteCount
 		{
 			get;
 			set;
 		}
 
 		/// <summary>
-		/// Gets or sets the byte address for the first static texture.
+		/// Gets or sets the byte address for the first static sprite.
 		/// </summary>
-		public int StaticTextureAddress
+		public int StaticSpriteAddress
 		{
 			get;
 			set;
@@ -58,8 +58,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 				this.Identifier, "; ",
 				this.Unkn1, "; ",
 				this.Unkn2, "; ",
-				this.StaticTextureCount, "; ",
-				this.StaticTextureAddress
+				this.StaticSpriteCount, "; ",
+				this.StaticSpriteAddress
 				);
 		}
 	}

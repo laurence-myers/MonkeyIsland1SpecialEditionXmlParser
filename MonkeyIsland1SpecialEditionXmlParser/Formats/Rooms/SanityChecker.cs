@@ -14,8 +14,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			room.Header.AlwaysZero1.Is( 0 );
 			room.Header.AlwaysZero2.Is( 0 );
 			room.Header.AlwaysZero3.Is( 0 );
-			room.Header.Unknown3Address1.Is( room.Header.Unknown3Address2 );
-			room.StaticTextureHeaderList.Count.Is( room.StaticTextureList.Count );
+			room.Header.Unknown6HeaderAddress1.Is( room.Header.Unknown6HeaderAddress2 );
+			room.StaticSpriteHeaderList.Count.Is( room.StaticSpriteList.Count );
 		}
 
 		private static void IsNotNull( this object value )

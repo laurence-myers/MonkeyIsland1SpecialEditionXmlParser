@@ -34,13 +34,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 		
-		public Int32 StaticTextureHeaderCount
+		public Int32 StaticSpriteHeaderCount
 		{
 			get;
 			set;
 		}
 		
-		public Int32 StaticTextureHeaderAddress
+		public Int32 StaticSpriteHeaderAddress
 		{
 			get;
 			set;
@@ -70,19 +70,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
-		public Int32 Unknown3Address1
+		public Int32 Unknown6HeaderAddress1
 		{
 			get;
 			set;
 		}
 	
-		public Int32 Unknown3Count
+		public Int32 Unknown6HeaderCount
 		{
 			get;
 			set;
 		}
 		
-		public Int32 Unknown3Address2
+		public Int32 Unknown6HeaderAddress2
 		{
 			get;
 			set;

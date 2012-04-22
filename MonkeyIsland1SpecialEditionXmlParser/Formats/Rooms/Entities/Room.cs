@@ -10,7 +10,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
-		public List<StaticTextureHeader> StaticTextureHeaderList
+		public List<StaticSpriteHeader> StaticSpriteHeaderList
 		{
 			get;
 			set;
@@ -22,7 +22,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
-		public List<Unknown3> Unknown3List
+		public List<Unknown6Header> Unknown6HeaderList
 		{
 			get;
 			set;
@@ -40,13 +40,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
-		public List<List<StaticTexture>> StaticTextureList
+		public List<List<StaticSprite>> StaticSpriteList
 		{
 			get;
 			set;
 		}
 
 		public List<SpriteGroup> SpriteGroupList
+		{
+			get;
+			set;
+		}
+
+		public List<Unknown6> Unknown6List
 		{
 			get;
 			set;

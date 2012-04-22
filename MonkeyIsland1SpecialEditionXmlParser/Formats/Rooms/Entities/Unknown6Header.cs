@@ -1,7 +1,7 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Unknown3
+	public class Unknown6Header
 	{
 		public byte Unkn1
 		{
@@ -33,13 +33,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
-		public int Unkn6
+		public int Unknown6Count
 		{
 			get;
 			set;
 		}
 
-		public int Addr7
+		public int Unknown6Address
 		{
 			get;
 			set;
@@ -53,8 +53,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 				this.Unkn3, "; ",
 				this.Unkn4, "; ",
 				this.Unkn5, "; ",
-				this.Unkn6, "; ",
-				this.Addr7
+				this.Unknown6Count, "; ",
+				this.Unknown6Address
 				);
 		}
 	}
