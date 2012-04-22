@@ -56,8 +56,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				Unknown6HeaderAddress1 = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				Unknown6HeaderCount = reader.ReadInt32(),
 				Unknown6HeaderAddress2 = reader.ReadInt32PlusBytePosition( value => value > 0 ),
-				Unknown4Count = reader.ReadInt32(),
-				Unknown4Address = reader.ReadInt32PlusBytePosition( value => value > 0 ),
+				Unknown4HeaderCount = reader.ReadInt32(),
+				Unknown4HeaderAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				Unknown5Count = reader.ReadInt32(),
 				Unknown5Address = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				AlwaysZero1 = reader.ReadInt32(),
@@ -116,18 +116,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				unknown6HeaderList.Add( unknown6Header );
 			}
 
-			// read unknown4 list
-			reader.BaseStream.Position = header.Unknown4Address;
-			var unknown4List = new List<Unknown4>();
-			for( var index = 0; index < header.Unknown4Count; index++ )
+			// read unknown4 header list
+			reader.BaseStream.Position = header.Unknown4HeaderAddress;
+			var unknown4HeaderList = new List<Unknown4Header>();
+			for( var index = 0; index < header.Unknown4HeaderCount; index++ )
 			{
-				var unknown4 = new Unknown4()
+				var unknown4Header = new Unknown4Header()
 				{
 					NameAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 					DataCount = reader.ReadInt32(),
 					DataAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				};
-				unknown4List.Add( unknown4 );
+				unknown4HeaderList.Add( unknown4Header );
 			}
 
 			// read unknown5 list
@@ -220,7 +220,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				StaticSpriteHeaderList = staticSpriteHeaderList,
 				SpriteHeaderList = spriteHeaderList,
 				Unknown6HeaderList = unknown6HeaderList,
-				Unknown4List = unknown4List,
+				Unknown4HeaderList = unknown4HeaderList,
 				Unknown5List = unknown5List,
 				StaticSpriteList = staticSpriteList,
 				SpriteGroupList = spriteGroupList,

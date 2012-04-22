@@ -1,7 +1,7 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Unknown4
+	public class Unknown4Header
 	{
 		public int NameAddress
 		{

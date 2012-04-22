@@ -28,7 +28,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
-		public List<Unknown4> Unknown4List
+		public List<Unknown4Header> Unknown4HeaderList
 		{
 			get;
 			set;

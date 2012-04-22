@@ -68,7 +68,7 @@
     <Compile Include="Formats\Rooms\Entities\StaticSprite.cs" />
     <Compile Include="Formats\Rooms\Entities\SpriteGroup.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown5.cs" />
-    <Compile Include="Formats\Rooms\Entities\Unknown4.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown4Header.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown6Header.cs" />
     <Compile Include="Formats\Rooms\Entities\SpriteHeader.cs" />
     <Compile Include="Formats\Rooms\Entities\Header.cs" />

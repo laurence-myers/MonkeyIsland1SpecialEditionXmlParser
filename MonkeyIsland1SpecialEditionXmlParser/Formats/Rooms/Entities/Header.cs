@@ -88,13 +88,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 		
-		public Int32 Unknown4Count
+		public Int32 Unknown4HeaderCount
 		{
 			get;
 			set;
 		}
 		
-		public Int32 Unknown4Address
+		public Int32 Unknown4HeaderAddress
 		{
 			get;
 			set;
