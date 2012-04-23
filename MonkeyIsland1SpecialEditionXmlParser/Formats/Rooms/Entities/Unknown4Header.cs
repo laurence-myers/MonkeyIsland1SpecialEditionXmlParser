@@ -3,19 +3,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
 	public class Unknown4Header
 	{
-		public int NameAddress
+		public int Unknown4NameAddress
 		{
 			get;
 			set;
 		}
 
-		public int DataCount
+		public int Unknown4Count
 		{
 			get;
 			set;
 		}
 
-		public int DataAddress
+		public int Unknown4Address
 		{
 			get;
 			set;
@@ -24,9 +24,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		public override string ToString()
 		{
 			return string.Concat(
-				this.NameAddress, "; ",
-				this.DataCount, "; ",
-				this.DataAddress
+				this.Unknown4NameAddress, "; ",
+				this.Unknown4Count, "; ",
+				this.Unknown4Address
 				);
 		}
 	}

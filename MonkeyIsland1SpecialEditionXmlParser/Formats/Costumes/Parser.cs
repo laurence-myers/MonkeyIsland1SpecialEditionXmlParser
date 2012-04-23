@@ -6,7 +6,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class Parser
 	{
-		public static object Parse( string fileName )
+		public static Costume Parse( string fileName )
 		{
 			Stream stream = null;
 			BinaryReader reader = null;

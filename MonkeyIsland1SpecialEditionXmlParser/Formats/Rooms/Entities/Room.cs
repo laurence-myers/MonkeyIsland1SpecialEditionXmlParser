@@ -64,6 +64,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
+		public List<Unknown5> Unknown5List
+		{
+			get;
+			set;
+		}
+
 		public override string ToString()
 		{
 			return string.Concat( this.Header.Identifier, "-", this.Header.Name );

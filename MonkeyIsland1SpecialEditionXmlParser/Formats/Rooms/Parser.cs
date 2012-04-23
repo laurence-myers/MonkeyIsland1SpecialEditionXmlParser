@@ -2,13 +2,12 @@
 using System.IO;
 using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
-using System;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 {
 	public static class Parser
 	{
-		public static object Parse( string fileName )
+		public static Room Parse( string fileName )
 		{
 			Stream stream = null;
 			BinaryReader reader = null;
@@ -123,9 +122,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			{
 				var unknown4Header = new Unknown4Header()
 				{
-					NameAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
-					DataCount = reader.ReadInt32(),
-					DataAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
+					Unknown4NameAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
+					Unknown4Count = reader.ReadInt32(),
+					Unknown4Address = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				};
 				unknown4HeaderList.Add( unknown4Header );
 			}
@@ -137,8 +136,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			{
 				var unknown5Header = new Unknown5Header()
 				{
-					Unkn1 = reader.ReadInt32(),
-					Addr2 = reader.ReadInt32PlusBytePosition( value => value > 0 ),
+					Unknown5Count = reader.ReadInt32(),
+					Unknown5Address = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				};
 				unknown5HeaderList.Add( unknown5Header );
 			}
@@ -217,8 +216,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			{
 				var unknown4Header = unknown4HeaderList[index];
 				var unknown4List = new List<Unknown4>();
-				reader.BaseStream.Position = unknown4Header.DataAddress;
-				for( var index2 = 0; index2 < unknown4Header.DataCount; index2++ )
+				reader.BaseStream.Position = unknown4Header.Unknown4Address;
+				for( var index2 = 0; index2 < unknown4Header.Unknown4Count; index2++ )
 				{
 					var unknown4 = new Unknown4()
 					{
@@ -271,6 +270,20 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				}
 			}
 
+			// read unknown5 list
+			var unknown5List = new List<Unknown5>();
+			for( var index = 0; index < unknown5HeaderList.Count; index++ )
+			{
+				var unknown5Header = unknown5HeaderList[index];
+				reader.BaseStream.Position = unknown5Header.Unknown5Address;
+				var unknown5 = new Unknown5()
+				{
+					Index = index,
+					Int32List = reader.ReadInt32s( unknown5Header.Unknown5Count ).ToList(),
+				};
+				unknown5List.Add( unknown5 );
+			}
+
 			// initialize room
 			var room = new Room()
 			{
@@ -284,6 +297,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				SpriteGroupList = spriteGroupList,
 				Unknown6List = unknown6List,
 				Unknown4GroupList = unknown4GroupList,
+				Unknown5List = unknown5List,
 			};
 
 			// validate and return room

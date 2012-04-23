@@ -52,6 +52,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			set;
 		}
 
+		public string[] RecentRoomFileNames
+		{
+			get;
+			set;
+		}
+
 		public string[] RecentImageExportDirectories
 		{
 			get;

@@ -222,5 +222,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			reader.BaseStream.Position = originalPosition;
 			return offsets.ToArray();
 		}
+
+		public static int[] ReadInt32s( this BinaryReader reader, int count )
+		{
+			var integers = new int[count];
+			for( var index = 0; index < count; index++ )
+			{
+				integers[index] = reader.ReadInt32();
+			}
+			return integers;
+		}
 	}
 }

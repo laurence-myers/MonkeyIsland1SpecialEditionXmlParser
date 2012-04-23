@@ -1,15 +1,16 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Unknown5Header
+	public class Unknown5
 	{
-		public int Unknown5Count
+		public int Index
 		{
 			get;
 			set;
 		}
 
-		public int Unknown5Address
+		public List<int> Int32List
 		{
 			get;
 			set;
@@ -17,10 +18,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 
 		public override string ToString()
 		{
-			return string.Concat(
-				this.Unknown5Count, "; ",
-				this.Unknown5Address
-				);
+			return string.Join( "; ", this.Int32List );
 		}
 	}
 }
