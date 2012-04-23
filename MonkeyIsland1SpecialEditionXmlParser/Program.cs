@@ -16,17 +16,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			var room33 = Formats.Rooms.Parser.Parse( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms\33_dock.room.xml" );
 			var room88 = Formats.Rooms.Parser.Parse( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms\88_fighting.room.xml" );
 
-			var layers = new int[0];
 			var fileNames = System.IO.Directory.GetFiles( @"K:\SVN\svn.code.sf.net\mi1sexmlparser\MonkeyIsland1SpecialEditionXmlParser\bin\Debug\Data\Rooms" );
 			foreach( var fileName in fileNames )
 			{
 				var room = Formats.Rooms.Parser.Parse( fileName ) as Formats.Rooms.Entities.Room;
-				layers = layers
-					.Union( room.SpriteGroupList
-						.SelectMany( g => g.SpriteList.Select( u => u.Layer ).Distinct()
-						).Distinct().ToArray() )
-					.Distinct()
-					.ToArray();
+				if( room.Unknown4GroupList.Any( u4g => u4g.Unknown4List.Any( u4 => u4.Unknown4_1Address != 0 && u4.Unknown4_2Address != 0 ) ) )
+				{
+				}
 			}
 
 

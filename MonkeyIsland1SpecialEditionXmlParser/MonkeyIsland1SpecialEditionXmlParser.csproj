@@ -64,9 +64,13 @@
     <Compile Include="Formats\Costumes\Parser.cs" />
     <Compile Include="Formats\Costumes\Renderer.cs" />
     <Compile Include="Formats\Costumes\SanityChecker.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown4_2.cs" />
     <Compile Include="Formats\Rooms\Entities\Sprite.cs" />
     <Compile Include="Formats\Rooms\Entities\StaticSprite.cs" />
     <Compile Include="Formats\Rooms\Entities\SpriteGroup.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown4.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown4Group.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown4_1.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown5.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown4Header.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown6Header.cs" />

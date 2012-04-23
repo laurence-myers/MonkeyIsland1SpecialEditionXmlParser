@@ -1,7 +1,7 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Unknown5
+	public class Unknown4_2
 	{
 		public int Unkn1
 		{
@@ -9,7 +9,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
-		public int Addr2
+		public int Unkn2
+		{
+			get;
+			set;
+		}
+
+		public int Unkn3
+		{
+			get;
+			set;
+		}
+
+		public int Unkn4
 		{
 			get;
 			set;
@@ -19,7 +31,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			return string.Concat(
 				this.Unkn1, "; ",
-				this.Addr2
+				this.Unkn2, "; ",
+				this.Unkn3, "; ",
+				this.Unkn4
 				);
 		}
 	}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
@@ -16,6 +17,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			room.Header.AlwaysZero3.Is( 0 );
 			room.Header.Unknown6HeaderAddress1.Is( room.Header.Unknown6HeaderAddress2 );
 			room.StaticSpriteHeaderList.Count.Is( room.StaticSpriteList.Count );
+			room.Unknown4GroupList.All( u4g => !u4g.Unknown4List.Any( u4 => u4.Unknown4_1Address != 0 && u4.Unknown4_2Address != 0 ) ).Is( true );
 		}
 
 		private static void IsNotNull( this object value )

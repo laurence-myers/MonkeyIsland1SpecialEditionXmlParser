@@ -139,8 +139,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				{
 					Unkn1 = reader.ReadInt32(),
 					Addr2 = reader.ReadInt32PlusBytePosition( value => value > 0 ),
-					Unkn3 = reader.ReadInt32(),
-					Unkn4 = reader.ReadInt32(),
 				};
 				unknown5List.Add( unknown5 );
 			}
@@ -213,6 +211,66 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				unknown6List.Add( unknown6 );
 			}
 
+			// read unknown4 group list
+			var unknown4GroupList = new List<Unknown4Group>();
+			for( var index = 0; index < unknown4HeaderList.Count; index++ )
+			{
+				var unknown4Header = unknown4HeaderList[index];
+				var unknown4List = new List<Unknown4>();
+				reader.BaseStream.Position = unknown4Header.DataAddress;
+				for( var index2 = 0; index2 < unknown4Header.DataCount; index2++ )
+				{
+					var unknown4 = new Unknown4()
+					{
+						Index = index2,
+						Unknown4_1Address = reader.ReadInt32PlusBytePosition( value => value > 0 ),
+						Unknown4_2Address = reader.ReadInt32PlusBytePosition( value => value > 0 ),
+						Unkn3 = reader.ReadSingle(),
+						Unkn4 = reader.ReadSingle(),
+					};
+					unknown4List.Add( unknown4 );
+				}
+
+				var unknown4Group = new Unknown4Group()
+				{
+					Unknown4List = unknown4List,
+				};
+				unknown4GroupList.Add( unknown4Group );
+			}
+
+			// read unknown4_x entities
+			foreach( var unknown4Group in unknown4GroupList )
+			{
+				foreach( var unknown4 in unknown4Group.Unknown4List )
+				{
+					if( unknown4.Unknown4_1Address > 0 )
+					{
+						reader.BaseStream.Position = unknown4.Unknown4_1Address;
+						var unknown4_1 = new Unknown4_1()
+						{
+							Unkn1 = reader.ReadInt32(),
+							Unkn2 = reader.ReadInt32(),
+							Unkn3 = reader.ReadInt32(),
+							Unkn4 = reader.ReadInt32(),
+							Unkn5 = reader.ReadInt32(),
+						};
+						unknown4.Unknown4_1 = unknown4_1;
+					}
+					if( unknown4.Unknown4_2Address > 0 )
+					{
+						reader.BaseStream.Position = unknown4.Unknown4_2Address;
+						var unknown4_2 = new Unknown4_2()
+						{
+							Unkn1 = reader.ReadInt32(),
+							Unkn2 = reader.ReadInt32(),
+							Unkn3 = reader.ReadInt32(),
+							Unkn4 = reader.ReadInt32(),
+						};
+						unknown4.Unknown4_2 = unknown4_2;
+					}
+				}
+			}
+
 			// initialize room
 			var room = new Room()
 			{
@@ -225,6 +283,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				StaticSpriteList = staticSpriteList,
 				SpriteGroupList = spriteGroupList,
 				Unknown6List = unknown6List,
+				Unknown4GroupList = unknown4GroupList,
 			};
 
 			// validate and return room
