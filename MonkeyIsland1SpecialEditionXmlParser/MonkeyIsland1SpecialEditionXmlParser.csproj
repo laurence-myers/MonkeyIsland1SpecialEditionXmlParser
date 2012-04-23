@@ -71,7 +71,7 @@
     <Compile Include="Formats\Rooms\Entities\Unknown4.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown4Group.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown4_1.cs" />
-    <Compile Include="Formats\Rooms\Entities\Unknown5.cs" />
+    <Compile Include="Formats\Rooms\Entities\Unknown5Header.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown4Header.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown6Header.cs" />
     <Compile Include="Formats\Rooms\Entities\SpriteHeader.cs" />

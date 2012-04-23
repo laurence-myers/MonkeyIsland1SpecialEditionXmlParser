@@ -58,8 +58,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				Unknown6HeaderAddress2 = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				Unknown4HeaderCount = reader.ReadInt32(),
 				Unknown4HeaderAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
-				Unknown5Count = reader.ReadInt32(),
-				Unknown5Address = reader.ReadInt32PlusBytePosition( value => value > 0 ),
+				Unknown5HeaderCount = reader.ReadInt32(),
+				Unknown5HeaderAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				AlwaysZero1 = reader.ReadInt32(),
 				AlwaysZero2 = reader.ReadInt32(),
 				AlwaysZero3 = reader.ReadInt32(),
@@ -130,17 +130,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				unknown4HeaderList.Add( unknown4Header );
 			}
 
-			// read unknown5 list
-			reader.BaseStream.Position = header.Unknown5Address;
-			var unknown5List = new List<Unknown5>();
-			for( var index = 0; index < header.Unknown5Count; index++ )
+			// read unknown5 header list
+			reader.BaseStream.Position = header.Unknown5HeaderAddress;
+			var unknown5HeaderList = new List<Unknown5Header>();
+			for( var index = 0; index < header.Unknown5HeaderCount; index++ )
 			{
-				var unknown5 = new Unknown5()
+				var unknown5Header = new Unknown5Header()
 				{
 					Unkn1 = reader.ReadInt32(),
 					Addr2 = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				};
-				unknown5List.Add( unknown5 );
+				unknown5HeaderList.Add( unknown5Header );
 			}
 
 			// read static sprite list
@@ -279,7 +279,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				SpriteHeaderList = spriteHeaderList,
 				Unknown6HeaderList = unknown6HeaderList,
 				Unknown4HeaderList = unknown4HeaderList,
-				Unknown5List = unknown5List,
+				Unknown5HeaderList = unknown5HeaderList,
 				StaticSpriteList = staticSpriteList,
 				SpriteGroupList = spriteGroupList,
 				Unknown6List = unknown6List,
