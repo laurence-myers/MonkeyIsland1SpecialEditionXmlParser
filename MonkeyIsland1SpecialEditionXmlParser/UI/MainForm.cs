@@ -32,15 +32,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			Command.OpenFileWithDialog.Execute();
 		}
 
-		public void EnableExportOptions()
-		{
-			this.exportToolStripMenuItem.Enabled = true;
-			foreach( ToolStripMenuItem item in this.exportToolStripMenuItem.DropDownItems )
-			{
-				item.Enabled = true;
-			}
-		}
-
 		private void ExitApplication( object sender, EventArgs e )
 		{
 			Application.Exit();

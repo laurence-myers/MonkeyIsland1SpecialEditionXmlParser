@@ -109,22 +109,22 @@
 			this.exportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toXMLFileToolStripMenuItem,
             this.toPNGFilesToolStripMenuItem});
-			this.exportToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.MatchOnly;
+			this.exportToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Replace;
 			this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-			this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exportToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
 			this.exportToolStripMenuItem.Text = "&Export";
 			// 
 			// toXMLFileToolStripMenuItem
 			// 
 			this.toXMLFileToolStripMenuItem.Name = "toXMLFileToolStripMenuItem";
-			this.toXMLFileToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.toXMLFileToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
 			this.toXMLFileToolStripMenuItem.Text = "As &XML file...";
 			this.toXMLFileToolStripMenuItem.Click += new System.EventHandler(this.ExportAsXmlFile);
 			// 
 			// toPNGFilesToolStripMenuItem
 			// 
 			this.toPNGFilesToolStripMenuItem.Name = "toPNGFilesToolStripMenuItem";
-			this.toPNGFilesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.toPNGFilesToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
 			this.toPNGFilesToolStripMenuItem.Text = "As PNG files...";
 			this.toPNGFilesToolStripMenuItem.Click += new System.EventHandler(this.ExportAllAsPngFiles);
 			// 

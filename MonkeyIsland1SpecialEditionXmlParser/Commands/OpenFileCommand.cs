@@ -54,8 +54,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			MainForm.Instance.EnableExportOptions();
-
 			return true;
 		}
 	}

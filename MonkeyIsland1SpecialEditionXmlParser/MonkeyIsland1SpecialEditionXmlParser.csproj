@@ -124,6 +124,10 @@
     <Compile Include="UI\RoomForm.Designer.cs">
       <DependentUpon>RoomForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\SpriteSetPreviewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\SpriteSetPreviewControlSprite.cs" />
     <Compile Include="UI\StandardXsltFiles.cs" />
     <Compile Include="UI\UserSettings.cs" />
     <Compile Include="UI\XmlExportDialog.cs">

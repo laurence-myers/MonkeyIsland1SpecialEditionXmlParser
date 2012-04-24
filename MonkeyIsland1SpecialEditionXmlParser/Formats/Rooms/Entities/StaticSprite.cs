@@ -57,6 +57,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		}
 
+		/// <summary>
+		/// Gets or sets the texture file name.
+		/// </summary>
+		public string TextureFileName
+		{
+			get;
+			set;
+		}
+
 		public override string ToString()
 		{
 			return string.Concat(

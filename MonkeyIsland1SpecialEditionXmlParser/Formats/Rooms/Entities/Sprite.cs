@@ -22,6 +22,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		}
 
 		/// <summary>
+		/// Gets or sets the texture file name.
+		/// </summary>
+		public string TextureFileName
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Gets or sets the X component of the sprite's rectangle.
 		/// </summary>
 		public int TextureX

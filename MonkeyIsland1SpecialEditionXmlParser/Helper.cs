@@ -232,5 +232,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			}
 			return integers;
 		}
+
+		public static void ClearWithTransparancyGrid( this Graphics graphics )
+		{
+			var gray = new SolidBrush( Color.FromArgb( 255, 191, 191, 191 ) );
+			for( var y = graphics.VisibleClipBounds.Y; y < graphics.VisibleClipBounds.Height; y += 10 )
+			{
+				for( var x = graphics.VisibleClipBounds.X; x < graphics.VisibleClipBounds.Width; x += 10 )
+				{
+					var brushIndex = ( x / 10 + y / 10 ) % 2;
+					var brush = brushIndex == 0 ? Brushes.White : gray;
+					graphics.FillRectangle( brush, x, y, 10, 10 );
+				}
+			}
+		}
 	}
 }

@@ -164,6 +164,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				}
 				staticSpriteList.Add( innerStaticSpriteList );
 			}
+			foreach( var staticSprite in staticSpriteList )
+			{
+				foreach( var innerStaticSprite in staticSprite )
+				{
+					reader.BaseStream.Position = innerStaticSprite.TextureFileNameAddress;
+					innerStaticSprite.TextureFileName = reader.ReadStringMonkey();
+				}
+			}
 
 			// read unknown1 list
 			var spriteGroupList = new List<SpriteGroup>();
@@ -194,6 +202,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 					SpriteList = spriteList,
 				};
 				spriteGroupList.Add( spriteGroup );
+			}
+			foreach( var spriteGroup in spriteGroupList )
+			{
+				foreach( var sprite in spriteGroup.SpriteList )
+				{
+					reader.BaseStream.Position = sprite.TextureFileNameAddress;
+					sprite.TextureFileName = reader.ReadStringMonkey();
+				}
 			}
 
 			// read unknown 6 list
