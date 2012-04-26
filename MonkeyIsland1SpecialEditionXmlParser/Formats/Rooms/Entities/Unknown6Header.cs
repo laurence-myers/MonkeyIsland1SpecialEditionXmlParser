@@ -1,4 +1,5 @@
 ﻿
+using System;
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
 	public class Unknown6Header
@@ -26,7 +27,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			get;
 			set;
 		}
-		
+
+		public Int16 Unkn12
+		{
+			get;
+			set;
+		}
+
+		public Int16 Unkn34
+		{
+			get;
+			set;
+		}
+
 		public int Unkn5
 		{
 			get;

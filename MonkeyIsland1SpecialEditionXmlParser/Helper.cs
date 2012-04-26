@@ -246,5 +246,41 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				}
 			}
 		}
+
+		public static List<Int16> ToInt16List( this List<byte> byteList )
+		{
+			var bytes = byteList.ToArray();
+			var list = new List<Int16>();
+			for( var index = 0; index < bytes.Length; index += 2 )
+			{
+				var value = BitConverter.ToInt16( bytes, index );
+				list.Add( value );
+			}
+			return list;
+		}
+
+		public static List<Int32> ToInt32List( this List<byte> byteList )
+		{
+			var bytes = byteList.ToArray();
+			var list = new List<Int32>();
+			for( var index = 0; index < bytes.Length; index += 4 )
+			{
+				var value = BitConverter.ToInt32( bytes, index );
+				list.Add( value );
+			}
+			return list;
+		}
+
+		public static List<float> ToFloatList( this List<byte> byteList )
+		{
+			var bytes = byteList.ToArray();
+			var list = new List<float>();
+			for( var index = 0; index < bytes.Length; index += 4 )
+			{
+				var value = BitConverter.ToSingle( bytes, index );
+				list.Add( value );
+			}
+			return list;
+		}
 	}
 }

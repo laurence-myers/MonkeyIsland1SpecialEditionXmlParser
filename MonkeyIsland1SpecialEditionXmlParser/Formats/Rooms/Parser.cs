@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
+using System;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 {
@@ -112,6 +113,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 					Unknown6Count = reader.ReadInt32(),
 					Unknown6Address = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				};
+				unknown6Header.Unkn12 = BitConverter.ToInt16( new[] { unknown6Header.Unkn1, unknown6Header.Unkn2 }, 0 );
+				unknown6Header.Unkn34 = BitConverter.ToInt16( new[] { unknown6Header.Unkn3, unknown6Header.Unkn4 }, 0 );
 				unknown6HeaderList.Add( unknown6Header );
 			}
 
@@ -223,6 +226,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 					Index = index,
 					ByteList = reader.ReadBytes( unknown3.Unknown6Count ).ToList(),
 				};
+				unknown6.Int16List = unknown6.ByteList.ToInt16List();
+				unknown6.Int32List = unknown6.ByteList.ToInt32List();
+				unknown6.FloatList = unknown6.ByteList.ToFloatList();
 				unknown6List.Add( unknown6 );
 			}
 
