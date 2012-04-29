@@ -10,7 +10,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 		{
 			room.IsNotNull();
 			room.Header.IsNotNull();
-			room.Header.NameAddress.Is( 80 );
 			room.Header.Name.IsNotNull();
 			room.Header.AlwaysZero1.Is( 0 );
 			room.Header.AlwaysZero2.Is( 0 );

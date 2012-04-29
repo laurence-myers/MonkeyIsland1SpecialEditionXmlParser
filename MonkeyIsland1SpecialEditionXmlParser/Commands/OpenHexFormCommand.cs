@@ -4,7 +4,7 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenRoomFormCommand : BaseCommand
+	public class OpenHexFormCommand : BaseCommand
 	{
 		public LPAKFile LPAKFile
 		{
@@ -41,7 +41,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			var form = new RoomForm()
+			var form = new HexForm()
 			{
 				FileIndex = this.FileIndex,
 				MdiParent = MainForm.Instance,

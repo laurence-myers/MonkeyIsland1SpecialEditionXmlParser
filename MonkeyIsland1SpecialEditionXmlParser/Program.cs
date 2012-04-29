@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.UI;
+using System.Threading;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
 {
@@ -27,10 +28,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 
 			Application.EnableVisualStyles();
+			Application.ThreadException += Program.HandleThreadException;
 
 			using( var mainForm = new MainForm() )
 			{
 				Application.Run( mainForm );
+			}
+		}
+
+		private static void HandleThreadException( object sender, ThreadExceptionEventArgs args )
+		{
+			using( var form = new ExceptionForm() )
+			{
+				form.Text = args.Exception.GetType().FullName;
+				( form.Controls[0] as TextBox ).Text = args.Exception.ToString();
+				form.Show();
 			}
 		}
 	}

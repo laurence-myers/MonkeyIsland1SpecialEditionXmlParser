@@ -9,9 +9,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		public static readonly OpenCostumeFormCommand OpenCostumeForm = new OpenCostumeFormCommand();
 		public static readonly OpenFileCommand OpenFile = new OpenFileCommand();
 		public static readonly OpenFileWithDialogCommand OpenFileWithDialog = new OpenFileWithDialogCommand();
+		public static readonly OpenHexFormCommand OpenHexForm = new OpenHexFormCommand();
 		public static readonly OpenImageExportDialogCommand OpenImageExportDialog = new OpenImageExportDialogCommand();
+		public static readonly OpenLPAKFormCommand OpenLPAKForm = new OpenLPAKFormCommand();
 		public static readonly OpenRoomFormCommand OpenRoomForm = new OpenRoomFormCommand();
-		public static readonly OpenXmlExportDialogCommand OpenXmlExportDialog = new OpenXmlExportDialogCommand();
+		public static readonly OpenShaderFormCommand OpenShaderForm = new OpenShaderFormCommand();
+		public static readonly ExportToXmlCommand ExportToXml = new ExportToXmlCommand();
 		public static readonly SetMainFormTitleCommand SetMainFormTitle = new SetMainFormTitleCommand();
 	}
 }

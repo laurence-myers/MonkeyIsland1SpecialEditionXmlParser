@@ -43,6 +43,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		public ImageExportDialog()
 		{
 			this.InitializeComponent();
+			this.FormClosing += this.UpdateRecentLists;
+		}
+
+		private void UpdateRecentLists( object sender, FormClosingEventArgs args )
+		{
+			if( this.DialogResult != System.Windows.Forms.DialogResult.OK )
+			{
+				return;
+			}
+
+			UserSettings.Instance.RecentImageExportDirectories = UserSettings.Instance.RecentImageExportDirectories.UpdateRecentList( this.Directory, 10 );
+			UserSettings.Instance.RecentImageExportFilePrefixes = UserSettings.Instance.RecentImageExportFilePrefixes.UpdateRecentList( this.FilePrefix, 10 );
+			UserSettings.Instance.Save();
 		}
 
 		private void ShowDirectoryBrowser( object sender, EventArgs e )

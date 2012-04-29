@@ -97,10 +97,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				this.ExportAsPngFiles( directory, filePrefix, animation.Name, spritePadding );
 			}
-
-			UserSettings.Instance.RecentImageExportDirectories = UserSettings.Instance.RecentImageExportDirectories.UpdateRecentList( directory, 10 );
-			UserSettings.Instance.RecentImageExportFilePrefixes = UserSettings.Instance.RecentImageExportFilePrefixes.UpdateRecentList( filePrefix, 10 );
-			UserSettings.Instance.Save();
 		}
 
 		private void ExportAsPngFiles( string directory, string filePrefix, string animationName, Padding spritePadding )
@@ -110,44 +106,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsXmlFile( object sender, EventArgs e )
 		{
-			Command.OpenXmlExportDialog.FileName = this.Costume.Header.Name + this.Costume.Header.Identifier + ".xml";
-			if( !Command.OpenXmlExportDialog.Execute() )
-			{
-				return;
-			}
-			var exportFileName = Command.OpenXmlExportDialog.ExportFileName;
-			var xsltFileName = Command.OpenXmlExportDialog.XsltFileName;
-
-			Helper.WriteObjectToFile( exportFileName, this.Costume );
-			UserSettings.Instance.RecentExportFileNames = UserSettings.Instance.RecentExportFileNames.UpdateRecentList( exportFileName, 10 );
-			UserSettings.Instance.Save();
-
-			var isXsltFileNameValid
-				= !string.IsNullOrWhiteSpace( xsltFileName )
-				&& File.Exists( xsltFileName )
-				;
-			if( isXsltFileNameValid )
-			{
-				var xmlReaderSettings = new XmlReaderSettings()
-				{
-					DtdProcessing = DtdProcessing.Parse,
-				};
-				using( var reader = XmlReader.Create( xsltFileName, xmlReaderSettings ) )
-				{
-					var tempFileName = Path.GetTempFileName();
-					var transform = new XslCompiledTransform();
-					transform.Load( reader );
-					transform.Transform( exportFileName, tempFileName );
-					File.Copy( tempFileName, exportFileName, overwrite: true );
-					File.Delete( tempFileName );
-				}
-
-				if( !StandardXsltFiles.Contains( xsltFileName ) )
-				{
-					UserSettings.Instance.RecentXsltFileNames = UserSettings.Instance.RecentXsltFileNames.UpdateRecentList( xsltFileName, 10 );
-					UserSettings.Instance.Save();
-				}
-			}
+			Command.ExportToXml.ObjectToExport = this.Costume;
+			Command.ExportToXml.ExportFileName = string.Concat( this.Costume.Header.Identifier, "_", this.Costume.Header.Name, ".xml" );
+			Command.ExportToXml.Execute();
 		}
 	}
 }

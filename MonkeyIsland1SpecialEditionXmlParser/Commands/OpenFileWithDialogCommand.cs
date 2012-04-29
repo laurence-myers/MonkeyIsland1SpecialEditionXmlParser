@@ -21,9 +21,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				AutoUpgradeEnabled = true,
 				CheckFileExists = true,
 				CheckPathExists = true,
-				DefaultExt = "xml",
+				DefaultExt = "pak",
 				DereferenceLinks = true,
-				Filter = "XML files|*.xml|All files|*.*",
+				Filter = "PAK files|*.pak|XML files|*.xml|All files|*.*",
 				FilterIndex = 0,
 				InitialDirectory = string.Empty, // TODO
 				Multiselect = false,

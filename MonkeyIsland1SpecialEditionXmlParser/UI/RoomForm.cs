@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
-using System.Drawing;
-using System.IO;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -13,6 +13,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private float scale = 0.5f;
 
 		public Room Room
+		{
+			get;
+			set;
+		}
+
+		public LPAKFile LPAKFile
+		{
+			get;
+			set;
+		}
+
+		public string LPAKFileName
+		{
+			get;
+			set;
+		}
+
+		public int FileIndex
 		{
 			get;
 			set;
@@ -38,10 +56,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void RenderRoom()
 		{
-			if( this.Room == null )
+			if( this.LPAKFile == null )
 			{
 				return;
 			}
+
+			var fileEntry = this.LPAKFile.PakFileEntries[this.FileIndex];
+			Helper.ReadBinaryFile( this.LPAKFileName, reader =>
+			{
+				reader.BaseStream.Position = fileEntry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
+				this.Room = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoom( reader );
+			} );
 
 			//var width = this.Room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.X + ss.Width ) );
 			//var height = this.Room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.Y + ss.Height ) );
@@ -87,12 +112,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private Bitmap RenderStaticSpriteList( List<StaticSprite> staticSpriteList )
 		{
-			var areAllFilesNotFound = staticSpriteList.All( ssl => !File.Exists( ssl.TextureFileName.Replace( ".dxt", ".png" ) ) );
-			if( areAllFilesNotFound )
-			{
-				return null;
-			}
-
 			var width = staticSpriteList.Max( ss => ss.X + ss.Width );
 			var height = staticSpriteList.Max( ss => ss.Y + ss.Height );
 
@@ -102,8 +121,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 			foreach( var staticSprite in staticSpriteList )
 			{
-				var textureFileName = staticSprite.TextureFileName.Replace( ".dxt", ".png" );
-				var texture = Image.FromFile( textureFileName );
+				var textureFileName = staticSprite.TextureFileName;
+				var texture = this.LoadTexture( textureFileName );
+				if( texture == null )
+				{
+					continue;
+				}
+
 				var destRect = new RectangleF( staticSprite.X * this.scale, staticSprite.Y * this.scale, staticSprite.Width * this.scale, staticSprite.Height * this.scale );
 				var srcRect = new RectangleF( 0.0f, 0.0f, texture.Width, texture.Height );
 				graphics.DrawImage( texture, destRect, srcRect, GraphicsUnit.Pixel );
@@ -114,7 +138,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private Bitmap RenderSpriteGroup(SpriteGroup spriteGroup)
 		{
-			if( spriteGroup.SpriteList.All( s => !File.Exists( s.TextureFileName.Replace( ".dxt", ".png" ) ) ) )
+			if( spriteGroup == null || spriteGroup.SpriteList == null || spriteGroup.SpriteList.Count == 0 )
 			{
 				return null;
 			}
@@ -131,14 +155,32 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			for( var index = 0; index < spriteGroup.SpriteList.Count; index++ )
 			{
 				var sprite = spriteGroup.SpriteList[index];
-				var textureFileName = sprite.TextureFileName.Replace( ".dxt", ".png" );
-				var texture = Image.FromFile( textureFileName );
+				var textureFileName = sprite.TextureFileName;
+				var texture = this.LoadTexture( textureFileName );
 				var destRect = new RectangleF( sprite.OffsetX * this.scale, index * maxHeight * this.scale + sprite.OffsetY, bitmap.Width, bitmap.Height );
 				var srcRect = new RectangleF( sprite.TextureX, sprite.TextureY, sprite.TextureWidth, sprite.TextureHeight );
 				graphics.DrawImage( texture, destRect, srcRect, GraphicsUnit.Pixel );
 			}
 
 			return bitmap;
+		}
+
+		private Image LoadTexture( string fileName )
+		{
+			var image = this.LPAKFile.LoadImage( this.LPAKFileName, fileName );
+			return image;
+		}
+
+		private void ExportAsXml( object sender, System.EventArgs e )
+		{
+			Command.ExportToXml.ObjectToExport = this.Room;
+			Command.ExportToXml.ExportFileName = string.Concat( this.Room.Header.Identifier, "_", this.Room.Header.Name, ".xml" );
+			Command.ExportToXml.Execute();
+		}
+
+		private void ExportAsPng( object sender, System.EventArgs e )
+		{
+
 		}
 	}
 }

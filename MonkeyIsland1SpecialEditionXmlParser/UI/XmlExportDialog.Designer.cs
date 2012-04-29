@@ -156,7 +156,7 @@
 			this.xsltFileNameButton.Name = "xsltFileNameButton";
 			this.xsltFileNameButton.Size = new System.Drawing.Size(50, 20);
 			this.xsltFileNameButton.TabIndex = 0;
-			this.xsltFileNameButton.Text = "…";
+			this.xsltFileNameButton.Text = "...";
 			this.xsltFileNameButton.UseVisualStyleBackColor = true;
 			this.xsltFileNameButton.Click += new System.EventHandler(this.SelectXsltFileName);
 			// 

@@ -1,11 +1,15 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Windows.Forms;
 using System.Xml.Serialization;
-using System;
-using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Security;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
 {
@@ -42,6 +46,37 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 			// skip the padding
 			reader.PadTheMonkey();
+
+			return text;
+		}
+
+		public static string ReadStringMonkeyNoPadding( this BinaryReader reader )
+		{
+			// store the original position
+			var position = reader.BaseStream.Position;
+
+			// figure out how long the string is
+			int @byte;
+			while( ( @byte = reader.BaseStream.ReadByte() ) != 0 ) ;
+			var endPosition = reader.BaseStream.Position - 1;
+			var length = (int)( endPosition - position );
+
+			// restore the original position
+			reader.BaseStream.Position = position;
+
+			var bytes = reader.ReadBytes( length );
+			var text = Encoding.ASCII.GetString( bytes );
+
+			// move cursor beyond zero termination
+			reader.BaseStream.Position++;
+
+			return text;
+		}
+
+		public static string ReadStringMonkeyNoPadding( this BinaryReader reader, int length )
+		{
+			var bytes = reader.ReadBytes( length );
+			var text = Encoding.ASCII.GetString( bytes );
 
 			return text;
 		}
@@ -281,6 +316,225 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				list.Add( value );
 			}
 			return list;
+		}
+
+		public static string Reverse( this string text )
+		{
+			if( text == null )
+			{
+				return null;
+			}
+			var array = text.ToCharArray();
+			Array.Reverse( array );
+			return new string( array );
+		}
+
+		public static TAttribute[] GetCustomAttributes<TAttribute>( this FieldInfo fieldInfo, bool inherit )
+		{
+			var attributes = fieldInfo.GetCustomAttributes( typeof( TAttribute ), inherit );
+			if( attributes == null || attributes.Length == 0 )
+			{
+				return new TAttribute[0];
+			}
+
+			var typedAttributes = attributes.OfType<TAttribute>().Where( a => a != null ).ToArray();
+			return typedAttributes;
+		}
+
+		public static int IndexOfPredicate<T>( this T[] array, Predicate<T> predicate )
+		{
+			for( var index = 0; index < array.Length; index++ )
+			{
+				var element = array[index];
+				if( predicate( element ) )
+				{
+					return index;
+				}
+			}
+
+			return -1;
+		}
+
+		public static int IndexOfPredicate( this TreeNodeCollection nodes, Predicate<TreeNode> predicate )
+		{
+			for( var index = 0; index < nodes.Count; index++ )
+			{
+				var node = nodes[index];
+				if( predicate( node ) )
+				{
+					return index;
+				}
+			}
+
+			return -1;
+		}
+
+		public static int IndexOfPredicate( this TreeNodeCollection nodes, Predicate<TreeNode> predicate, int notFoundValue )
+		{
+			var index = nodes.IndexOfPredicate( predicate );
+			if( index == -1 )
+			{
+				return notFoundValue;
+			}
+			return index;
+		}
+
+		public static string[] Split( this string text, StringSplitOptions options, params char[] separators )
+		{
+			if( text == null )
+			{
+				return new string[0];
+			}
+			if( text == string.Empty )
+			{
+				return new string[] { string.Empty };
+			}
+			var result = text.Split( separators, options );
+			return result;
+		}
+
+		public static StringBuilder Append( this StringBuilder builder, params object[] args )
+		{
+			builder.Append( string.Concat( args ) );
+			return builder;
+		}
+
+		public static void ReadBinaryFile( string fileName, Action<BinaryReader> action )
+		{
+			Stream stream = null;
+			BinaryReader reader = null;
+
+			try
+			{
+				stream = System.IO.File.OpenRead( fileName );
+				reader = new BinaryReader( stream );
+				action( reader );
+			}
+			finally
+			{
+				if( reader != null )
+				{
+					reader.Dispose();
+					reader = null;
+				}
+				if( stream != null )
+				{
+					stream.Close();
+					stream.Dispose();
+					stream = null;
+				}
+			}
+		}
+
+		public static void WriteBinaryFile( string fileName, Action<BinaryWriter> action )
+		{
+			Stream stream = null;
+			BinaryWriter writer = null;
+
+			try
+			{
+				stream = System.IO.File.OpenWrite( fileName );
+				writer = new BinaryWriter( stream );
+				action( writer );
+			}
+			finally
+			{
+				if( writer != null )
+				{
+					writer.Dispose();
+					writer = null;
+				}
+				if( stream != null )
+				{
+					stream.Close();
+					stream.Dispose();
+					stream = null;
+				}
+			}
+		}
+
+		public static string ReadBytesAsHexEditor( this BinaryReader reader, int length )
+		{
+			var bytes = reader.ReadBytes( length );
+			var builder = new StringBuilder();
+
+			for( var y = 0; y < length / 16; y++ )
+			{
+				for( var x = 0; x < 16 && ( y * 16 ) + x < length; x++ )
+				{
+					var @byte = bytes[( y * 16 ) + x];
+					var @char = Encoding.ASCII.GetString( new[] { @byte } )[0];
+					builder
+						.Append( @byte.ToString( "x2" ) )
+						.Append( " " )
+						;
+				}
+				for( var x = 0; x < 16 && ( y * 16 ) + x < length; x++ )
+				{
+					var @byte = bytes[( y * 16 ) + x];
+					var @char = Encoding.ASCII.GetString( new[] { @byte } )[0];
+					builder.Append( char.IsLetterOrDigit( @char ) ? @char : '.' );
+				}
+				builder.AppendLine();
+			}
+
+			return builder.ToString();
+		}
+
+		public static string WriteTempFile( byte[] content )
+		{
+			var fileName = Path.GetTempFileName();
+			File.WriteAllBytes( fileName, content );
+			return fileName;
+		}
+
+		public static Image ImageFromDxtBytes( byte[] bytes )
+		{
+			Image image = null;
+			var tempFileName = Path.GetTempFileName();
+			Helper.WriteBinaryFile( tempFileName, writer =>
+			{
+				writer.Write( Encoding.ASCII.GetBytes( "DDS " ) );
+				writer.Write( 124 ); // size (of what???)
+				writer.Write( 528391 ); // some flags: DDSD_CAPS, DDSD_HEIGHT, DDSD_WIDTH, DDSD_PIXELFORMAT and DDSD_LINEARSIZE
+				writer.Write( BitConverter.ToInt32( bytes, 4 ) ); // height
+				writer.Write( BitConverter.ToInt32( bytes, 8 ) ); // width
+				writer.Write( bytes.Length - 12 ); // dwPitchOrLinearSize
+				writer.Write( 0 ); // depth
+				writer.Write( 0 ); // mipmap count
+				for( var reserved = 0; reserved < 11; reserved++ ) writer.Write( 0 );
+				writer.Write( 32 ); // size (of what???)
+				writer.Write( 0x00000004 ); // more flags: DDPF_FOURCC
+				writer.Write( BitConverter.ToInt32( bytes, 0 ) ); // DXTn
+				writer.Write( 0 ); // dwRGBBitCount
+				writer.Write( 0 ); // dwRBitMask
+				writer.Write( 0 ); // dwGBitMask
+				writer.Write( 0 ); // dwBBitMask
+				writer.Write( 0 ); // dwAlphaBitMask
+				writer.Write( 0x00001000 ); // dwCaps1 : DDSCAPS_TEXTURE
+				writer.Write( 0 ); // dwCaps2
+				writer.Write( 0 ); // dwDDSX
+				writer.Write( 0 ); // dwReserved
+				writer.Write( 0 ); // dwReserved2
+				writer.Write( bytes, 12, bytes.Length - 12 );
+			} );
+			image = DevIL.DevIL.LoadBitmap( tempFileName );
+			File.Delete( tempFileName );
+			return image;
+		}
+
+		public static Image LoadImage( this LPAKFile file, string lpakFileName, string fileName )
+		{
+			var index = file.PakFileNames.IndexOfPredicate( e => e.FileName == fileName );
+			var entry = file.PakFileEntries[index];
+			Image image = null;
+			Helper.ReadBinaryFile( lpakFileName, reader =>
+			{
+				reader.BaseStream.Position = entry.OffsetToStartOfData + file.PakHeader.StartOfData;
+				var bytes = reader.ReadBytes( entry.SizeOfData1 );
+				image = Helper.ImageFromDxtBytes( bytes );
+			} );
+			return image;
 		}
 	}
 }

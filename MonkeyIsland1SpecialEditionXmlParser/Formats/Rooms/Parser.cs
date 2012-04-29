@@ -38,7 +38,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			return room;
 		}
 
-		private static Room ReadRoom( BinaryReader reader )
+		public static Room ReadRoom( BinaryReader reader )
 		{
 			// read header
 			var header = new Header()

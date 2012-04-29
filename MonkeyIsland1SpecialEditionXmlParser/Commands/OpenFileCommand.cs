@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
-using MonkeyIsland1SpecialEditionXmlParser.UI;
 using costumes = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes;
+using lpak = MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 using rooms = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
@@ -16,21 +16,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 
 		protected override bool InnerExecute()
 		{
-			if( this.OpenFileName.EndsWith( ".room.xml", StringComparison.OrdinalIgnoreCase ) )
+			if( this.OpenFileName.EndsWith( ".pak", StringComparison.OrdinalIgnoreCase ) )
 			{
-				var room = rooms.Parser.Parse( this.OpenFileName );
-				if( room == null )
+				var file = lpak.Parser.Parse( this.OpenFileName );
+				if( file == null )
 				{
 					MessageBox.Show( "Unable to parse room file." );
 					return false;
 				}
 
-				Command.AddRecentRoomFileName.RecentFileName = this.OpenFileName;
-				Command.AddRecentRoomFileName.Execute();
+				//Command.AddRecentLPAKFileName.RecentFileName = this.OpenFileName;
+				//Command.AddRecentLPAKFileName.Execute();
 
-				Command.OpenRoomForm.FileName = this.OpenFileName;
-				Command.OpenRoomForm.Room = room;
-				Command.OpenRoomForm.Execute();
+				Command.OpenLPAKForm.FileName = this.OpenFileName;
+				Command.OpenLPAKForm.LPAKFile = file;
+				Command.OpenLPAKForm.Execute();
 			}
 			else if( this.OpenFileName.EndsWith( ".costume.xml", StringComparison.OrdinalIgnoreCase ) )
 			{
@@ -50,7 +50,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			}
 			else
 			{
-				MessageBox.Show( @"File must end with "".costume.xml"" or "".room.xml""." );
+				MessageBox.Show( @"File must end with "".pak"", "".costume.xml"" or "".room.xml""." );
 				return false;
 			}
 

@@ -1,10 +1,11 @@
-﻿using System.Windows.Forms;
+﻿using System.IO;
+using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenRoomFormCommand : BaseCommand
+	public class OpenLPAKFormCommand : BaseCommand
 	{
 		public LPAKFile LPAKFile
 		{
@@ -13,18 +14,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 		}
 
 		public string FileName
-		{
-			get;
-			set;
-		}
-
-		public int FileIndex
-		{
-			get;
-			set;
-		}
-
-		public string LPAKFileName
 		{
 			get;
 			set;
@@ -40,13 +29,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			{
 				return false;
 			}
-
-			var form = new RoomForm()
+			if( !File.Exists( this.FileName ) )
 			{
-				FileIndex = this.FileIndex,
+				return false;
+			}
+
+			var form = new LPAKForm()
+			{
+				FileName = this.FileName,
 				MdiParent = MainForm.Instance,
 				LPAKFile = this.LPAKFile,
-				LPAKFileName = this.LPAKFileName,
 				Text = this.FileName,
 				WindowState = FormWindowState.Normal,
 			};

@@ -12,6 +12,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				return this.exportFileNameTextBox.Text;
 			}
+			set
+			{
+				this.exportFileNameTextBox.Text = value;
+				this.ExportFileDialog.FileName = Path.GetFileName( value );
+			}
 		}
 
 		public string XsltFileName
@@ -24,7 +29,25 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		public XmlExportDialog()
 		{
-			InitializeComponent();
+			this.InitializeComponent();
+			this.FormClosing += this.UpdateRecentLists;
+		}
+
+		private void UpdateRecentLists( object sender, FormClosingEventArgs args )
+		{
+			if( this.DialogResult != System.Windows.Forms.DialogResult.OK )
+			{
+				return;
+			}
+
+			UserSettings.Instance.RecentExportFileNames = UserSettings.Instance.RecentExportFileNames.UpdateRecentList( this.ExportFileName, 10 );
+			UserSettings.Instance.Save();
+
+			if( !string.IsNullOrEmpty( this.XsltFileName ) && File.Exists( this.XsltFileName ) && !StandardXsltFiles.Contains( this.XsltFileName ) )
+			{
+				UserSettings.Instance.RecentXsltFileNames = UserSettings.Instance.RecentXsltFileNames.UpdateRecentList( this.XsltFileName, 10 );
+				UserSettings.Instance.Save();
+			}
 		}
 
 		private void SelectExportFileName( object sender, EventArgs e )

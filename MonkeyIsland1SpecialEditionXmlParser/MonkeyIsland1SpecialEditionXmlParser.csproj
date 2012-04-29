@@ -38,6 +38,9 @@
     <StartupObject>MonkeyIsland1SpecialEditionXmlParser.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DevIL.NET2">
+      <HintPath>..\3rd Party\DevILDotNet_1.3\DevIL.NET2.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -53,10 +56,13 @@
     <Compile Include="Commands\AddRecentCostumeFileNameCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="Commands\AddRecentRoomFileNameCommand.cs" />
+    <Compile Include="Commands\OpenRoomFormCommand.cs" />
+    <Compile Include="Commands\OpenHexFormCommand.cs" />
+    <Compile Include="Commands\OpenShaderFormCommand.cs" />
+    <Compile Include="Commands\OpenLPAKFormCommand.cs" />
     <Compile Include="Commands\OpenCostumeFormCommand.cs" />
     <Compile Include="Commands\OpenFileCommand.cs" />
     <Compile Include="Commands\OpenImageExportDialogCommand.cs" />
-    <Compile Include="Commands\OpenRoomFormCommand.cs" />
     <Compile Include="Commands\OpenXmlExportDialogCommand.cs" />
     <Compile Include="Commands\SetMainFormTitleCommand.cs" />
     <Compile Include="Commands\OpenFileWithDialogCommand.cs" />
@@ -75,6 +81,8 @@
     <Compile Include="Formats\Costumes\Parser.cs" />
     <Compile Include="Formats\Costumes\Renderer.cs" />
     <Compile Include="Formats\Costumes\SanityChecker.cs" />
+    <Compile Include="Formats\LPAK\LPAKFile.cs" />
+    <Compile Include="Formats\LPAK\Parser.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown4_2.cs" />
     <Compile Include="Formats\Rooms\Entities\Sprite.cs" />
     <Compile Include="Formats\Rooms\Entities\StaticSprite.cs" />
@@ -106,11 +114,29 @@
     <Compile Include="UI\CostumeForm.Designer.cs">
       <DependentUpon>CostumeForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\ExceptionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\ExceptionForm.Designer.cs">
+      <DependentUpon>ExceptionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\HexForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\HexForm.Designer.cs">
+      <DependentUpon>HexForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\ImageExportDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\ImageExportDialog.Designer.cs">
       <DependentUpon>ImageExportDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\LPAKForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\LPAKForm.Designer.cs">
+      <DependentUpon>LPAKForm.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\MainForm.cs">
       <SubType>Form</SubType>
@@ -123,6 +149,12 @@
     </Compile>
     <Compile Include="UI\RoomForm.Designer.cs">
       <DependentUpon>RoomForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\ShaderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\ShaderForm.Designer.cs">
+      <DependentUpon>ShaderForm.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\SpriteSetPreviewControl.cs">
       <SubType>Component</SubType>
@@ -168,6 +200,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Data\Rooms\28_test.room.xml" />
+    <Content Include="DevIL.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ILU.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -186,14 +224,26 @@
     <EmbeddedResource Include="UI\CostumeForm.resx">
       <DependentUpon>CostumeForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\ExceptionForm.resx">
+      <DependentUpon>ExceptionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\HexForm.resx">
+      <DependentUpon>HexForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UI\ImageExportDialog.resx">
       <DependentUpon>ImageExportDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\LPAKForm.resx">
+      <DependentUpon>LPAKForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\RoomForm.resx">
       <DependentUpon>RoomForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\ShaderForm.resx">
+      <DependentUpon>ShaderForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\XmlExportDialog.resx">
       <DependentUpon>XmlExportDialog.cs</DependentUpon>
