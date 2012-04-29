@@ -180,7 +180,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsPng( object sender, System.EventArgs e )
 		{
-
+			Command.ExportRoomToPngWithDialog.LPAKFile = this.LPAKFile;
+			Command.ExportRoomToPngWithDialog.LPAKFileName = this.LPAKFileName;
+			Command.ExportRoomToPngWithDialog.Room = this.Room;
+			Command.ExportRoomToPngWithDialog.Execute();
 		}
 	}
 }

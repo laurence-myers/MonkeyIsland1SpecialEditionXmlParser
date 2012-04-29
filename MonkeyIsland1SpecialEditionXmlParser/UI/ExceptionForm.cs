@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
@@ -13,7 +7,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 	{
 		public ExceptionForm()
 		{
-			InitializeComponent();
+			this.InitializeComponent();
+		}
+
+		public void SetException( Exception exception )
+		{
+			this.Text = exception.GetType().FullName;
+			this.textBox1.Text = exception.ToString();
+			this.textBox1.Select( 0, 0 );
 		}
 	}
 }

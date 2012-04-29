@@ -2,7 +2,6 @@
 using System.Windows.Forms;
 using costumes = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes;
 using lpak = MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
-using rooms = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
@@ -50,7 +49,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			}
 			else
 			{
-				MessageBox.Show( @"File must end with "".pak"", "".costume.xml"" or "".room.xml""." );
+				MessageBox.Show( @"File must end with "".pak"" or "".costume.xml""." );
 				return false;
 			}
 

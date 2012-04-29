@@ -56,6 +56,8 @@
     <Compile Include="Commands\AddRecentCostumeFileNameCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="Commands\AddRecentRoomFileNameCommand.cs" />
+    <Compile Include="Commands\ExportRoomToPngCommand.cs" />
+    <Compile Include="Commands\ExportRoomToPngWithDialogCommand.cs" />
     <Compile Include="Commands\OpenRoomFormCommand.cs" />
     <Compile Include="Commands\OpenHexFormCommand.cs" />
     <Compile Include="Commands\OpenShaderFormCommand.cs" />
@@ -178,28 +180,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Collaboration readme.txt" />
-    <Content Include="Data\Costumes\124_test-object.costume.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Data\Costumes\21_test-skin.costume.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Data\Costumes\44_test-skin.costume.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Data\Costumes\72_test.costume.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="art\costumes\images\21_test-skin\costumes_a0.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="art\costumes\images\21_test-skin\costumes_a1.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="art\costumes\images\21_test-skin\costumes_a2.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Data\Rooms\28_test.room.xml" />
     <Content Include="DevIL.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

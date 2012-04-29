@@ -15,16 +15,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		public MainForm()
 		{
 			MainForm.Instance = this;
-
 			this.InitializeComponent();
-
-			// TODO
-			//this.openFileDialog.InitialDirectory
-			//    = this.xmlExportDialog.ExportFileDialog.InitialDirectory
-			//    = this.xmlExportDialog.XsltFileDialog.InitialDirectory
-			//    = this.imageExportDialog.FolderBrowserDialog.SelectedPath
-			//    = Environment.CurrentDirectory
-			//    ;
 		}
 
 		private void OpenFileWithDialog( object sender, EventArgs e )
@@ -55,6 +46,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
+		// TODO move this method to some costume related class
 		private void UpdateRecentMenuItems( object sender, EventArgs args )
 		{
 			this.recentToolStripMenuItem.DropDownItems.Clear();
