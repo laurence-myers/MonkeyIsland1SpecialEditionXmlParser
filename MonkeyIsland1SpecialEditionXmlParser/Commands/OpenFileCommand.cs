@@ -24,8 +24,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 					return false;
 				}
 
-				//Command.AddRecentLPAKFileName.RecentFileName = this.OpenFileName;
-				//Command.AddRecentLPAKFileName.Execute();
+				Command.AddRecentLPAKFileName.RecentFileName = this.OpenFileName;
+				Command.AddRecentLPAKFileName.Execute();
 
 				Command.OpenLPAKForm.FileName = this.OpenFileName;
 				Command.OpenLPAKForm.LPAKFile = file;

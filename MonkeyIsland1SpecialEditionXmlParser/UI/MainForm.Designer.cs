@@ -79,52 +79,52 @@
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
 			this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
 			this.openToolStripMenuItem.Text = "&Open";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenFileWithDialog);
 			// 
 			// toolStripMenuItem2
 			// 
 			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-			this.toolStripMenuItem2.Size = new System.Drawing.Size(149, 6);
+			this.toolStripMenuItem2.Size = new System.Drawing.Size(126, 6);
 			// 
 			// exportToolStripMenuItem
 			// 
 			this.exportToolStripMenuItem.Enabled = false;
 			this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-			this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exportToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
 			this.exportToolStripMenuItem.Text = "&Export";
 			// 
 			// toolStripMenuItem1
 			// 
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(149, 6);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(126, 6);
 			// 
 			// recentToolStripMenuItem
 			// 
 			this.recentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.dummyToolStripMenuItem});
 			this.recentToolStripMenuItem.Name = "recentToolStripMenuItem";
-			this.recentToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.recentToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
 			this.recentToolStripMenuItem.Text = "&Recent";
 			this.recentToolStripMenuItem.DropDownOpening += new System.EventHandler(this.UpdateRecentMenuItems);
 			// 
 			// dummyToolStripMenuItem
 			// 
 			this.dummyToolStripMenuItem.Name = "dummyToolStripMenuItem";
-			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.dummyToolStripMenuItem.Size = new System.Drawing.Size(105, 22);
 			this.dummyToolStripMenuItem.Text = "dummy";
 			// 
 			// toolStripMenuItem4
 			// 
 			this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-			this.toolStripMenuItem4.Size = new System.Drawing.Size(149, 6);
+			this.toolStripMenuItem4.Size = new System.Drawing.Size(126, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
 			this.exitToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
 			this.exitToolStripMenuItem.Text = "E&xit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitApplication);
 			// 
@@ -188,7 +188,8 @@
 			this.IsMdiContainer = true;
 			this.MainMenuStrip = this.menuStrip1;
 			this.Name = "MainForm";
-			this.Text = "MonkeyIsland1SpecialEditionXmlParser";
+			this.Text = "Monkey Island SE Inspector";
+			this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
 			this.ResumeLayout(false);

@@ -46,13 +46,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			set;
 		}
 
-		public string[] RecentCostumeFileNames
+		public string[] RecentLPAKFileNames
 		{
 			get;
 			set;
 		}
 
-		public string[] RecentRoomFileNames
+		public string[] RecentCostumeFileNames
 		{
 			get;
 			set;
@@ -65,6 +65,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		}
 
 		public string[] RecentImageExportFilePrefixes
+		{
+			get;
+			set;
+		}
+
+		public bool DontShowQuickStart
 		{
 			get;
 			set;

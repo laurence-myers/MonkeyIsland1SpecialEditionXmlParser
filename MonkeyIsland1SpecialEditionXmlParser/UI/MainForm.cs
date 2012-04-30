@@ -16,6 +16,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		{
 			MainForm.Instance = this;
 			this.InitializeComponent();
+
+			if( !UserSettings.Instance.DontShowQuickStart )
+			{
+				this.Paint += this.OpenQuickStartDialog;
+			}
+		}
+
+		private void OpenQuickStartDialog( object sender, EventArgs args )
+		{
+			this.Paint -= this.OpenQuickStartDialog;
+			Command.OpenQuickStartDialog.Execute();
 		}
 
 		private void OpenFileWithDialog( object sender, EventArgs e )
@@ -46,17 +57,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		// TODO move this method to some costume related class
 		private void UpdateRecentMenuItems( object sender, EventArgs args )
 		{
 			this.recentToolStripMenuItem.DropDownItems.Clear();
-			if( UserSettings.Instance.RecentCostumeFileNames != null )
+			if( UserSettings.Instance.RecentLPAKFileNames != null )
 			{
-				foreach( var costumeFileName in UserSettings.Instance.RecentCostumeFileNames )
+				foreach( var lpakFileName in UserSettings.Instance.RecentLPAKFileNames )
 				{
 					var item = new ToolStripMenuItem()
 					{
-						Text = costumeFileName,
+						Text = lpakFileName,
 						Tag = "recent",
 					};
 					item.Click += delegate

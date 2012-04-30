@@ -1,5 +1,7 @@
 ﻿XML transformation: pretty up the code
-Finish the room parser
-Add the file name on disk to LPAKFile class and update code to use that property. Also ensure that parser does not attempt to populate that property
-Add history for .pak files
 Migrate Costume support to new workflow
+Add the file name on disk to LPAKFile class and update code to use that property. Also ensure that parser does not attempt to populate that property
+
+There is something with the DXT to DDS conversion I think. Look at the bar room; there are artifacts at the lower right of each 1024px
+
+Finish the room parser

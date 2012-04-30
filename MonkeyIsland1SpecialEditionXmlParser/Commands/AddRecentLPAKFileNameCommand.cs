@@ -3,7 +3,7 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class AddRecentRoomFileNameCommand : BaseCommand
+	public class AddRecentLPAKFileNameCommand : BaseCommand
 	{
 		public string RecentFileName
 		{
@@ -22,8 +22,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			UserSettings.Instance.RecentRoomFileNames = Helper.UpdateRecentList(
-				UserSettings.Instance.RecentRoomFileNames,
+			UserSettings.Instance.RecentLPAKFileNames = Helper.UpdateRecentList(
+				UserSettings.Instance.RecentLPAKFileNames,
 				this.RecentFileName,
 				10
 				);

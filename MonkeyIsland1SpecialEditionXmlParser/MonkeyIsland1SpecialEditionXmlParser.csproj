@@ -55,9 +55,11 @@
     <Compile Include="Command.cs" />
     <Compile Include="Commands\AddRecentCostumeFileNameCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
-    <Compile Include="Commands\AddRecentRoomFileNameCommand.cs" />
+    <Compile Include="Commands\AddRecentLPAKFileNameCommand.cs" />
     <Compile Include="Commands\ExportRoomToPngCommand.cs" />
     <Compile Include="Commands\ExportRoomToPngWithDialogCommand.cs" />
+    <Compile Include="Commands\ExportToXmlCommand.cs" />
+    <Compile Include="Commands\OpenQuickStartDialogCommand.cs" />
     <Compile Include="Commands\OpenRoomFormCommand.cs" />
     <Compile Include="Commands\OpenHexFormCommand.cs" />
     <Compile Include="Commands\OpenShaderFormCommand.cs" />
@@ -65,8 +67,6 @@
     <Compile Include="Commands\OpenCostumeFormCommand.cs" />
     <Compile Include="Commands\OpenFileCommand.cs" />
     <Compile Include="Commands\OpenImageExportDialogCommand.cs" />
-    <Compile Include="Commands\OpenXmlExportDialogCommand.cs" />
-    <Compile Include="Commands\SetMainFormTitleCommand.cs" />
     <Compile Include="Commands\OpenFileWithDialogCommand.cs" />
     <Compile Include="Formats\Costumes\Entities\Animation.cs" />
     <Compile Include="Formats\Costumes\Entities\AnimationFrame.cs" />
@@ -146,6 +146,12 @@
     <Compile Include="UI\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\QuickStartForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\QuickStartForm.Designer.cs">
+      <DependentUpon>QuickStartForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\RoomForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -218,6 +224,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\QuickStartForm.resx">
+      <DependentUpon>QuickStartForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\RoomForm.resx">
       <DependentUpon>RoomForm.cs</DependentUpon>

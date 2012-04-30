@@ -5,7 +5,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 	public static class Command
 	{
 		public static readonly AddRecentCostumeFileNameCommand AddRecentCostumeFileName = new AddRecentCostumeFileNameCommand();
-		public static readonly AddRecentRoomFileNameCommand AddRecentRoomFileName = new AddRecentRoomFileNameCommand();
+		public static readonly AddRecentLPAKFileNameCommand AddRecentLPAKFileName = new AddRecentLPAKFileNameCommand();
 		public static readonly ExportRoomToPngCommand ExportRoomToPng = new ExportRoomToPngCommand();
 		public static readonly ExportRoomToPngWithDialogCommand ExportRoomToPngWithDialog = new ExportRoomToPngWithDialogCommand();
 		public static readonly ExportToXmlCommand ExportToXml = new ExportToXmlCommand();
@@ -15,8 +15,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		public static readonly OpenHexFormCommand OpenHexForm = new OpenHexFormCommand();
 		public static readonly OpenImageExportDialogCommand OpenImageExportDialog = new OpenImageExportDialogCommand();
 		public static readonly OpenLPAKFormCommand OpenLPAKForm = new OpenLPAKFormCommand();
+		public static readonly OpenQuickStartDialogCommand OpenQuickStartDialog = new OpenQuickStartDialogCommand();
 		public static readonly OpenRoomFormCommand OpenRoomForm = new OpenRoomFormCommand();
 		public static readonly OpenShaderFormCommand OpenShaderForm = new OpenShaderFormCommand();
-		public static readonly SetMainFormTitleCommand SetMainFormTitle = new SetMainFormTitleCommand();
 	}
 }
