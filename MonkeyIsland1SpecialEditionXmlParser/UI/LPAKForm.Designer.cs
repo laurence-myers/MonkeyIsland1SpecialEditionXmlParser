@@ -61,6 +61,7 @@
 			this.treeView1.Name = "treeView1";
 			this.treeView1.Size = new System.Drawing.Size(198, 526);
 			this.treeView1.TabIndex = 3;
+			this.treeView1.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.HandleBeforeExpand);
 			this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.HandleMouseDoubleClick);
 			// 
 			// label1

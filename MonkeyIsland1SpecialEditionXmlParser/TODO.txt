@@ -1,6 +1,4 @@
-﻿Lazy load treenodes
-
-Change Room and Costume parser to use the new binary loader.... you know... the one LPAK uses
+﻿Change Room and Costume parser to use the new binary loader.... you know... the one LPAK uses
 
 There is something with the DXT to DDS conversion I think. Look at the bar room; there are artifacts at the lower right of each 1024px
 

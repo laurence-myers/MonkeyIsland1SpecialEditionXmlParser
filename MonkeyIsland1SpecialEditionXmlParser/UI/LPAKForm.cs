@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
-using System.IO;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -44,6 +41,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				Text = "Costumes",
 			};
+			costumesNode.Nodes.Add( "---" );
 			rootNode.Nodes.Add( costumesNode );
 
 			//-------------------------------------------
@@ -52,6 +50,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				Text = "Other",
 			};
+			othersNode.Nodes.Add( "---" );
 			rootNode.Nodes.Add( othersNode );
 
 			//-------------------------------------------
@@ -60,6 +59,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				Text = "Rooms",
 			};
+			roomsNode.Nodes.Add( "---" );
 			rootNode.Nodes.Add( roomsNode );
 
 			//-------------------------------------------
@@ -68,6 +68,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				Text = "Shaders",
 			};
+			shadersNode.Nodes.Add( "---" );
 			rootNode.Nodes.Add( shadersNode );
 
 			//-------------------------------------------
@@ -76,75 +77,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				Text = "Textures",
 			};
+			texturesNode.Nodes.Add( "---" );
 			rootNode.Nodes.Add( texturesNode );
-
-			for( var index = 0; index < this.LPAKFile.PakFileNames.Length; index++ )
-			{
-				var fileName = this.LPAKFile.PakFileNames[index].FileName;
-				if( string.IsNullOrWhiteSpace( fileName ) )
-				{
-					continue;
-				}
-
-				//-------------------------------------------
-				// costume folder
-				if( fileName.EndsWith( ".costume.xml" ) )
-				{
-					var costumeNode = new TreeNode()
-					{
-						Text = this.FileNameToDisplayName( fileName ),
-						Tag = index,
-					};
-					costumesNode.Nodes.Add( costumeNode );
-				}
-
-				//-------------------------------------------
-				// room folder
-				else if( fileName.EndsWith( ".room.xml" ) )
-				{
-					var roomNode = new TreeNode()
-					{
-						Text = this.FileNameToDisplayName( fileName ),
-						Tag = index,
-					};
-					roomsNode.Nodes.Add( roomNode );
-				}
-
-				//-------------------------------------------
-				// shader folder
-				else if( fileName.EndsWith( ".fx" ) )
-				{
-					var shaderNode = new TreeNode()
-					{
-						Text = Path.GetFileNameWithoutExtension( fileName ),
-						Tag = index,
-					};
-					shadersNode.Nodes.Add( shaderNode );
-				}
-				//-------------------------------------------
-				// texture folder
-				else if( fileName.EndsWith( ".dxt" ) )
-				{
-					var textureNode = new TreeNode()
-					{
-						Text = fileName,
-						Tag = index,
-					};
-					texturesNode.Nodes.Add( textureNode );
-				}
-
-					//-------------------------------------------
-				// other folder
-				else if( !fileName.EndsWith(".dxt" ) && !fileName.EndsWith( ".png" ) )
-				{
-					var otherNode = new TreeNode()
-					{
-						Text = fileName,
-						Tag = index,
-					};
-					othersNode.Nodes.Add( otherNode );
-				}
-			}
 
 			this.treeView1.Sort();
 			rootNode.Expand();
@@ -210,11 +144,101 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			if( node.Level <= 1 )
+			switch( node.Level )
+			{
+				case 2:
+					this.HandleLevel2DoubleClick( node );
+					break;
+				default:
+					// do nothing
+					break;
+			}
+		}
+
+		private void HandleLevel1BeforeExpand( TreeNode node )
+		{
+			if( node == null )
+			{
+				return;
+			}
+			if( node.Nodes.Count != 1 || node.Nodes[0].Text != "---" )
 			{
 				return;
 			}
 
+			node.Nodes.Clear();
+
+			for( var index = 0; index < this.LPAKFile.PakFileNames.Length; index++ )
+			{
+				var fileName = this.LPAKFile.PakFileNames[index].FileName;
+				if( string.IsNullOrWhiteSpace( fileName ) )
+				{
+					continue;
+				}
+
+				//-------------------------------------------
+				// costume folder
+				if( node.Text == "Costumes" && fileName.EndsWith( ".costume.xml" ) )
+				{
+					var costumeNode = new TreeNode()
+					{
+						Text = this.FileNameToDisplayName( fileName ),
+						Tag = index,
+					};
+					node.Nodes.Add( costumeNode );
+				}
+
+				//-------------------------------------------
+				// room folder
+				else if( node.Text == "Rooms" && fileName.EndsWith( ".room.xml" ) )
+				{
+					var roomNode = new TreeNode()
+					{
+						Text = this.FileNameToDisplayName( fileName ),
+						Tag = index,
+					};
+					node.Nodes.Add( roomNode );
+				}
+
+				//-------------------------------------------
+				// shader folder
+				else if( node.Text == "Shaders" && fileName.EndsWith( ".fx" ) )
+				{
+					var shaderNode = new TreeNode()
+					{
+						Text = Path.GetFileNameWithoutExtension( fileName ),
+						Tag = index,
+					};
+					node.Nodes.Add( shaderNode );
+				}
+				//-------------------------------------------
+				// texture folder
+				else if( node.Text == "Textures" && fileName.EndsWith( ".dxt" ) )
+				{
+					var textureNode = new TreeNode()
+					{
+						Text = fileName,
+						Tag = index,
+					};
+					node.Nodes.Add( textureNode );
+				}
+
+					//-------------------------------------------
+				// other folder
+				else if( node.Text == "Other" && !fileName.EndsWith( ".dxt" ) && !fileName.EndsWith( ".png" ) )
+				{
+					var otherNode = new TreeNode()
+					{
+						Text = fileName,
+						Tag = index,
+					};
+					node.Nodes.Add( otherNode );
+				}
+			}
+		}
+
+		private void HandleLevel2DoubleClick( TreeNode node )
+		{
 			var fileIndex = (int)node.Tag;
 			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
 
@@ -286,6 +310,27 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				action( node );
 				this.RecursiveForEach( node.Nodes, action );
+			}
+		}
+
+		private void HandleBeforeExpand( object sender, TreeViewCancelEventArgs args )
+		{
+			if( args == null )
+			{
+				return;
+			}
+
+			var node = args.Node;
+			if( node == null )
+			{
+				return;
+			}
+
+			switch( node.Level )
+			{
+				case 1:
+					this.HandleLevel1BeforeExpand( node );
+					break;
 			}
 		}
 	}
