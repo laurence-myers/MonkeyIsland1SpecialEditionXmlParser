@@ -1,4 +1,5 @@
-﻿
+﻿using MonkeyIsland1SpecialEditionXmlParser.Parsing;
+
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 {
 	public class LPAKFile : IEntity

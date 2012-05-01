@@ -104,6 +104,8 @@
     <Compile Include="Formats\Rooms\Entities\Unknown6.cs" />
     <Compile Include="Formats\Rooms\Parser.cs" />
     <Compile Include="Formats\Rooms\SanityChecker.cs" />
+    <Compile Include="Parsing\GenericReader.cs" />
+    <Compile Include="Parsing\LengthAttribute.cs" />
     <Compile Include="UI\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
