@@ -15,12 +15,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			set;
 		}
 
-		public string LPAKFileName
-		{
-			get;
-			set;
-		}
-
 		public Room Room
 		{
 			get;
@@ -57,7 +51,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			}
 
 			Command.ExportRoomToPng.LPAKFile = this.LPAKFile;
-			Command.ExportRoomToPng.LPAKFileName = this.LPAKFileName;
 			Command.ExportRoomToPng.Room = this.Room;
 			Command.ExportRoomToPng.ExportFileName = this.imageExportDialog.FileName;
 

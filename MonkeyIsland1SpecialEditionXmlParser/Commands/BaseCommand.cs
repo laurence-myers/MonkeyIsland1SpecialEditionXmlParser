@@ -14,7 +14,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 
 			var success = this.InnerExecute();
 
-			var executedHandler = this.Executing;
+			var executedHandler = this.Executed;
 			if( executedHandler != null )
 			{
 				executedHandler( this, EventArgs.Empty );

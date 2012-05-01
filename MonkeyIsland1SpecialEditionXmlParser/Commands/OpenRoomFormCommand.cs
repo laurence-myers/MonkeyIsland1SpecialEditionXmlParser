@@ -24,12 +24,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			set;
 		}
 
-		public string LPAKFileName
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
 			if( this.LPAKFile == null )
@@ -45,7 +39,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			{
 				FileIndex = this.FileIndex,
 				LPAKFile = this.LPAKFile,
-				LPAKFileName = this.LPAKFileName,
 				MdiParent = MainForm.Instance,
 				Text = this.FileName,
 				WindowState = FormWindowState.Normal,

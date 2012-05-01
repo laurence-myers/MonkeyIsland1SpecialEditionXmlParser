@@ -18,13 +18,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			set;
 		}
 
-		public string LPAKFileName
-		{
-			get;
-			set;
-
-		}
-
 		public ShaderForm()
 		{
 			this.InitializeComponent();
@@ -33,7 +26,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		public void HandleFormLoad( object sender, EventArgs args )
 		{
 			var entry = this.LPAKFile.PakFileEntries[this.FileIndex];
-			Helper.ReadBinaryFile( this.LPAKFileName, reader =>
+			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
 			{
 				reader.BaseStream.Position = entry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
 				this.textBox1.Text = reader.ReadStringMonkeyNoPadding( entry.SizeOfData2 );

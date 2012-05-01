@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 using System.Reflection;
 
@@ -16,6 +13,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 			{
 				file = Parser.Read( reader, typeof( LPAKFile ) ) as LPAKFile;
 			} );
+			file.FileNameOnDisk = fileName;
 			return file;
 		}
 

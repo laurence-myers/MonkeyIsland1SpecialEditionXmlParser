@@ -12,12 +12,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			set;
 		}
 
-		public string LPAKFileName
-		{
-			get;
-			set;
-		}
-
 		public LPAKFile LPAKFile
 		{
 			get;

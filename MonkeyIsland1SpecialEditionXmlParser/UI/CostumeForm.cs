@@ -27,12 +27,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			set;
 		}
 
-		public string LPAKFileName
-		{
-			get;
-			set;
-		}
-
 		public int FileIndex
 		{
 			get;
@@ -66,7 +60,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			var fileEntry = this.LPAKFile.PakFileEntries[this.FileIndex];
-			Helper.ReadBinaryFile( this.LPAKFileName, reader =>
+			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
 			{
 				reader.BaseStream.Position = fileEntry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
 				this.Costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostume( reader );
@@ -132,7 +126,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsPngFiles( string directory, string filePrefix, string animationName, Padding spritePadding )
 		{
-			Renderer.Render( this.Costume, animationName, directory, filePrefix, spritePadding, this.LPAKFile, this.LPAKFileName );
+			Renderer.Render( this.Costume, animationName, directory, filePrefix, spritePadding, this.LPAKFile );
 		}
 
 		private void ExportAsXmlFile( object sender, EventArgs args )

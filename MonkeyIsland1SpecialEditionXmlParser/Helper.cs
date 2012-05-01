@@ -523,12 +523,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return image;
 		}
 
-		public static Image LoadImage( this LPAKFile file, string lpakFileName, string fileName )
+		public static Image LoadImage( this LPAKFile file, string fileName )
 		{
 			var index = file.PakFileNames.IndexOfPredicate( e => e.FileName == fileName );
 			var entry = file.PakFileEntries[index];
 			Image image = null;
-			Helper.ReadBinaryFile( lpakFileName, reader =>
+			Helper.ReadBinaryFile( file.FileNameOnDisk, reader =>
 			{
 				reader.BaseStream.Position = entry.OffsetToStartOfData + file.PakHeader.StartOfData;
 				var bytes = reader.ReadBytes( entry.SizeOfData1 );

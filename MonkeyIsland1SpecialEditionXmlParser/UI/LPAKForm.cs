@@ -224,28 +224,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					Command.OpenCostumeForm.LPAKFile = this.LPAKFile;
 					Command.OpenCostumeForm.FileName = fileName;
 					Command.OpenCostumeForm.FileIndex = fileIndex;
-					Command.OpenCostumeForm.LPAKFileName = this.FileName;
 					Command.OpenCostumeForm.Execute();
 					break;
 				case "Rooms":
 					Command.OpenRoomForm.LPAKFile = this.LPAKFile;
 					Command.OpenRoomForm.FileName = fileName;
 					Command.OpenRoomForm.FileIndex = fileIndex;
-					Command.OpenRoomForm.LPAKFileName = this.FileName;
 					Command.OpenRoomForm.Execute();
 					break;
 				case "Shaders":
 					Command.OpenShaderForm.LPAKFile = this.LPAKFile;
 					Command.OpenShaderForm.FileName = fileName;
 					Command.OpenShaderForm.FileIndex = fileIndex;
-					Command.OpenShaderForm.LPAKFileName = this.FileName;
 					Command.OpenShaderForm.Execute();
 					break;
 				default:
 					Command.OpenHexForm.LPAKFile = this.LPAKFile;
 					Command.OpenHexForm.FileName = fileName;
 					Command.OpenHexForm.FileIndex = fileIndex;
-					Command.OpenHexForm.LPAKFileName = this.FileName;
 					Command.OpenHexForm.Execute();
 					break;
 			}

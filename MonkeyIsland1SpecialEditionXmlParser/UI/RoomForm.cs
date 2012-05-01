@@ -25,12 +25,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			set;
 		}
 
-		public string LPAKFileName
-		{
-			get;
-			set;
-		}
-
 		public int FileIndex
 		{
 			get;
@@ -63,7 +57,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			var fileEntry = this.LPAKFile.PakFileEntries[this.FileIndex];
-			Helper.ReadBinaryFile( this.LPAKFileName, reader =>
+			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
 			{
 				reader.BaseStream.Position = fileEntry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
 				this.Room = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoom( reader );
@@ -168,7 +162,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private Image LoadTexture( string fileName )
 		{
-			var image = this.LPAKFile.LoadImage( this.LPAKFileName, fileName );
+			var image = this.LPAKFile.LoadImage( fileName );
 			return image;
 		}
 
@@ -182,7 +176,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private void ExportAsPng( object sender, EventArgs args )
 		{
 			Command.ExportRoomToPngWithDialog.LPAKFile = this.LPAKFile;
-			Command.ExportRoomToPngWithDialog.LPAKFileName = this.LPAKFileName;
 			Command.ExportRoomToPngWithDialog.Room = this.Room;
 			Command.ExportRoomToPngWithDialog.Execute();
 		}

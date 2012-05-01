@@ -11,7 +11,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class Renderer
 	{
-		public static void Render( Costume costume, string animationName, string directory, string filePrefix, Padding spritePadding, LPAKFile lpakFile, string lpakFileName )
+		public static void Render( Costume costume, string animationName, string directory, string filePrefix, Padding spritePadding, LPAKFile lpakFile )
 		{
 			var animation = costume.AnimationList.FirstOrDefault( a => a.Name == animationName );
 			if( animation == null )
@@ -19,7 +19,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				throw new Exception( "Animation not found" );
 			}
 
-			var textures = costume.TextureFileNameList.Select( f => Helper.LoadImage( lpakFile, lpakFileName, f.Path ) ).ToArray();
+			var textures = costume.TextureFileNameList.Select( f => lpakFile.LoadImage( f.Path ) ).ToArray();
 			if( textures.Any( t => t == null ) )
 			{
 				throw new Exception( "Unable to load one or more textures" );

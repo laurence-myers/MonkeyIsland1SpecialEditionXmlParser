@@ -1,6 +1,4 @@
-﻿Add the file name on disk to LPAKFile class and update code to use that property. Also ensure that parser does not attempt to populate that property
-
-Lazy load treenodes
+﻿Lazy load treenodes
 
 Change Room and Costume parser to use the new binary loader.... you know... the one LPAK uses
 
@@ -9,3 +7,8 @@ There is something with the DXT to DDS conversion I think. Look at the bar room;
 Finish the room parser
 
 Improve costume support
+
+Implement ExportRoomToPngCommand
+
+Add context menu to level 2 tree nodes so HEX view is available
+
