@@ -1,20 +1,12 @@
 ================================
-FIRST USE
+WHERE DO I FIND THE MONKEY ISLAND DATA FILE?
 ================================
-Before use you must copy the PNG costume artwork to the art folder keeping the same folder hierarchy as exported.
 
+1. Money Island 1 Special Edition via Steam
 
-================================
-WHERE DO I FIND THE ARTWORK?
-================================
-Have you not yet exported the artwork from the game you can do that using MISE Explorer which can be downloaded here
-http://quick.mixnmojo.com/software/monkey-island-explorer
+	You will find the file inside your Steam installation:
+	-->	Steam\steamapps\common\the secret of monkey island special edition
 
-Export all the costume as DDS as the PNG export option ignores transparency.
+2. Other
 
-
-================================
-HOW DO I CONVERT THE ARTWORK FROM DDS TO PNG?
-================================
-I use Paint.NET but other image editors can probably also do it. Paint.NET is free and can be downloaded here
-http://www.getpaint.net/
+	Sorry I don't know :(

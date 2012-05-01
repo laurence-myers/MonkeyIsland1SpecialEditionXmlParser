@@ -39,11 +39,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			Application.Exit();
 		}
 
-		private void NavigateToMISEExplorer( object sender, EventArgs e )
-		{
-			Process.Start( "http://quick.mixnmojo.com/software/monkey-island-explorer" );
-		}
-
 		private void NavigateToForumThread( object sender, EventArgs e )
 		{
 			Process.Start( "http://www.lucasforums.com/showthread.php?p=2809988#post2809988" );

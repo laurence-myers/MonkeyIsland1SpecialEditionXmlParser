@@ -195,7 +195,6 @@
     <Content Include="Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="TODO.txt" />
     <Content Include="XSLT\Cleanup.xslt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

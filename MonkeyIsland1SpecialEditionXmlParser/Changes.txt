@@ -1,4 +1,9 @@
-﻿[ 2012/04/21 ]
+﻿[ 2012/05/01 ]
+- Made some serious changes to how you work with the program
+- 3rd party extractor tool no longer needed
+- Added Quick start window
+
+[ 2012/04/21 ]
 ---------------------------------------------------------------
 - Fixed a bug that only allowed for 4 specific costume files to be parsed
 - Started adding support for room files, nothing visible yet though
