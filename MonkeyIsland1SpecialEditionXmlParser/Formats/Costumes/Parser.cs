@@ -6,38 +6,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class Parser
 	{
-		public static Costume Parse( string fileName )
-		{
-			Stream stream = null;
-			BinaryReader reader = null;
-			Costume costume = null;
-
-			try
-			{
-				stream = File.OpenRead( fileName );
-				reader = new BinaryReader( stream );
-				costume = Parser.ReadCostume( reader );
-			}
-			finally
-			{
-				if( reader != null )
-				{
-					reader.Dispose();
-					reader = null;
-				}
-				if( stream != null )
-				{
-					stream.Close();
-					stream.Dispose();
-					stream = null;
-				}
-			}
-
-			SanityChecker.Check( costume );
-			return costume;
-		}
-
-		private static Costume ReadCostume( BinaryReader reader )
+		public static Costume ReadCostume( BinaryReader reader )
 		{
 			var costume = new Costume();
 			costume.Header = Parser.ReadHeader( reader, costume );
@@ -143,6 +112,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 
 			if( costume.Header.PathPointCount > 0 )
 			{
+				var position = reader.BaseStream.Position;
 				for( var index = 0; index < costume.Header.PathPointCount; index++ )
 				{
 					var pathPoint = new PathPoint()
@@ -156,7 +126,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 					};
 					list.Add( pathPoint );
 				}
-				reader.PadTheMonkey();
+				reader.PadTheMonkey( position );
 			}
 
 			return list;

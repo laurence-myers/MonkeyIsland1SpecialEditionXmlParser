@@ -7,6 +7,7 @@ using System.Xml;
 using System.Xml.Xsl;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -15,6 +16,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private static readonly List<CostumeForm> instances = new List<CostumeForm>();
 
 		public Costume Costume
+		{
+			get;
+			set;
+		}
+
+		public LPAKFile LPAKFile
+		{
+			get;
+			set;
+		}
+
+		public string LPAKFileName
+		{
+			get;
+			set;
+		}
+
+		public int FileIndex
 		{
 			get;
 			set;
@@ -41,6 +60,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void PopulateGridView()
 		{
+			if( this.LPAKFile == null )
+			{
+				return;
+			}
+
+			var fileEntry = this.LPAKFile.PakFileEntries[this.FileIndex];
+			Helper.ReadBinaryFile( this.LPAKFileName, reader =>
+			{
+				reader.BaseStream.Position = fileEntry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
+				this.Costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostume( reader );
+			} );
+
 			this.dataGridView1.DataSource = null;
 			Application.DoEvents();
 
@@ -101,10 +132,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsPngFiles( string directory, string filePrefix, string animationName, Padding spritePadding )
 		{
-			Renderer.Render( this.Costume, animationName, directory, filePrefix, spritePadding );
+			Renderer.Render( this.Costume, animationName, directory, filePrefix, spritePadding, this.LPAKFile, this.LPAKFileName );
 		}
 
-		private void ExportAsXmlFile( object sender, EventArgs e )
+		private void ExportAsXmlFile( object sender, EventArgs args )
 		{
 			Command.ExportToXml.ObjectToExport = this.Costume;
 			Command.ExportToXml.ExportFileName = string.Concat( this.Costume.Header.Identifier, "_", this.Costume.Header.Name, ".xml" );

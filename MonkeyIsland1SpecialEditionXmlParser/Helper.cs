@@ -45,7 +45,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			var text = Encoding.ASCII.GetString( bytes );
 
 			// skip the padding
-			reader.PadTheMonkey();
+			reader.PadTheMonkey( position );
 
 			return text;
 		}
@@ -87,9 +87,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		/// <param Name="reader">
 		/// The reader who's position to offset.
 		/// </param>
-		public static void PadTheMonkey( this BinaryReader reader )
+		public static void PadTheMonkey( this BinaryReader reader, long startPosition )
 		{
-			var mod = reader.BaseStream.Position % 16;
+			var mod = ( reader.BaseStream.Position - startPosition  ) % 16;
 			reader.BaseStream.Position += 16 - mod;
 		}
 

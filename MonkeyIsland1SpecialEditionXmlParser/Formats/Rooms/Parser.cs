@@ -1,43 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
-using System;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 {
 	public static class Parser
 	{
-		public static Room Parse( string fileName )
-		{
-			Stream stream = null;
-			BinaryReader reader = null;
-			Room room;
-
-			try
-			{
-				stream = File.OpenRead( fileName );
-				reader = new BinaryReader( stream );
-				room = Parser.ReadRoom( reader );
-			}
-			finally
-			{
-				if( reader != null )
-				{
-					reader.Dispose();
-					reader = null;
-				}
-				if( stream != null )
-				{
-					stream.Close();
-					stream.Dispose();
-					stream = null;
-				}
-			}
-
-			return room;
-		}
-
 		public static Room ReadRoom( BinaryReader reader )
 		{
 			// read header

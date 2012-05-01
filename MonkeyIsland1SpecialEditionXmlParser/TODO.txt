@@ -1,7 +1,11 @@
-﻿XML transformation: pretty up the code
-Migrate Costume support to new workflow
-Add the file name on disk to LPAKFile class and update code to use that property. Also ensure that parser does not attempt to populate that property
+﻿Add the file name on disk to LPAKFile class and update code to use that property. Also ensure that parser does not attempt to populate that property
+
+Lazy load treenodes
+
+Change Room and Costume parser to use the new binary loader.... you know... the one LPAK uses
 
 There is something with the DXT to DDS conversion I think. Look at the bar room; there are artifacts at the lower right of each 1024px
 
 Finish the room parser
+
+Improve costume support

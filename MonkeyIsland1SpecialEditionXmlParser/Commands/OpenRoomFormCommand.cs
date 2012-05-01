@@ -44,9 +44,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			var form = new RoomForm()
 			{
 				FileIndex = this.FileIndex,
-				MdiParent = MainForm.Instance,
 				LPAKFile = this.LPAKFile,
 				LPAKFileName = this.LPAKFileName,
+				MdiParent = MainForm.Instance,
 				Text = this.FileName,
 				WindowState = FormWindowState.Normal,
 			};

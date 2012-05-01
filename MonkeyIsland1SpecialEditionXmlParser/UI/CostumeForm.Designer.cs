@@ -38,6 +38,7 @@
 			this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toXMLFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toPNGFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.label1 = new System.Windows.Forms.Label();
 			((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -54,10 +55,10 @@
             this.framesColumn,
             this.exportButtonColumn});
 			this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.dataGridView1.Location = new System.Drawing.Point(0, 0);
+			this.dataGridView1.Location = new System.Drawing.Point(0, 23);
 			this.dataGridView1.Name = "dataGridView1";
 			this.dataGridView1.ReadOnly = true;
-			this.dataGridView1.Size = new System.Drawing.Size(737, 569);
+			this.dataGridView1.Size = new System.Drawing.Size(737, 546);
 			this.dataGridView1.TabIndex = 2;
 			// 
 			// animationColumn
@@ -128,12 +129,27 @@
 			this.toPNGFilesToolStripMenuItem.Text = "As PNG files...";
 			this.toPNGFilesToolStripMenuItem.Click += new System.EventHandler(this.ExportAllAsPngFiles);
 			// 
+			// label1
+			// 
+			this.label1.AutoEllipsis = true;
+			this.label1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+			this.label1.Dock = System.Windows.Forms.DockStyle.Top;
+			this.label1.ForeColor = System.Drawing.SystemColors.ButtonFace;
+			this.label1.Location = new System.Drawing.Point(0, 0);
+			this.label1.Name = "label1";
+			this.label1.Padding = new System.Windows.Forms.Padding(3);
+			this.label1.Size = new System.Drawing.Size(737, 23);
+			this.label1.TabIndex = 7;
+			this.label1.Text = "Costume";
+			this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			// 
 			// CostumeForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(737, 569);
 			this.Controls.Add(this.dataGridView1);
+			this.Controls.Add(this.label1);
 			this.Controls.Add(this.menuStrip1);
 			this.MainMenuStrip = this.menuStrip1;
 			this.Name = "CostumeForm";
@@ -159,5 +175,6 @@
 		private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem toXMLFileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem toPNGFilesToolStripMenuItem;
+		private System.Windows.Forms.Label label1;
 	}
 }

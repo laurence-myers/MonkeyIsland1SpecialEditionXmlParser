@@ -5,12 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class Renderer
 	{
-		public static void Render( Costume costume, string animationName, string directory, string filePrefix, Padding spritePadding )
+		public static void Render( Costume costume, string animationName, string directory, string filePrefix, Padding spritePadding, LPAKFile lpakFile, string lpakFileName )
 		{
 			var animation = costume.AnimationList.FirstOrDefault( a => a.Name == animationName );
 			if( animation == null )
@@ -18,7 +19,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				throw new Exception( "Animation not found" );
 			}
 
-			var textures = costume.TextureFileNameList.Select( f => Image.FromFile( f.Path.Replace( ".dxt", ".png" ) ) ).ToArray();
+			var textures = costume.TextureFileNameList.Select( f => Helper.LoadImage( lpakFile, lpakFileName, f.Path ) ).ToArray();
 			if( textures.Any( t => t == null ) )
 			{
 				throw new Exception( "Unable to load one or more textures" );
@@ -35,7 +36,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				}
 
 				var sprites = animationFrame.FrameList
-					.Where( f => f.SpriteIdentifier > -1 )
+					.Where( f => f.SpriteIdentifier > -1 && f.SpriteIdentifier < spriteGroup.SpriteList.Count )
 					.Select( f => spriteGroup.SpriteList[f.SpriteIdentifier] )
 					.ToArray()
 					;
@@ -56,6 +57,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 
 				foreach( var sprite in sprites )
 				{
+					if( sprite.TextureNumber < 0 )
+					{
+						continue;
+					}
+
 					var texture = textures[sprite.TextureNumber];
 					var destPoints
 						= flip

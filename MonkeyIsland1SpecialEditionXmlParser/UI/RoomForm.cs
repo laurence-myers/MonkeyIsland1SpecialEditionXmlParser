@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
+using System;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -171,14 +172,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			return image;
 		}
 
-		private void ExportAsXml( object sender, System.EventArgs e )
+		private void ExportAsXml( object sender, EventArgs args )
 		{
 			Command.ExportToXml.ObjectToExport = this.Room;
 			Command.ExportToXml.ExportFileName = string.Concat( this.Room.Header.Identifier, "_", this.Room.Header.Name, ".xml" );
 			Command.ExportToXml.Execute();
 		}
 
-		private void ExportAsPng( object sender, System.EventArgs e )
+		private void ExportAsPng( object sender, EventArgs args )
 		{
 			Command.ExportRoomToPngWithDialog.LPAKFile = this.LPAKFile;
 			Command.ExportRoomToPngWithDialog.LPAKFileName = this.LPAKFileName;

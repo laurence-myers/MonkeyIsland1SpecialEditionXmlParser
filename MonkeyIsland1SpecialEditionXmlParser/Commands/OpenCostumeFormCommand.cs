@@ -1,13 +1,12 @@
-﻿using System.IO;
-using System.Windows.Forms;
-using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
+﻿using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class OpenCostumeFormCommand : BaseCommand
 	{
-		public Costume Costume
+		public LPAKFile LPAKFile
 		{
 			get;
 			set;
@@ -19,9 +18,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			set;
 		}
 
+		public int FileIndex
+		{
+			get;
+			set;
+		}
+
+		public string LPAKFileName
+		{
+			get;
+			set;
+		}
+
 		protected override bool InnerExecute()
 		{
-			if( this.Costume == null )
+			if( this.LPAKFile == null )
 			{
 				return false;
 			}
@@ -29,19 +40,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			{
 				return false;
 			}
-			if( !File.Exists( this.FileName ) )
-			{
-				return false;
-			}
 
-			var costumeForm = new CostumeForm()
+			var form = new CostumeForm()
 			{
-				Costume = this.Costume,
+				FileIndex = this.FileIndex,
+				LPAKFile = this.LPAKFile,
+				LPAKFileName = this.LPAKFileName,
 				MdiParent = MainForm.Instance,
 				Text = this.FileName,
-				WindowState = FormWindowState.Maximized,
+				WindowState = FormWindowState.Normal,
 			};
-			costumeForm.Show();
+			form.Show();
 
 			return true;
 		}
