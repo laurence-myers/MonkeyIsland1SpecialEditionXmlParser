@@ -9,6 +9,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 		public PakFileEntry[] PakFileEntries;
 		public PakFileName[] PakFileNames;
 
+		[Ignore]
 		public string FileNameOnDisk
 		{
 			get;

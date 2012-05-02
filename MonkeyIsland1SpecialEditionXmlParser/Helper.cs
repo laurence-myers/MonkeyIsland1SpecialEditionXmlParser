@@ -7,8 +7,6 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Serialization;
-using System.Runtime.InteropServices;
-using System.Security;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser
@@ -268,6 +266,37 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return integers;
 		}
 
+		public static Int16[] ReadInt16s( this byte[] bytes )
+		{
+			var integers = new Int16[bytes.Length / 2];
+			for( var index = 0; index < bytes.Length; index++ )
+			{
+				integers[index / 2] = BitConverter.ToInt16( bytes, index );
+			}
+			return integers;
+		}
+
+		public static int[] ReadInt32s( this byte[] bytes )
+		{
+			var integers = new int[bytes.Length / 4];
+			for( var index = 0; index < bytes.Length; index++ )
+			{
+				integers[index/ 4] = BitConverter.ToInt32( bytes, index );
+			}
+			return integers;
+		}
+
+
+		public static float[] ReadFloats( this byte[] bytes )
+		{
+			var floats = new float[bytes.Length / 4];
+			for( var index = 0; index < bytes.Length; index++ )
+			{
+				floats[index / 4] = BitConverter.ToSingle( bytes, index );
+			}
+			return floats;
+		}
+
 		public static void ClearWithTransparancyGrid( this Graphics graphics )
 		{
 			var gray = new SolidBrush( Color.FromArgb( 255, 191, 191, 191 ) );
@@ -329,9 +358,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return new string( array );
 		}
 
-		public static TAttribute[] GetCustomAttributes<TAttribute>( this FieldInfo fieldInfo, bool inherit )
+		public static TAttribute[] GetCustomAttributes<TAttribute>( this MemberInfo member, bool inherit )
 		{
-			var attributes = fieldInfo.GetCustomAttributes( typeof( TAttribute ), inherit );
+			var attributes = member.GetCustomAttributes( typeof( TAttribute ), inherit );
 			if( attributes == null || attributes.Length == 0 )
 			{
 				return new TAttribute[0];
@@ -535,6 +564,57 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				image = Helper.ImageFromDxtBytes( bytes );
 			} );
 			return image;
+		}
+
+		public static Type GetFieldOrPropertyType( this MemberInfo member )
+		{
+			var field = member as FieldInfo;
+			if( field != null )
+			{
+				return field.FieldType;
+			}
+
+			var property = member as PropertyInfo;
+			if( property != null )
+			{
+				return property.PropertyType;
+			}
+
+			return null;
+		}
+
+		public static void SetMemberValue( this MemberInfo member, object instance, object value )
+		{
+			var field = member as FieldInfo;
+			if( field != null )
+			{
+				field.SetValue( instance, value );
+				return;
+			}
+
+			var property = member as PropertyInfo;
+			if( property != null )
+			{
+				property.SetValue( instance, value, null );
+				return;
+			}
+		}
+
+		public static object GetMemberValue( this MemberInfo member, object instance )
+		{
+			var field = member as FieldInfo;
+			if( field != null )
+			{
+				return field.GetValue( instance );
+			}
+
+			var property = member as PropertyInfo;
+			if( property != null )
+			{
+				return property.GetValue( instance, null );
+			}
+
+			return null;
 		}
 	}
 }

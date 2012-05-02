@@ -85,6 +85,7 @@
     <Compile Include="Formats\Costumes\SanityChecker.cs" />
     <Compile Include="Formats\LPAK\LPAKFile.cs" />
     <Compile Include="Formats\LPAK\Parser.cs" />
+    <Compile Include="Formats\Rooms\Entities\StaticSpriteGroup.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown4_2.cs" />
     <Compile Include="Formats\Rooms\Entities\Sprite.cs" />
     <Compile Include="Formats\Rooms\Entities\StaticSprite.cs" />
@@ -105,6 +106,7 @@
     <Compile Include="Formats\Rooms\Parser.cs" />
     <Compile Include="Formats\Rooms\SanityChecker.cs" />
     <Compile Include="Parsing\GenericReader.cs" />
+    <Compile Include="Parsing\IgnoreAttribute.cs" />
     <Compile Include="Parsing\LengthAttribute.cs" />
     <Compile Include="UI\AboutBox.cs">
       <SubType>Form</SubType>
