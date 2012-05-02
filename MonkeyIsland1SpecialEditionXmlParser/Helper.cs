@@ -497,8 +497,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				writer.Write( Encoding.ASCII.GetBytes( "DDS " ) );
 				writer.Write( 124 ); // size (of what???)
 				writer.Write( 528391 ); // some flags: DDSD_CAPS, DDSD_HEIGHT, DDSD_WIDTH, DDSD_PIXELFORMAT and DDSD_LINEARSIZE
-				writer.Write( BitConverter.ToInt32( bytes, 4 ) ); // height
-				writer.Write( BitConverter.ToInt32( bytes, 8 ) ); // width
+				writer.Write( BitConverter.ToInt32( bytes, 8 ) ); // height
+				writer.Write( BitConverter.ToInt32( bytes, 4 ) ); // width
 				writer.Write( bytes.Length - 12 ); // dwPitchOrLinearSize
 				writer.Write( 0 ); // depth
 				writer.Write( 0 ); // mipmap count

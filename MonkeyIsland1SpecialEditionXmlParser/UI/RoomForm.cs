@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
-using System;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -152,6 +152,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				var sprite = spriteGroup.SpriteList[index];
 				var textureFileName = sprite.TextureFileName;
 				var texture = this.LoadTexture( textureFileName );
+				if( texture == null )
+				{
+					continue;
+				}
+
 				var destRect = new RectangleF( sprite.OffsetX * this.scale, index * maxHeight * this.scale + sprite.OffsetY, bitmap.Width, bitmap.Height );
 				var srcRect = new RectangleF( sprite.TextureX, sprite.TextureY, sprite.TextureWidth, sprite.TextureHeight );
 				graphics.DrawImage( texture, destRect, srcRect, GraphicsUnit.Pixel );
