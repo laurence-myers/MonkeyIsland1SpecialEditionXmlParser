@@ -9,7 +9,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 			LPAKFile file = null;
 			Helper.ReadBinaryFile( fileName, reader =>
 			{
-				file = GenericReader.Read( reader, typeof( LPAKFile ) ) as LPAKFile;
+				file = GenericReader.Read( reader, typeof( LPAKFile ), null, 0 ) as LPAKFile;
 			} );
 			file.FileNameOnDisk = fileName;
 			return file;
