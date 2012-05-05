@@ -63,11 +63,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				this.Room = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoom( reader );
 			} );
 
-			//var width = this.Room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.X + ss.Width ) );
-			//var height = this.Room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.Y + ss.Height ) );
-
-			this.spriteSetPreviewControl.Sprites = new List<SpriteSetPreviewControlSprite>();
-
 			for( var index = 0; index < this.Room.StaticSpriteList.Count; index++ )
 			{
 				var staticSpriteList = this.Room.StaticSpriteList[index];

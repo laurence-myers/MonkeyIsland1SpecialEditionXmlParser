@@ -262,6 +262,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					Command.OpenShaderForm.FileIndex = fileIndex;
 					Command.OpenShaderForm.Execute();
 					break;
+				case "Textures":
+					Command.OpenImageForm.Image = this.LPAKFile.LoadImage( fileName ) as Bitmap;
+					Command.OpenImageForm.Execute();
+					break;
 				default:
 					Command.OpenHexForm.LPAKFile = this.LPAKFile;
 					Command.OpenHexForm.FileName = fileName;

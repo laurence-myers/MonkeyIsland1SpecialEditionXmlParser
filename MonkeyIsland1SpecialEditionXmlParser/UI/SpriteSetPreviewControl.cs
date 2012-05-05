@@ -10,13 +10,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		public List<SpriteSetPreviewControlSprite> Sprites
 		{
 			get;
-			set;
+			private set;
 		}
 
 		public SpriteSetPreviewControl()
 		{
 			this.SetStyle( ControlStyles.AllPaintingInWmPaint, true );
 			this.SetStyle( ControlStyles.UserPaint, true );
+
+			this.Sprites = new List<SpriteSetPreviewControlSprite>();
 		}
 
 		protected override void OnPaintBackground( PaintEventArgs args )

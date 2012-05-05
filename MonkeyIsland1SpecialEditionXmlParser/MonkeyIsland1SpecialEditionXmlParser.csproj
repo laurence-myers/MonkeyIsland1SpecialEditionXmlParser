@@ -56,13 +56,16 @@
     <Compile Include="Commands\AddRecentCostumeFileNameCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="Commands\AddRecentLPAKFileNameCommand.cs" />
+    <Compile Include="Commands\ExportToPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportRoomToPngCommand.cs" />
     <Compile Include="Commands\ExportRoomToPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportRoomToMergedPngCommand.cs" />
     <Compile Include="Commands\ExportRoomToMergedPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportToBinaryCommand.cs" />
     <Compile Include="Commands\ExportToBinaryWithDialogCommand.cs" />
+    <Compile Include="Commands\ExportToPngCommand.cs" />
     <Compile Include="Commands\ExportToXmlCommand.cs" />
+    <Compile Include="Commands\OpenImageFormCommand.cs" />
     <Compile Include="Commands\OpenQuickStartDialogCommand.cs" />
     <Compile Include="Commands\OpenRoomFormCommand.cs" />
     <Compile Include="Commands\OpenHexFormCommand.cs" />
@@ -141,6 +144,12 @@
     </Compile>
     <Compile Include="UI\ImageExportDialog.Designer.cs">
       <DependentUpon>ImageExportDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\ImageViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\ImageViewerForm.Designer.cs">
+      <DependentUpon>ImageViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\LPAKForm.cs">
       <SubType>Form</SubType>
@@ -231,6 +240,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\ImageExportDialog.resx">
       <DependentUpon>ImageExportDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\ImageViewerForm.resx">
+      <DependentUpon>ImageViewerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\LPAKForm.resx">
       <DependentUpon>LPAKForm.cs</DependentUpon>

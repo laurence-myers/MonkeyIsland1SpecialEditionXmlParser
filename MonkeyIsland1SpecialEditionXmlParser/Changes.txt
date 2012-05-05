@@ -1,4 +1,11 @@
-﻿[ 2012/05/01 ]
+﻿[ 2012/05/05 ]
+---------------------------------------------------------------
+- Added "View as HEX"
+- Added Export as binary
+- Added Texture viewer with export to png menu item
+
+[ 2012/05/01 ]
+---------------------------------------------------------------
 - Made some serious changes to how you work with the program
 - 3rd party extractor tool no longer needed
 - Added Quick start window
