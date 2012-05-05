@@ -6,8 +6,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 	{
 		public static readonly AddRecentCostumeFileNameCommand AddRecentCostumeFileName = new AddRecentCostumeFileNameCommand();
 		public static readonly AddRecentLPAKFileNameCommand AddRecentLPAKFileName = new AddRecentLPAKFileNameCommand();
-		public static readonly ExportRoomToPngCommand ExportRoomToPng = new ExportRoomToPngCommand();
-		public static readonly ExportRoomToPngWithDialogCommand ExportRoomToPngWithDialog = new ExportRoomToPngWithDialogCommand();
+		public static readonly ExportRoomToMergedPngCommand ExportRoomToMergedPng = new ExportRoomToMergedPngCommand();
+		public static readonly ExportRoomToMergedPngWithDialogCommand ExportRoomToMergedPngWithDialog = new ExportRoomToMergedPngWithDialogCommand();
 		public static readonly ExportToXmlCommand ExportToXml = new ExportToXmlCommand();
 		public static readonly OpenCostumeFormCommand OpenCostumeForm = new OpenCostumeFormCommand();
 		public static readonly OpenFileCommand OpenFile = new OpenFileCommand();

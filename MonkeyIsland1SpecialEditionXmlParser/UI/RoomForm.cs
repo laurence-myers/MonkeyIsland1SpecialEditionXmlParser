@@ -85,24 +85,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				} );
 			}
 
-			for( var index = 0; index < this.Room.SpriteGroupList.Count; index++ )
-			{
-				var spriteGroup = this.Room.SpriteGroupList[index];
-				var image = this.RenderSpriteGroup( spriteGroup );
-				if( image == null )
-				{
-					continue;
-				}
+			//for( var index = 0; index < this.Room.SpriteGroupList.Count; index++ )
+			//{
+			//    var spriteGroup = this.Room.SpriteGroupList[index];
+			//    var image = this.RenderSpriteGroup( spriteGroup );
+			//    if( image == null )
+			//    {
+			//        continue;
+			//    }
 
-				this.spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite()
-				{
-					Image = image,
-					Layer = index * 100,
-					Name = "Sprite" + index,
-				} );
+			//    this.spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite()
+			//    {
+			//        Image = image,
+			//        Layer = index * 100,
+			//        Name = "Sprite" + index,
+			//    } );
 
-				return;
-			}
+			//    return;
+			//}
 		}
 
 		private Bitmap RenderStaticSpriteList( List<StaticSprite> staticSpriteList )
@@ -178,11 +178,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			Command.ExportToXml.Execute();
 		}
 
+		private void ExportAsMergedPng( object sender, EventArgs args )
+		{
+			Command.ExportRoomToMergedPngWithDialog.LPAKFile = this.LPAKFile;
+			Command.ExportRoomToMergedPngWithDialog.Room = this.Room;
+			Command.ExportRoomToMergedPngWithDialog.Execute();
+		}
+
 		private void ExportAsPng( object sender, EventArgs args )
 		{
-			Command.ExportRoomToPngWithDialog.LPAKFile = this.LPAKFile;
-			Command.ExportRoomToPngWithDialog.Room = this.Room;
-			Command.ExportRoomToPngWithDialog.Execute();
+			throw new NotImplementedException();
 		}
 	}
 }

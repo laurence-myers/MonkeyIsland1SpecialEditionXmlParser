@@ -5,7 +5,7 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportRoomToPngWithDialogCommand : BaseCommand
+	public class ExportRoomToMergedPngWithDialogCommand : BaseCommand
 	{
 		private SaveFileDialog imageExportDialog;
 
@@ -21,7 +21,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			set;
 		}
 
-		public ExportRoomToPngWithDialogCommand()
+		public ExportRoomToMergedPngWithDialogCommand()
 		{
 			this.imageExportDialog = new SaveFileDialog()
 			{
@@ -50,11 +50,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			Command.ExportRoomToPng.LPAKFile = this.LPAKFile;
-			Command.ExportRoomToPng.Room = this.Room;
-			Command.ExportRoomToPng.ExportFileName = this.imageExportDialog.FileName;
+			Command.ExportRoomToMergedPng.LPAKFile = this.LPAKFile;
+			Command.ExportRoomToMergedPng.Room = this.Room;
+			Command.ExportRoomToMergedPng.ExportFileName = this.imageExportDialog.FileName;
 
-			var succes = Command.ExportRoomToPng.Execute();
+			var succes = Command.ExportRoomToMergedPng.Execute();
 			return succes;
 		}
 	}
