@@ -187,7 +187,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsPng( object sender, EventArgs args )
 		{
-			throw new NotImplementedException();
+			Command.ExportRoomToPngWithDialog.LPAKFile = this.LPAKFile;
+			Command.ExportRoomToPngWithDialog.Room = this.Room;
+			Command.ExportRoomToPngWithDialog.Execute();
 		}
 	}
 }

@@ -56,6 +56,8 @@
     <Compile Include="Commands\AddRecentCostumeFileNameCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="Commands\AddRecentLPAKFileNameCommand.cs" />
+    <Compile Include="Commands\ExportRoomToPngCommand.cs" />
+    <Compile Include="Commands\ExportRoomToPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportRoomToMergedPngCommand.cs" />
     <Compile Include="Commands\ExportRoomToMergedPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportToXmlCommand.cs" />
