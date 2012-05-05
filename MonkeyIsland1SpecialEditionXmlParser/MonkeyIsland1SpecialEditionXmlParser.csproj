@@ -60,6 +60,8 @@
     <Compile Include="Commands\ExportRoomToPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportRoomToMergedPngCommand.cs" />
     <Compile Include="Commands\ExportRoomToMergedPngWithDialogCommand.cs" />
+    <Compile Include="Commands\ExportToBinaryCommand.cs" />
+    <Compile Include="Commands\ExportToBinaryWithDialogCommand.cs" />
     <Compile Include="Commands\ExportToXmlCommand.cs" />
     <Compile Include="Commands\OpenQuickStartDialogCommand.cs" />
     <Compile Include="Commands\OpenRoomFormCommand.cs" />

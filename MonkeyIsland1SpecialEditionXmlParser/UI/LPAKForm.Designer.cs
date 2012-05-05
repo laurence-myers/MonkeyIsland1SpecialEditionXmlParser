@@ -28,12 +28,17 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.treeView1 = new System.Windows.Forms.TreeView();
+			this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.viewAsHEXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label1 = new System.Windows.Forms.Label();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.menuStrip1.SuspendLayout();
+			this.contextMenuStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// menuStrip1
@@ -62,7 +67,30 @@
 			this.treeView1.Size = new System.Drawing.Size(198, 526);
 			this.treeView1.TabIndex = 3;
 			this.treeView1.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.HandleBeforeExpand);
+			this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ShowContextMenu);
 			this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.HandleMouseDoubleClick);
+			// 
+			// contextMenuStrip
+			// 
+			this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.viewAsHEXToolStripMenuItem,
+            this.saveAsToolStripMenuItem});
+			this.contextMenuStrip.Name = "contextMenuStrip";
+			this.contextMenuStrip.Size = new System.Drawing.Size(153, 70);
+			// 
+			// viewAsHEXToolStripMenuItem
+			// 
+			this.viewAsHEXToolStripMenuItem.Name = "viewAsHEXToolStripMenuItem";
+			this.viewAsHEXToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.viewAsHEXToolStripMenuItem.Text = "View as &HEX";
+			this.viewAsHEXToolStripMenuItem.Click += new System.EventHandler(this.OpenInHexView);
+			// 
+			// saveAsToolStripMenuItem
+			// 
+			this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+			this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.saveAsToolStripMenuItem.Text = "Save as binary...";
+			this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAs);
 			// 
 			// label1
 			// 
@@ -105,6 +133,7 @@
 			this.Load += new System.EventHandler(this.HandleFormLoad);
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
+			this.contextMenuStrip.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -117,5 +146,8 @@
 		private System.Windows.Forms.TreeView treeView1;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox textBox1;
+		private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+		private System.Windows.Forms.ToolStripMenuItem viewAsHEXToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
 	}
 }
