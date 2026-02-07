@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonkeyIsland1SpecialEditionXmlParser", "MonkeyIsland1SpecialEditionXmlParser.csproj", "{B6F514DF-1FA6-4044-B86C-B39145A10F7D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{F6BFDC58-9D68-4595-B9F7-A1CC1F74AE28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +15,10 @@ Global
 		{B6F514DF-1FA6-4044-B86C-B39145A10F7D}.Debug|x86.Build.0 = Debug|x86
 		{B6F514DF-1FA6-4044-B86C-B39145A10F7D}.Release|x86.ActiveCfg = Release|x86
 		{B6F514DF-1FA6-4044-B86C-B39145A10F7D}.Release|x86.Build.0 = Release|x86
+		{F6BFDC58-9D68-4595-B9F7-A1CC1F74AE28}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F6BFDC58-9D68-4595-B9F7-A1CC1F74AE28}.Debug|x86.Build.0 = Debug|Any CPU
+		{F6BFDC58-9D68-4595-B9F7-A1CC1F74AE28}.Release|x86.ActiveCfg = Release|Any CPU
+		{F6BFDC58-9D68-4595-B9F7-A1CC1F74AE28}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

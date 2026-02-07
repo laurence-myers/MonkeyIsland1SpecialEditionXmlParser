@@ -6,6 +6,20 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class Parser
 	{
+		/// <summary>
+		/// Reads a Costume from a single .dat file.
+		/// </summary>
+		/// <param name="fileName">The path to the .dat file.</param>
+		/// <returns>The parsed Costume object.</returns>
+		public static Costume ReadCostumeFromFile( string fileName )
+		{
+			using( var stream = File.OpenRead( fileName ) )
+			using( var reader = new BinaryReader( stream ) )
+			{
+				return ReadCostume( reader );
+			}
+		}
+
 		public static Costume ReadCostume( BinaryReader reader )
 		{
 			var costume = new Costume();
