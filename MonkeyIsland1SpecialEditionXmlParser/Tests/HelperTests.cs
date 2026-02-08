@@ -21,7 +21,7 @@ namespace Tests
 			try
 			{
 				// Act
-				var costume = Parser.ReadCostumeFromFile( datFilePath );
+				var costume = Parser.ReadCostumeFromBinaryFile( datFilePath );
 				Helper.WriteObjectToFile( tempFilePath, costume );
 
 				// Assert
@@ -34,6 +34,40 @@ namespace Tests
 				RemoveAddressValues( actualDoc );
 
 				Assert.That( actualDoc.ToString(), Is.EqualTo( expectedDoc.ToString() ), "XML content should match (ignoring Address values)" );
+			}
+			finally
+			{
+				// Cleanup
+				if( File.Exists( tempFilePath ) )
+				{
+					File.Delete( tempFilePath );
+				}
+			}
+		}
+
+		[Test]
+		public void ReadCostumeFromXmlFile_ReadsValidXml()
+		{
+			// Arrange
+			var xmlPath = Path.Combine( TestContext.CurrentContext.TestDirectory, "Fixtures", "001 - guybrush-skin.xml" );
+			var tempFilePath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
+
+			try
+			{
+				// Act
+				var costume = Parser.ReadCostumeFromXmlFile( xmlPath );
+				Helper.WriteObjectToFile( tempFilePath, costume );
+
+				// Assert
+				Assert.That( File.Exists( tempFilePath ), Is.True, "Temporary file should exist" );
+
+				var expectedDoc = XDocument.Load( xmlPath );
+				var actualDoc = XDocument.Load( tempFilePath );
+
+				RemoveAddressValues( expectedDoc );
+				RemoveAddressValues( actualDoc );
+
+				Assert.That( actualDoc.ToString(), Is.EqualTo( expectedDoc.ToString() ), "XML content should match after round-trip" );
 			}
 			finally
 			{

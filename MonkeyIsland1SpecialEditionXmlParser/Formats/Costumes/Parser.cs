@@ -11,13 +11,23 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 		/// </summary>
 		/// <param name="fileName">The path to the .dat file.</param>
 		/// <returns>The parsed Costume object.</returns>
-		public static Costume ReadCostumeFromFile( string fileName )
+		public static Costume ReadCostumeFromBinaryFile( string fileName )
 		{
 			using( var stream = File.OpenRead( fileName ) )
 			using( var reader = new BinaryReader( stream ) )
 			{
 				return ReadCostume( reader );
 			}
+		}
+
+		/// <summary>
+		/// Reads a Costume from an XML file.
+		/// </summary>
+		/// <param name="fileName">The path to the XML file.</param>
+		/// <returns>The parsed Costume object.</returns>
+		public static Costume ReadCostumeFromXmlFile( string fileName )
+		{
+			return Helper.ReadObjectFromFile<Costume>( fileName );
 		}
 
 		public static Costume ReadCostume( BinaryReader reader )
