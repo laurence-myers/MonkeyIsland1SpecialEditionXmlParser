@@ -79,6 +79,89 @@ namespace Tests
 			}
 		}
 
+		[Test]
+		public void WriteCostumeToBinaryFile_RoundTripFromBinary_ProducesSameValues()
+		{
+			// Arrange
+			var datFilePath = Path.Combine( TestContext.CurrentContext.TestDirectory, "Fixtures", "001 - guybrush-skin.dat" );
+			var tempDatPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".dat" );
+
+			try
+			{
+				// Act
+				var originalCostume = Parser.ReadCostumeFromBinaryFile( datFilePath );
+				Packer.WriteCostumeToBinaryFile( tempDatPath, originalCostume );
+				var roundTripCostume = Parser.ReadCostumeFromBinaryFile( tempDatPath );
+
+				// Assert
+				
+				var originalXmlPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
+				var roundTripXmlPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
+
+				Helper.WriteObjectToFile( originalXmlPath, originalCostume );
+				Helper.WriteObjectToFile( roundTripXmlPath, roundTripCostume );
+
+				var originalDoc = XDocument.Load( originalXmlPath );
+				var roundTripDoc = XDocument.Load( roundTripXmlPath );
+
+				RemoveAddressValues( originalDoc );
+				RemoveAddressValues( roundTripDoc );
+
+				File.Delete( originalXmlPath );
+				File.Delete( roundTripXmlPath );
+
+				Assert.That( roundTripDoc.ToString(), Is.EqualTo( originalDoc.ToString() ), "Round-tripped costume should match original costume" );
+			}
+			finally
+			{
+				if( File.Exists( tempDatPath ) )
+				{
+					File.Delete( tempDatPath );
+				}
+			}
+		}
+
+		[Test]
+		public void WriteCostumeToBinaryFile_RoundTripFromXml_ProducesSameValues()
+		{
+			// Arrange
+			var xmlFilePath = Path.Combine( TestContext.CurrentContext.TestDirectory, "Fixtures", "001 - guybrush-skin.xml" );
+			var tempDatPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".dat" );
+
+			try
+			{
+				// Act
+				var originalCostume = Parser.ReadCostumeFromXmlFile( xmlFilePath );
+				Packer.WriteCostumeToBinaryFile( tempDatPath, originalCostume );
+				var roundTripCostume = Parser.ReadCostumeFromBinaryFile( tempDatPath );
+
+				// Assert
+				var originalXmlPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
+				var roundTripXmlPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
+
+				Helper.WriteObjectToFile( originalXmlPath, originalCostume );
+				Helper.WriteObjectToFile( roundTripXmlPath, roundTripCostume );
+
+				var originalDoc = XDocument.Load( originalXmlPath );
+				var roundTripDoc = XDocument.Load( roundTripXmlPath );
+
+				RemoveAddressValues( originalDoc );
+				RemoveAddressValues( roundTripDoc );
+
+				File.Delete( originalXmlPath );
+				File.Delete( roundTripXmlPath );
+
+				Assert.That( roundTripDoc.ToString(), Is.EqualTo( originalDoc.ToString() ), "Round-tripped costume from XML should match original costume" );
+			}
+			finally
+			{
+				if( File.Exists( tempDatPath ) )
+				{
+					File.Delete( tempDatPath );
+				}
+			}
+		}
+
 		private void RemoveAddressValues( XDocument doc )
 		{
 			var addressElements = doc.Descendants().Where( e => 

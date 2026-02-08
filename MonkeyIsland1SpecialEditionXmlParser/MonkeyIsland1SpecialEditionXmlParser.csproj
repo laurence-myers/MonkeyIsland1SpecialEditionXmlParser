@@ -89,6 +89,7 @@
     <Compile Include="Formats\Costumes\Entities\SpriteGroupHeader.cs" />
     <Compile Include="Formats\Costumes\Entities\TextureFileName.cs" />
     <Compile Include="Formats\Costumes\Entities\TextureHeader.cs" />
+    <Compile Include="Formats\Costumes\Packer.cs" />
     <Compile Include="Formats\Costumes\Parser.cs" />
     <Compile Include="Formats\Costumes\Renderer.cs" />
     <Compile Include="Formats\Costumes\SanityChecker.cs" />
