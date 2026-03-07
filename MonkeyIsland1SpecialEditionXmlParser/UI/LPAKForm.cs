@@ -415,5 +415,44 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			Command.ExportToBinaryWithDialog.Bytes = bytes;
 			Command.ExportToBinaryWithDialog.Execute();
 		}
+		
+		private void SaveOverride( object sender, EventArgs args )
+		{
+			var selectedNode = this.contextMenuStrip.Tag as TreeNode;
+			if( selectedNode == null )
+			{
+				return;
+			}
+
+			var fileIndex = (int)selectedNode.Tag;
+			if( fileIndex < 0 || fileIndex >= this.LPAKFile.PakFileNames.Length )
+			{
+				return;
+			}
+
+			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
+			if( string.IsNullOrWhiteSpace( fileName ) )
+			{
+				return;
+			}
+
+			var entry = this.LPAKFile.PakFileEntries[fileIndex];
+			if( entry == null )
+			{
+				return;
+			}
+
+			var bytes = new byte[entry.SizeOfData1];
+			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
+			{
+				reader.BaseStream.Position = entry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
+				bytes = reader.ReadBytes( entry.SizeOfData1 );
+			} );
+
+			Command.ExportToBinaryOverride.LpakFilePath = this.LPAKFile.FileNameOnDisk;
+			Command.ExportToBinaryOverride.ResourcePath = fileName;
+			Command.ExportToBinaryOverride.Bytes = bytes;
+			Command.ExportToBinaryOverride.Execute();
+		}
 	}
 }

@@ -35,6 +35,7 @@
 			this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.viewAsHEXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.saveOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label1 = new System.Windows.Forms.Label();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.menuStrip1.SuspendLayout();
@@ -73,8 +74,10 @@
 			// contextMenuStrip
 			// 
 			this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.viewAsHEXToolStripMenuItem,
-            this.saveAsToolStripMenuItem});
+	            this.viewAsHEXToolStripMenuItem,
+	            this.saveAsToolStripMenuItem,
+	            this.saveOverrideToolStripMenuItem
+			});
 			this.contextMenuStrip.Name = "contextMenuStrip";
 			this.contextMenuStrip.Size = new System.Drawing.Size(153, 70);
 			// 
@@ -91,6 +94,14 @@
 			this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.saveAsToolStripMenuItem.Text = "Save as binary...";
 			this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAs);
+			// 
+			// saveOverrideToolStripMenuItem
+			// 
+			this.saveOverrideToolStripMenuItem.Name = "saveOverrideToolStripMenuItem";
+			this.saveOverrideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.saveOverrideToolStripMenuItem.Text = "Save override";
+			this.saveOverrideToolStripMenuItem.Click += new System.EventHandler(this.SaveOverride);
+			
 			// 
 			// label1
 			// 
@@ -149,5 +160,6 @@
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem viewAsHEXToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
 	}
 }

@@ -58,6 +58,7 @@
     <Compile Include="Commands\AddRecentCostumeFileNameCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="Commands\AddRecentLPAKFileNameCommand.cs" />
+    <Compile Include="Commands\ExportToBinaryOverrideCommand.cs" />
     <Compile Include="Commands\ExportToPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportRoomToPngCommand.cs" />
     <Compile Include="Commands\ExportRoomToPngWithDialogCommand.cs" />
