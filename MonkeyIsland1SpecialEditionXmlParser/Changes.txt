@@ -1,4 +1,12 @@
-﻿[ 2012/05/05 ]
+﻿[ 2026/03/08 ]
+---------------------------------------------------------------
+- Added "Export override XML"
+- Added "Apply override"
+- Update to .NET v4.8.1
+- Update C# language version to 14
+- Convert source code repository from SVN to Git
+
+[ 2012/05/05 ]
 ---------------------------------------------------------------
 - Added "View as HEX"
 - Added Export as binary
