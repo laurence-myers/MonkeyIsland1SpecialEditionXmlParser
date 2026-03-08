@@ -2,21 +2,21 @@ using System.IO;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportToBinaryOverrideCommand : BaseCommand
+	public class ExportToOverrideXmlCommand : BaseCommand
 	{
-		public string LpakFilePath
+		public string? LpakFilePath
 		{
 			get;
 			set;
 		}
 
-		public string ResourcePath
+		public string? ResourcePath
 		{
 			get;
 			set;
 		}
 
-		public byte[] Bytes
+		public object? Object
 		{
 			get;
 			set;
@@ -32,16 +32,20 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			{
 				return false;
 			}
-			if( this.Bytes == null || this.Bytes.Length == 0 )
+			if( this.Object == null )
 			{
 				return false;
 			}
 
 			// Get the directory containing the LPAK file
 			var lpakDirectory = Path.GetDirectoryName( this.LpakFilePath );
+			if( lpakDirectory == null || this.ResourcePath == null )
+			{
+				return false;
+			}
 
 			// Combine with the resource path to create the full export path
-			var exportPath = Path.Combine( lpakDirectory, this.ResourcePath );
+			var exportPath = Path.Combine( lpakDirectory, "overrides", this.ResourcePath );
 
 			// Create directory structure if it doesn't exist
 			var exportDirectory = Path.GetDirectoryName( exportPath );
@@ -50,7 +54,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				Directory.CreateDirectory( exportDirectory );
 			}
 
-			File.WriteAllBytes( exportPath, this.Bytes );
+			Helper.WriteObjectToFile( exportPath, this.Object );
+
 			return true;
 		}
 	}

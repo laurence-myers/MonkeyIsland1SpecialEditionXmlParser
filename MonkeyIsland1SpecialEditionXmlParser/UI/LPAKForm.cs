@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
@@ -416,7 +417,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			Command.ExportToBinaryWithDialog.Execute();
 		}
 		
-		private void SaveOverride( object sender, EventArgs args )
+		private void ExportOverrideXML( object sender, EventArgs args )
 		{
 			var selectedNode = this.contextMenuStrip.Tag as TreeNode;
 			if( selectedNode == null )
@@ -431,7 +432,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
-			if( string.IsNullOrWhiteSpace( fileName ) )
+			// Initially only supported for costumes
+			if( string.IsNullOrWhiteSpace( fileName )
+			   || !fileName.EndsWith( ".costume.xml" ) )
 			{
 				return;
 			}
@@ -442,17 +445,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			var bytes = new byte[entry.SizeOfData1];
+			var costume = new Costume();
 			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
 			{
 				reader.BaseStream.Position = entry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
-				bytes = reader.ReadBytes( entry.SizeOfData1 );
+				costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostume( reader );
 			} );
 
-			Command.ExportToBinaryOverride.LpakFilePath = this.LPAKFile.FileNameOnDisk;
-			Command.ExportToBinaryOverride.ResourcePath = fileName;
-			Command.ExportToBinaryOverride.Bytes = bytes;
-			Command.ExportToBinaryOverride.Execute();
+			Command.ExportToOverrideXml.LpakFilePath = this.LPAKFile.FileNameOnDisk;
+			Command.ExportToOverrideXml.ResourcePath = fileName;
+			Command.ExportToOverrideXml.Object = costume;
+			Command.ExportToOverrideXml.Execute();
 		}
 	}
 }

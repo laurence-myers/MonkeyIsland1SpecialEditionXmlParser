@@ -11,8 +11,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		public static readonly ExportRoomToMergedPngWithDialogCommand ExportRoomToMergedPngWithDialog = new ExportRoomToMergedPngWithDialogCommand();
 		public static readonly ExportRoomToPngWithDialogCommand ExportRoomToPngWithDialog = new ExportRoomToPngWithDialogCommand();
 		public static readonly ExportToBinaryCommand ExportToBinary = new ExportToBinaryCommand();
-		public static readonly ExportToBinaryOverrideCommand ExportToBinaryOverride = new ExportToBinaryOverrideCommand();
 		public static readonly ExportToBinaryWithDialogCommand ExportToBinaryWithDialog = new ExportToBinaryWithDialogCommand();
+		public static readonly ExportToOverrideXmlCommand ExportToOverrideXml = new ExportToOverrideXmlCommand();
 		public static readonly ExportToPngCommand ExportToPng = new ExportToPngCommand();
 		public static readonly ExportToPngWithDialogCommand ExportToPngWithDialog = new ExportToPngWithDialogCommand();
 		public static readonly ExportToXmlCommand ExportToXml = new ExportToXmlCommand();

@@ -99,8 +99,8 @@
 			// 
 			this.saveOverrideToolStripMenuItem.Name = "saveOverrideToolStripMenuItem";
 			this.saveOverrideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.saveOverrideToolStripMenuItem.Text = "Save override";
-			this.saveOverrideToolStripMenuItem.Click += new System.EventHandler(this.SaveOverride);
+			this.saveOverrideToolStripMenuItem.Text = "Export override XML";
+			this.saveOverrideToolStripMenuItem.Click += new System.EventHandler(this.ExportOverrideXML);
 			
 			// 
 			// label1
