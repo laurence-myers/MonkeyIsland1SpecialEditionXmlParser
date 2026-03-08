@@ -375,6 +375,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 			this.viewAsHEXToolStripMenuItem.Enabled = node.Level == 2;
 			this.saveAsToolStripMenuItem.Enabled = node.Level == 2;
+			this.saveOverrideToolStripMenuItem.Enabled = node.Level == 2;
+			this.applyOverrideToolStripMenuItem.Enabled = node.Level == 2;
 
 			this.contextMenuStrip.Tag = node;
 			this.contextMenuStrip.Show( this.treeView1.PointToScreen( args.Location ) );
@@ -456,6 +458,33 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			Command.ExportToOverrideXml.ResourcePath = fileName;
 			Command.ExportToOverrideXml.Object = costume;
 			Command.ExportToOverrideXml.Execute();
+		}
+
+		private void ApplyOverride( object sender, EventArgs args )
+		{
+			var selectedNode = this.contextMenuStrip.Tag as TreeNode;
+			if( selectedNode == null )
+			{
+				return;
+			}
+
+			var fileIndex = (int)selectedNode.Tag;
+			if( fileIndex < 0 || fileIndex >= this.LPAKFile.PakFileNames.Length )
+			{
+				return;
+			}
+
+			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
+			// Initially only supported for costumes
+			if( string.IsNullOrWhiteSpace( fileName )
+			   || !fileName.EndsWith( ".costume.xml" ) )
+			{
+				return;
+			}
+
+			Command.ApplyOverride.LpakFilePath = this.LPAKFile.FileNameOnDisk;
+			Command.ApplyOverride.ResourcePath = fileName;
+			Command.ApplyOverride.Execute();
 		}
 	}
 }

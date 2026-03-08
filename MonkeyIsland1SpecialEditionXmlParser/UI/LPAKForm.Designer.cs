@@ -36,6 +36,7 @@
 			this.viewAsHEXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.applyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label1 = new System.Windows.Forms.Label();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.menuStrip1.SuspendLayout();
@@ -76,10 +77,11 @@
 			this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
 	            this.viewAsHEXToolStripMenuItem,
 	            this.saveAsToolStripMenuItem,
-	            this.saveOverrideToolStripMenuItem
+	            this.saveOverrideToolStripMenuItem,
+	            this.applyOverrideToolStripMenuItem
 			});
 			this.contextMenuStrip.Name = "contextMenuStrip";
-			this.contextMenuStrip.Size = new System.Drawing.Size(153, 70);
+			this.contextMenuStrip.Size = new System.Drawing.Size(153, 92);
 			// 
 			// viewAsHEXToolStripMenuItem
 			// 
@@ -96,13 +98,20 @@
 			this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAs);
 			// 
 			// saveOverrideToolStripMenuItem
-			// 
+			//
 			this.saveOverrideToolStripMenuItem.Name = "saveOverrideToolStripMenuItem";
 			this.saveOverrideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.saveOverrideToolStripMenuItem.Text = "Export override XML";
 			this.saveOverrideToolStripMenuItem.Click += new System.EventHandler(this.ExportOverrideXML);
-			
-			// 
+			//
+			// applyOverrideToolStripMenuItem
+			//
+			this.applyOverrideToolStripMenuItem.Name = "applyOverrideToolStripMenuItem";
+			this.applyOverrideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.applyOverrideToolStripMenuItem.Text = "Apply override";
+			this.applyOverrideToolStripMenuItem.Click += new System.EventHandler(this.ApplyOverride);
+
+			//
 			// label1
 			// 
 			this.label1.AutoEllipsis = true;
@@ -161,5 +170,6 @@
 		private System.Windows.Forms.ToolStripMenuItem viewAsHEXToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem applyOverrideToolStripMenuItem;
 	}
 }
