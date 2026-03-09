@@ -1,0 +1,22 @@
+name: Build
+
+permissions:
+  contents: read # access to check out code and install dependencies
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: windows-2025-vs2026
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+      with:
+        vs-version: '[18,]'
+
+    - name: Build
+      run: msbuild MonkeyIsland1SpecialEditionXmlParser/MonkeyIsland1SpecialEditionXmlParser.sln -p:Configuration=Release -t:build -restore
