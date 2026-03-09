@@ -196,9 +196,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 					Index = index,
 					ByteList = reader.ReadBytes( unknown3.Unknown6Count ).ToList(),
 				};
-				unknown6.Int16List = unknown6.ByteList.ToInt16List();
-				unknown6.Int32List = unknown6.ByteList.ToInt32List();
-				unknown6.FloatList = unknown6.ByteList.ToFloatList();
 				unknown6List.Add( unknown6 );
 			}
 
