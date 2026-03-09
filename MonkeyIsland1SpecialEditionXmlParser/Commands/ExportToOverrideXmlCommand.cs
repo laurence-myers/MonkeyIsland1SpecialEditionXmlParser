@@ -2,50 +2,32 @@ using System.IO;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportToOverrideXmlCommand : BaseCommand
+	public class ExportToOverrideXmlCommand( string? lpakFilePath, string? resourcePath, object? obj ) : BaseCommand
 	{
-		public string? LpakFilePath
-		{
-			get;
-			set;
-		}
-
-		public string? ResourcePath
-		{
-			get;
-			set;
-		}
-
-		public object? Object
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( string.IsNullOrWhiteSpace( this.LpakFilePath ) )
+			if( string.IsNullOrWhiteSpace( lpakFilePath ) )
 			{
 				return false;
 			}
-			if( string.IsNullOrWhiteSpace( this.ResourcePath ) )
+			if( string.IsNullOrWhiteSpace( resourcePath ) )
 			{
 				return false;
 			}
-			if( this.Object == null )
+			if( obj == null )
 			{
 				return false;
 			}
 
 			// Get the directory containing the LPAK file
-			var lpakDirectory = Path.GetDirectoryName( this.LpakFilePath );
-			if( lpakDirectory == null || this.ResourcePath == null )
+			var lpakDirectory = Path.GetDirectoryName( lpakFilePath );
+			if( lpakDirectory == null || resourcePath == null )
 			{
 				return false;
 			}
 
 			// Combine with the resource path to create the full export path
-			var exportPath = Path.Combine( lpakDirectory, "overrides", this.ResourcePath );
+			var exportPath = Path.Combine( lpakDirectory, "overrides", resourcePath );
 
 			// Create directory structure if it doesn't exist
 			var exportDirectory = Path.GetDirectoryName( exportPath );
@@ -54,7 +36,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				Directory.CreateDirectory( exportDirectory );
 			}
 
-			Helper.WriteObjectToFile( exportPath, this.Object );
+			Helper.WriteObjectToFile( exportPath, obj );
 
 			return true;
 		}

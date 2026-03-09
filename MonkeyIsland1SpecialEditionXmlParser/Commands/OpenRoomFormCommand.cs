@@ -4,43 +4,25 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenRoomFormCommand : BaseCommand
+	public class OpenRoomFormCommand( LPAKFile lpakFile, string fileName, int fileIndex ) : BaseCommand
 	{
-		public LPAKFile LPAKFile
-		{
-			get;
-			set;
-		}
-
-		public string FileName
-		{
-			get;
-			set;
-		}
-
-		public int FileIndex
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( this.LPAKFile == null )
+			if( lpakFile == null )
 			{
 				return false;
 			}
-			if( string.IsNullOrWhiteSpace( this.FileName ) )
+			if( string.IsNullOrWhiteSpace( fileName ) )
 			{
 				return false;
 			}
 
 			var form = new RoomForm()
 			{
-				FileIndex = this.FileIndex,
-				LPAKFile = this.LPAKFile,
+				FileIndex = fileIndex,
+				LPAKFile = lpakFile,
 				MdiParent = MainForm.Instance,
-				Text = this.FileName,
+				Text = fileName,
 				WindowState = FormWindowState.Normal,
 			};
 			form.Show();

@@ -5,43 +5,26 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportRoomToMergedPngWithDialogCommand : BaseCommand
+	public class ExportRoomToMergedPngWithDialogCommand( LPAKFile lpakFile, Room room ) : BaseCommand
 	{
-		private SaveFileDialog imageExportDialog;
-
-		public LPAKFile LPAKFile
+		private readonly SaveFileDialog imageExportDialog = new SaveFileDialog()
 		{
-			get;
-			set;
-		}
-
-		public Room Room
-		{
-			get;
-			set;
-		}
-
-		public ExportRoomToMergedPngWithDialogCommand()
-		{
-			this.imageExportDialog = new SaveFileDialog()
-			{
-				AddExtension = false,
-				AutoUpgradeEnabled = true,
-				CheckFileExists = false,
-				CheckPathExists = true,
-				CreatePrompt = false,
-				DefaultExt = "png",
-				DereferenceLinks = true,
-				Filter = "PNG files|*.png|All files|*.*",
-				FilterIndex = 0,
-				OverwritePrompt = true,
-				RestoreDirectory = false,
-				ShowHelp = false,
-				SupportMultiDottedExtensions = true,
-				Title = "Image Export",
-				ValidateNames = true,
-			};
-		}
+			AddExtension = false,
+			AutoUpgradeEnabled = true,
+			CheckFileExists = false,
+			CheckPathExists = true,
+			CreatePrompt = false,
+			DefaultExt = "png",
+			DereferenceLinks = true,
+			Filter = "PNG files|*.png|All files|*.*",
+			FilterIndex = 0,
+			OverwritePrompt = true,
+			RestoreDirectory = false,
+			ShowHelp = false,
+			SupportMultiDottedExtensions = true,
+			Title = "Image Export",
+			ValidateNames = true,
+		};
 
 		protected override bool InnerExecute()
 		{
@@ -50,12 +33,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			Command.ExportRoomToMergedPng.LPAKFile = this.LPAKFile;
-			Command.ExportRoomToMergedPng.Room = this.Room;
-			Command.ExportRoomToMergedPng.ExportFileName = this.imageExportDialog.FileName;
-
-			var succes = Command.ExportRoomToMergedPng.Execute();
-			return succes;
+			var success = new ExportRoomToMergedPngCommand( this.imageExportDialog.FileName, lpakFile, room ).Execute();
+			return success;
 		}
 	}
 }

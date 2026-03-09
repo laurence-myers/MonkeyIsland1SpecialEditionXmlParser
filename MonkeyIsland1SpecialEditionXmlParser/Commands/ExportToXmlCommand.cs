@@ -9,15 +9,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class ExportToXmlCommand : BaseCommand
 	{
-		private XmlExportDialog xmlExportDialog;
+		private readonly XmlExportDialog xmlExportDialog;
 
-		public object ObjectToExport
-		{
-			get;
-			set;
-		}
+		private object ObjectToExport { get; }
 
-		public string ExportFileName
+		private string ExportFileName
 		{
 			get
 			{
@@ -40,7 +36,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			}
 		}
 
-		public string XsltFileName
+		private string XsltFileName
 		{
 			get
 			{
@@ -48,12 +44,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			}
 		}
 
-		public ExportToXmlCommand()
+		public ExportToXmlCommand(object objectToExport, string exportFileName)
 		{
+			this.ObjectToExport = objectToExport;
+
 			this.xmlExportDialog = new XmlExportDialog()
 			{
 				Text = "XML Export",
 			};
+
+			this.ExportFileName = exportFileName;
 		}
 
 		protected override bool InnerExecute()
@@ -63,8 +63,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			var exportFileName = Command.ExportToXml.ExportFileName;
-			var xsltFileName = Command.ExportToXml.XsltFileName;
+			var exportFileName = this.ExportFileName;
+			var xsltFileName = this.XsltFileName;
 
 			Helper.WriteObjectToFile( exportFileName, this.ObjectToExport );
 

@@ -3,28 +3,22 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class AddRecentLPAKFileNameCommand : BaseCommand
+	public class AddRecentLPAKFileNameCommand( string recentFileName ) : BaseCommand
 	{
-		public string RecentFileName
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( string.IsNullOrWhiteSpace( this.RecentFileName ) )
+			if( string.IsNullOrWhiteSpace( recentFileName ) )
 			{
 				return false;
 			}
-			if( !File.Exists( this.RecentFileName ) )
+			if( !File.Exists( recentFileName ) )
 			{
 				return false;
 			}
 
 			UserSettings.Instance.RecentLPAKFileNames = Helper.UpdateRecentList(
 				UserSettings.Instance.RecentLPAKFileNames,
-				this.RecentFileName,
+				recentFileName,
 				10
 				);
 			UserSettings.Instance.Save();

@@ -5,7 +5,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class OpenImageExportDialogCommand : BaseCommand
 	{
-		private ImageExportDialog imageExportDialog;
+		private readonly ImageExportDialog imageExportDialog;
 
 		public string FilePrefix
 		{
@@ -35,12 +35,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			}
 		}
 
-		public OpenImageExportDialogCommand()
+		public OpenImageExportDialogCommand(string filePrefix)
 		{
 			this.imageExportDialog = new ImageExportDialog()
 			{
 				Text = "Image Export",
 			};
+
+			this.FilePrefix = filePrefix;
 		}
 
 		protected override bool InnerExecute()

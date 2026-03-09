@@ -7,55 +7,29 @@ using System.IO;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportRoomToPngCommand : BaseCommand
+	public class ExportRoomToPngCommand( string exportPath, LPAKFile lpakFile, Room room ) : BaseCommand
 	{
-		public string ExportPath
-		{
-			get;
-			set;
-		}
-
-		public LPAKFile LPAKFile
-		{
-			get;
-			set;
-		}
-
-		public Room Room
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( this.LPAKFile == null )
+			if( string.IsNullOrWhiteSpace( exportPath ) )
 			{
 				return false;
 			}
-			if( string.IsNullOrWhiteSpace( this.ExportPath ) )
+			if( !Directory.Exists( exportPath ) )
 			{
 				return false;
 			}
-			if( !Directory.Exists( this.ExportPath ) )
-			{
-				return false;
-			}
-			if( this.Room == null )
-			{
-				return false;
-			}
-			if( this.Room.StaticSpriteList == null )
+			if( room.StaticSpriteList == null )
 			{
 				return false;
 			}
 
-			var width = this.Room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.X + ss.Width ) );
-			var height = this.Room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.Y + ss.Height ) );
+			var width = room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.X + ss.Width ) );
+			var height = room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.Y + ss.Height ) );
 
-			for( var index = 0; index < this.Room.StaticSpriteList.Count; index++ )
+			for( var index = 0; index < room.StaticSpriteList.Count; index++ )
 			{
-				var staticSpriteList = this.Room.StaticSpriteList[index];
+				var staticSpriteList = room.StaticSpriteList[index];
 				for( var index2 = 0; index2 < staticSpriteList.Count; index2++ )
 				{
 					var staticSprite = staticSpriteList[index2];
@@ -65,13 +39,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 					}
 
 					var textureFileName = staticSprite.TextureFileName;
-					var texture = this.LPAKFile.LoadImage( textureFileName );
+					var texture = lpakFile.LoadImage( textureFileName );
 					if( texture == null )
 					{
 						continue;
 					}
 
-					var exportFileName = Path.Combine( this.ExportPath, string.Concat( this.Room.Header.Identifier, "_", this.Room.Header.Name, "_", index, "_", index2, ".png" ) );
+					var exportFileName = Path.Combine( exportPath, string.Concat( room.Header.Identifier, "_", room.Header.Name, "_", index, "_", index2, ".png" ) );
 					texture.Save( exportFileName, ImageFormat.Png );
 				}
 			}

@@ -4,35 +4,26 @@ using lpak = MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenFileCommand : BaseCommand
+	public class OpenFileCommand( string openFileName ) : BaseCommand
 	{
-		public string OpenFileName
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( !this.OpenFileName.EndsWith( ".pak", StringComparison.OrdinalIgnoreCase ) )
+			if( !openFileName.EndsWith( ".pak", StringComparison.OrdinalIgnoreCase ) )
 			{
 				MessageBox.Show( @"File must end with "".pak""." );
 				return false;
 			}
 
-			var file = lpak.Parser.Parse( this.OpenFileName );
+			var file = lpak.Parser.Parse( openFileName );
 			if( file == null )
 			{
 				MessageBox.Show( "Unable to parse room file." );
 				return false;
 			}
 
-			Command.AddRecentLPAKFileName.RecentFileName = this.OpenFileName;
-			Command.AddRecentLPAKFileName.Execute();
+			new AddRecentLPAKFileNameCommand( openFileName ).Execute();
 
-			Command.OpenLPAKForm.FileName = this.OpenFileName;
-			Command.OpenLPAKForm.LPAKFile = file;
-			Command.OpenLPAKForm.Execute();
+			new OpenLPAKFormCommand( file, openFileName ).Execute();
 
 			return true;
 		}

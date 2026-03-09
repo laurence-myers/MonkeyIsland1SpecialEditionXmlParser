@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Commands;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
 
@@ -168,23 +169,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsXml( object sender, EventArgs args )
 		{
-			Command.ExportToXml.ObjectToExport = this.Room;
-			Command.ExportToXml.ExportFileName = string.Concat( this.Room.Header.Identifier, "_", this.Room.Header.Name, ".xml" );
-			Command.ExportToXml.Execute();
+			new ExportToXmlCommand( this.Room, string.Concat( this.Room.Header.Identifier, "_", this.Room.Header.Name, ".xml" ) ).Execute();
 		}
 
 		private void ExportAsMergedPng( object sender, EventArgs args )
 		{
-			Command.ExportRoomToMergedPngWithDialog.LPAKFile = this.LPAKFile;
-			Command.ExportRoomToMergedPngWithDialog.Room = this.Room;
-			Command.ExportRoomToMergedPngWithDialog.Execute();
+			new ExportRoomToMergedPngWithDialogCommand( this.LPAKFile, this.Room ).Execute();
 		}
 
 		private void ExportAsPng( object sender, EventArgs args )
 		{
-			Command.ExportRoomToPngWithDialog.LPAKFile = this.LPAKFile;
-			Command.ExportRoomToPngWithDialog.Room = this.Room;
-			Command.ExportRoomToPngWithDialog.Execute();
+			new ExportRoomToPngWithDialogCommand( this.LPAKFile, this.Room ).Execute();
 		}
 	}
 }

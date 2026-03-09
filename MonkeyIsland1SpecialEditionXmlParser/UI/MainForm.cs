@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Commands;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -26,12 +27,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private void OpenQuickStartDialog( object sender, EventArgs args )
 		{
 			this.Paint -= this.OpenQuickStartDialog;
-			Command.OpenQuickStartDialog.Execute();
+			new OpenQuickStartDialogCommand().Execute();
 		}
 
 		private void OpenFileWithDialog( object sender, EventArgs e )
 		{
-			Command.OpenFileWithDialog.Execute();
+			new OpenFileWithDialogCommand().Execute();
 		}
 
 		private void ExitApplication( object sender, EventArgs e )
@@ -66,8 +67,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					};
 					item.Click += delegate
 					{
-						Command.OpenFile.OpenFileName = item.Text;
-						Command.OpenFile.Execute();
+						new OpenFileCommand( item.Text ).Execute();
 					};
 					this.recentToolStripMenuItem.DropDownItems.Add( item );
 				}

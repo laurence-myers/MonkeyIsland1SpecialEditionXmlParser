@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Commands;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -34,7 +35,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.Enabled = false;
 			Application.DoEvents();
 			this.Close();
-			Command.OpenFileWithDialog.Execute();
+			new OpenFileWithDialogCommand().Execute();
 		}
 
 		private void OpenRecentFile( object sender, TreeNodeMouseClickEventArgs args )
@@ -70,8 +71,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.Enabled = false;
 			Application.DoEvents();
 			this.Close();
-			Command.OpenFile.OpenFileName = fileName;
-			Command.OpenFile.Execute();
+			new OpenFileCommand( fileName ).Execute();
 		}
 
 		private void UpdateRecentButtonEnabled( object sender, TreeViewEventArgs args )

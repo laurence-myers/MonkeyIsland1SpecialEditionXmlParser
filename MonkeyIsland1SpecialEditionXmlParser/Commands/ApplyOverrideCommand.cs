@@ -2,40 +2,28 @@ using System.IO;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ApplyOverrideCommand : BaseCommand
+	public class ApplyOverrideCommand( string? lpakFilePath, string? resourcePath ) : BaseCommand
 	{
-		public string? LpakFilePath
-		{
-			get;
-			set;
-		}
-
-		public string? ResourcePath
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( string.IsNullOrWhiteSpace( this.LpakFilePath ) )
+			if( string.IsNullOrWhiteSpace( lpakFilePath ) )
 			{
 				return false;
 			}
-			if( string.IsNullOrWhiteSpace( this.ResourcePath ) )
+			if( string.IsNullOrWhiteSpace( resourcePath ) )
 			{
 				return false;
 			}
 
 			// Get the directory containing the LPAK file
-			var lpakDirectory = Path.GetDirectoryName( this.LpakFilePath );
-			if( lpakDirectory == null || this.ResourcePath == null )
+			var lpakDirectory = Path.GetDirectoryName( lpakFilePath );
+			if( lpakDirectory == null || resourcePath == null )
 			{
 				return false;
 			}
 
 			// Construct the override XML file path
-			var overrideXmlPath = Path.Combine( lpakDirectory, "overrides", this.ResourcePath );
+			var overrideXmlPath = Path.Combine( lpakDirectory, "overrides", resourcePath );
 
 			// Check if the override file exists
 			if( !File.Exists( overrideXmlPath ) )
@@ -47,7 +35,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			var costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostumeFromXmlFile( overrideXmlPath );
 
 			// Construct the binary resource path (without the "overrides/" prefix)
-			var binaryResourcePath = Path.Combine( lpakDirectory, this.ResourcePath );
+			var binaryResourcePath = Path.Combine( lpakDirectory, resourcePath );
 
 			// Create directory structure if it doesn't exist
 			var binaryDirectory = Path.GetDirectoryName( binaryResourcePath );

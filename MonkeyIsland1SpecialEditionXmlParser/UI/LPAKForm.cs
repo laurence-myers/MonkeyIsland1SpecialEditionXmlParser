@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Commands;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
@@ -246,32 +247,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			switch( node.Parent.Text )
 			{
 				case "Costumes":
-					Command.OpenCostumeForm.LPAKFile = this.LPAKFile;
-					Command.OpenCostumeForm.FileName = fileName;
-					Command.OpenCostumeForm.FileIndex = fileIndex;
-					Command.OpenCostumeForm.Execute();
+					new OpenCostumeFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Rooms":
-					Command.OpenRoomForm.LPAKFile = this.LPAKFile;
-					Command.OpenRoomForm.FileName = fileName;
-					Command.OpenRoomForm.FileIndex = fileIndex;
-					Command.OpenRoomForm.Execute();
+					new OpenRoomFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Shaders":
-					Command.OpenShaderForm.LPAKFile = this.LPAKFile;
-					Command.OpenShaderForm.FileName = fileName;
-					Command.OpenShaderForm.FileIndex = fileIndex;
-					Command.OpenShaderForm.Execute();
+					new OpenShaderFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Textures":
-					Command.OpenImageForm.Image = this.LPAKFile.LoadImage( fileName ) as Bitmap;
-					Command.OpenImageForm.Execute();
+					new OpenImageFormCommand( this.LPAKFile.LoadImage( fileName ) as Bitmap, fileName ).Execute();
 					break;
 				default:
-					Command.OpenHexForm.LPAKFile = this.LPAKFile;
-					Command.OpenHexForm.FileName = fileName;
-					Command.OpenHexForm.FileIndex = fileIndex;
-					Command.OpenHexForm.Execute();
+					new OpenHexFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 			}
 		}
@@ -359,10 +347,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			Command.OpenHexForm.FileIndex = fileIndex;
-			Command.OpenHexForm.FileName = fileName;
-			Command.OpenHexForm.LPAKFile = this.LPAKFile;
-			Command.OpenHexForm.Execute();
+			new OpenHexFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 		}
 
 		private void ShowContextMenu( object sender, TreeNodeMouseClickEventArgs args )
@@ -415,8 +400,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				bytes = reader.ReadBytes( entry.SizeOfData1 );
 			} );
 
-			Command.ExportToBinaryWithDialog.Bytes = bytes;
-			Command.ExportToBinaryWithDialog.Execute();
+			new ExportToBinaryWithDialogCommand( bytes ).Execute();
 		}
 		
 		private void ExportOverrideXML( object sender, EventArgs args )
@@ -454,10 +438,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostume( reader );
 			} );
 
-			Command.ExportToOverrideXml.LpakFilePath = this.LPAKFile.FileNameOnDisk;
-			Command.ExportToOverrideXml.ResourcePath = fileName;
-			Command.ExportToOverrideXml.Object = costume;
-			Command.ExportToOverrideXml.Execute();
+			new ExportToOverrideXmlCommand( this.LPAKFile.FileNameOnDisk, fileName, costume ).Execute();
 		}
 
 		private void ApplyOverride( object sender, EventArgs args )
@@ -482,9 +463,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			Command.ApplyOverride.LpakFilePath = this.LPAKFile.FileNameOnDisk;
-			Command.ApplyOverride.ResourcePath = fileName;
-			Command.ApplyOverride.Execute();
+			new ApplyOverrideCommand( this.LPAKFile.FileNameOnDisk, fileName ).Execute();
 		}
 	}
 }

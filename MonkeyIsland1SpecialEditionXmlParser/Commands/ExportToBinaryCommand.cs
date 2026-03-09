@@ -2,32 +2,20 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportToBinaryCommand : BaseCommand
+	public class ExportToBinaryCommand( string exportFileName, byte[] bytes ) : BaseCommand
 	{
-		public string ExportFileName
-		{
-			get;
-			set;
-		}
-
-		public byte[] Bytes
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( string.IsNullOrWhiteSpace( this.ExportFileName ) )
+			if( string.IsNullOrWhiteSpace( exportFileName ) )
 			{
 				return false;
 			}
-			if( this.Bytes == null || this.Bytes.Length == 0 )
+			if( bytes == null || bytes.Length == 0 )
 			{
 				return false;
 			}
 
-			File.WriteAllBytes( this.ExportFileName, this.Bytes );
+			File.WriteAllBytes( exportFileName, bytes );
 			return true;
 		}
 	}

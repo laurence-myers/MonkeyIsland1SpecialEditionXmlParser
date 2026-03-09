@@ -54,8 +54,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Command.cs" />
-    <Compile Include="Commands\AddRecentCostumeFileNameCommand.cs" />
     <Compile Include="Commands\ApplyOverrideCommand.cs" />
     <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="Commands\AddRecentLPAKFileNameCommand.cs" />

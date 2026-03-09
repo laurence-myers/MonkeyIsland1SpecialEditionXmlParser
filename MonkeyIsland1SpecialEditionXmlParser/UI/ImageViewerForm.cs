@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Commands;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -28,9 +29,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			Command.ExportToPngWithDialog.ExportImage = this.spriteSetPreviewControl.Sprites[0].Image;
-			Command.ExportToPngWithDialog.ExportFileName = this.spriteSetPreviewControl.Sprites[0].Name + ".png";
-			Command.ExportToPngWithDialog.Execute();
+			new ExportToPngWithDialogCommand( this.spriteSetPreviewControl.Sprites[0].Image, this.spriteSetPreviewControl.Sprites[0].Name + ".png" ).Execute();
 		}
 	}
 }

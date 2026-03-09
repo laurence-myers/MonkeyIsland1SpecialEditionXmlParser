@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Xsl;
+using MonkeyIsland1SpecialEditionXmlParser.Commands;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
@@ -93,15 +94,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			Command.OpenImageExportDialog.FilePrefix = string.Concat( this.Costume.Header.Name, this.Costume.Header.Identifier );
-			if( !Command.OpenImageExportDialog.Execute() )
+			var openImageExportDialogCommand = new OpenImageExportDialogCommand( string.Concat( this.Costume.Header.Name, this.Costume.Header.Identifier ) );
+			if( !openImageExportDialogCommand.Execute() )
 			{
 				return;
 			}
 
-			var directory = Command.OpenImageExportDialog.Directory;
-			var filePrefix = Command.OpenImageExportDialog.FilePrefix;
-			var spritePadding = Command.OpenImageExportDialog.SpritePadding;
+			var directory = openImageExportDialogCommand.Directory;
+			var filePrefix = openImageExportDialogCommand.FilePrefix;
+			var spritePadding = openImageExportDialogCommand.SpritePadding;
 			var animationName = this.dataGridView1.Rows[args.RowIndex].Cells["animationColumn"].Value as string;
 
 			this.ExportAsPngFiles( directory, filePrefix, animationName, spritePadding );
@@ -109,14 +110,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAllAsPngFiles( object sender, EventArgs e )
 		{
-			Command.OpenImageExportDialog.FilePrefix = string.Concat( this.Costume.Header.Name, this.Costume.Header.Identifier );
-			if( !Command.OpenImageExportDialog.Execute() )
+			var openImageExportDialogCommand = new OpenImageExportDialogCommand( string.Concat( this.Costume.Header.Name, this.Costume.Header.Identifier ) );
+			if( !openImageExportDialogCommand.Execute() )
 			{
 				return;
 			}
-			var directory = Command.OpenImageExportDialog.Directory;
-			var filePrefix = Command.OpenImageExportDialog.FilePrefix;
-			var spritePadding = Command.OpenImageExportDialog.SpritePadding;
+			var directory = openImageExportDialogCommand.Directory;
+			var filePrefix = openImageExportDialogCommand.FilePrefix;
+			var spritePadding = openImageExportDialogCommand.SpritePadding;
 
 			foreach( var animation in this.Costume.AnimationList )
 			{
@@ -131,9 +132,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsXmlFile( object sender, EventArgs args )
 		{
-			Command.ExportToXml.ObjectToExport = this.Costume;
-			Command.ExportToXml.ExportFileName = string.Concat( this.Costume.Header.Identifier, "_", this.Costume.Header.Name, ".xml" );
-			Command.ExportToXml.Execute();
+			new ExportToXmlCommand( this.Costume, string.Concat( this.Costume.Header.Identifier, "_", this.Costume.Header.Name, ".xml" ) ).Execute();
 		}
 	}
 }

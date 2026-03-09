@@ -5,36 +5,27 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class OpenFileWithDialogCommand : BaseCommand
 	{
-		private OpenFileDialog openFileDialog;
-
-		public string FileName
+		private readonly OpenFileDialog openFileDialog = new OpenFileDialog()
 		{
-			get;
-			private set;
-		}
+			AddExtension = false,
+			AutoUpgradeEnabled = true,
+			CheckFileExists = true,
+			CheckPathExists = true,
+			DefaultExt = "pak",
+			DereferenceLinks = true,
+			Filter = "PAK files|*.pak|XML files|*.xml|All files|*.*",
+			FilterIndex = 0,
+			InitialDirectory = string.Empty,
+			Multiselect = false,
+			ReadOnlyChecked = false,
+			RestoreDirectory = false,
+			ShowHelp = false,
+			ShowReadOnly = false,
+			SupportMultiDottedExtensions = true,
+			Title = "Open File",
+		};
 
-		public OpenFileWithDialogCommand()
-		{
-			this.openFileDialog = new OpenFileDialog()
-			{
-				AddExtension = false,
-				AutoUpgradeEnabled = true,
-				CheckFileExists = true,
-				CheckPathExists = true,
-				DefaultExt = "pak",
-				DereferenceLinks = true,
-				Filter = "PAK files|*.pak|XML files|*.xml|All files|*.*",
-				FilterIndex = 0,
-				InitialDirectory = string.Empty, // TODO
-				Multiselect = false,
-				ReadOnlyChecked = false,
-				RestoreDirectory = false,
-				ShowHelp = false,
-				ShowReadOnly = false,
-				SupportMultiDottedExtensions = true,
-				Title = "Open File",
-			};
-		}
+		private string? FileName;
 
 		protected override bool InnerExecute()
 		{
@@ -43,12 +34,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			Command.OpenFile.OpenFileName
-				= this.FileName
-				= openFileDialog.FileName
-				;
+			this.FileName = openFileDialog.FileName;
 
-			var success = Command.OpenFile.Execute();
+			var success = new OpenFileCommand( this.FileName ).Execute();
 			return success;
 		}
 	}

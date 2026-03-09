@@ -5,29 +5,12 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportRoomToPngWithDialogCommand : BaseCommand
+	public class ExportRoomToPngWithDialogCommand( LPAKFile lpakFile, Room room ) : BaseCommand
 	{
-		private FolderBrowserDialog imageExportDialog;
-
-		public LPAKFile LPAKFile
+		private readonly FolderBrowserDialog imageExportDialog = new FolderBrowserDialog()
 		{
-			get;
-			set;
-		}
-
-		public Room Room
-		{
-			get;
-			set;
-		}
-
-		public ExportRoomToPngWithDialogCommand()
-		{
-			this.imageExportDialog = new FolderBrowserDialog()
-			{
-				ShowNewFolderButton = true,
-			};
-		}
+			ShowNewFolderButton = true,
+		};
 
 		protected override bool InnerExecute()
 		{
@@ -36,12 +19,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			Command.ExportRoomToPng.LPAKFile = this.LPAKFile;
-			Command.ExportRoomToPng.Room = this.Room;
-			Command.ExportRoomToPng.ExportPath = this.imageExportDialog.SelectedPath;
-
-			var succes = Command.ExportRoomToPng.Execute();
-			return succes;
+			var success = new ExportRoomToPngCommand( this.imageExportDialog.SelectedPath, lpakFile, room ).Execute();
+			return success;
 		}
 	}
 }

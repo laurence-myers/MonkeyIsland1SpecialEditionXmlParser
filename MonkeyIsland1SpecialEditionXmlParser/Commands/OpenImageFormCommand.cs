@@ -6,30 +6,18 @@ using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenImageFormCommand : BaseCommand
+	public class OpenImageFormCommand( Bitmap? image, string title ) : BaseCommand
 	{
-		public Bitmap Image
-		{
-			get;
-			set;
-		}
-
-		public string Title
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( this.Image == null )
+			if( image == null )
 			{
 				return false;
 			}
 
 			var form = new ImageViewerForm()
 			{
-				Text = this.Title,
+				Text = title,
 				MdiParent = MainForm.Instance,
 				WindowState = FormWindowState.Normal,
 			};
@@ -39,7 +27,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			{
 				return false;
 			}
-			spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite() { Image = this.Image } );
+			spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite() { Image = image } );
 
 			form.Show();
 			return true;

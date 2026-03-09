@@ -5,41 +5,25 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenLPAKFormCommand : BaseCommand
+	public class OpenLPAKFormCommand( LPAKFile lpakFile, string fileName ) : BaseCommand
 	{
-		public LPAKFile LPAKFile
-		{
-			get;
-			set;
-		}
-
-		public string FileName
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( this.LPAKFile == null )
+			if( string.IsNullOrWhiteSpace( fileName ) )
 			{
 				return false;
 			}
-			if( string.IsNullOrWhiteSpace( this.FileName ) )
-			{
-				return false;
-			}
-			if( !File.Exists( this.FileName ) )
+			if( !File.Exists( fileName ) )
 			{
 				return false;
 			}
 
 			var form = new LPAKForm()
 			{
-				FileName = this.FileName,
+				FileName = fileName,
 				MdiParent = MainForm.Instance,
-				LPAKFile = this.LPAKFile,
-				Text = this.FileName,
+				LPAKFile = lpakFile,
+				Text = fileName,
 				WindowState = FormWindowState.Normal,
 			};
 			form.Show();

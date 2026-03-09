@@ -4,43 +4,21 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenShaderFormCommand : BaseCommand
+	public class OpenShaderFormCommand( LPAKFile lpakFile, string fileName, int fileIndex ) : BaseCommand
 	{
-		public LPAKFile LPAKFile
-		{
-			get;
-			set;
-		}
-
-		public string FileName
-		{
-			get;
-			set;
-		}
-
-		public int FileIndex
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( this.LPAKFile == null )
-			{
-				return false;
-			}
-			if( string.IsNullOrWhiteSpace( this.FileName ) )
+			if( string.IsNullOrWhiteSpace( fileName ) )
 			{
 				return false;
 			}
 
 			var form = new ShaderForm()
 			{
-				FileIndex = this.FileIndex,
+				FileIndex = fileIndex,
 				MdiParent = MainForm.Instance,
-				LPAKFile = this.LPAKFile,
-				Text = this.FileName,
+				LPAKFile = lpakFile,
+				Text = fileName,
 				WindowState = FormWindowState.Normal,
 			};
 			form.Show();

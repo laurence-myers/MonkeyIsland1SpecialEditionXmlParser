@@ -4,14 +4,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class OpenQuickStartDialogCommand : BaseCommand
 	{
-		private QuickStartForm quickStartForm;
-
-		public OpenQuickStartDialogCommand()
+		private readonly QuickStartForm quickStartForm = new QuickStartForm()
 		{
-			this.quickStartForm = new QuickStartForm()
-			{
-			};
-		}
+		};
 
 		protected override bool InnerExecute()
 		{

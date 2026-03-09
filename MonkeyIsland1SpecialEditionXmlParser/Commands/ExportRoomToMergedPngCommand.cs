@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
@@ -6,64 +7,36 @@ using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportRoomToMergedPngCommand : BaseCommand
+	public class ExportRoomToMergedPngCommand( string exportFileName, LPAKFile lpakFile, Room room ) : BaseCommand
 	{
-		public string ExportFileName
-		{
-			get;
-			set;
-		}
-
-		public LPAKFile LPAKFile
-		{
-			get;
-			set;
-		}
-
-		public Room Room
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( this.LPAKFile == null )
+			if( string.IsNullOrWhiteSpace( exportFileName ) )
 			{
 				return false;
 			}
-			if( string.IsNullOrWhiteSpace( this.ExportFileName ) )
-			{
-				return false;
-			}
-			if( this.Room == null )
-			{
-				return false;
-			}
-			if( this.Room.StaticSpriteList == null )
+			if( room.StaticSpriteList == null )
 			{
 				return false;
 			}
 
-			var width = this.Room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.X + ss.Width ) );
-			var height = this.Room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.Y + ss.Height ) );
+			var width = room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.X + ss.Width ) );
+			var height = room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.Y + ss.Height ) );
 
 			var image = new Bitmap( width, height );
 			var graphics = Graphics.FromImage( image );
 
-			for( var index = 0; index < this.Room.StaticSpriteList.Count; index++ )
+			foreach( var staticSpriteList in room.StaticSpriteList )
 			{
-				var staticSpriteList = this.Room.StaticSpriteList[index];
-				for( var index2 = 0; index2 < staticSpriteList.Count; index2++ )
+				foreach( var staticSprite in staticSpriteList )
 				{
-					var staticSprite = staticSpriteList[index2];
 					if( staticSprite == null )
 					{
 						continue;
 					}
 
 					var textureFileName = staticSprite.TextureFileName;
-					var texture = this.LPAKFile.LoadImage( textureFileName );
+					var texture = lpakFile.LoadImage( textureFileName );
 					if( texture == null )
 					{
 						continue;
@@ -75,7 +48,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				}
 			}
 
-			image.Save( this.ExportFileName, ImageFormat.Png );
+			image.Save( exportFileName, ImageFormat.Png );
 			return true;
 		}
 	}

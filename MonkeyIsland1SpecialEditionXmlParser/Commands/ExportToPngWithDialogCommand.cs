@@ -4,51 +4,34 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportToPngWithDialogCommand : BaseCommand
+	public class ExportToPngWithDialogCommand( Bitmap exportImage, string exportFileName ) : BaseCommand
 	{
-		private SaveFileDialog saveFileDialog;
-
-		public Bitmap ExportImage
+		private readonly SaveFileDialog saveFileDialog = new SaveFileDialog()
 		{
-			get;
-			set;
-		}
-
-		public string ExportFileName
-		{
-			get;
-			set;
-		}
-
-		public ExportToPngWithDialogCommand()
-		{
-			this.saveFileDialog = new SaveFileDialog()
-			{
-				AddExtension = false,
-				AutoUpgradeEnabled = true,
-				CheckFileExists = false,
-				CheckPathExists = true,
-				CreatePrompt = false,
-				DefaultExt = "png",
-				DereferenceLinks = true,
-				Filter = "PNG files|*.png|All files|*.*",
-				FilterIndex = 0,
-				OverwritePrompt = true,
-				RestoreDirectory = false,
-				ShowHelp = false,
-				SupportMultiDottedExtensions = true,
-				Title = "Export to PNG",
-				ValidateNames = true,
-			};
-		}
+			AddExtension = false,
+			AutoUpgradeEnabled = true,
+			CheckFileExists = false,
+			CheckPathExists = true,
+			CreatePrompt = false,
+			DefaultExt = "png",
+			DereferenceLinks = true,
+			Filter = "PNG files|*.png|All files|*.*",
+			FilterIndex = 0,
+			OverwritePrompt = true,
+			RestoreDirectory = false,
+			ShowHelp = false,
+			SupportMultiDottedExtensions = true,
+			Title = "Export to PNG",
+			ValidateNames = true,
+		};
 
 		protected override bool InnerExecute()
 		{
-			if( this.ExportImage == null )
+			if( exportImage == null )
 			{
 				return false;
 			}
-			if( string.IsNullOrWhiteSpace( this.ExportFileName ) )
+			if( string.IsNullOrWhiteSpace( exportFileName ) )
 			{
 				return false;
 			}
@@ -58,10 +41,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			Command.ExportToPng.ExportFileName = this.saveFileDialog.FileName;
-			Command.ExportToPng.ExportImage = this.ExportImage;
-
-			var success = Command.ExportToPng.Execute();
+			var success = new ExportToPngCommand( exportImage, this.saveFileDialog.FileName ).Execute();
 			return success;
 		}
 	}

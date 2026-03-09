@@ -3,32 +3,20 @@ using System.Drawing.Imaging;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportToPngCommand : BaseCommand
+	public class ExportToPngCommand( Bitmap exportImage, string exportFileName ) : BaseCommand
 	{
-		public Bitmap ExportImage
-		{
-			get;
-			set;
-		}
-
-		public string ExportFileName
-		{
-			get;
-			set;
-		}
-
 		protected override bool InnerExecute()
 		{
-			if( this.ExportImage == null )
+			if( exportImage == null )
 			{
 				return false;
 			}
-			if( string.IsNullOrWhiteSpace( this.ExportFileName ) )
+			if( string.IsNullOrWhiteSpace( exportFileName ) )
 			{
 				return false;
 			}
 
-			this.ExportImage.Save( this.ExportFileName, ImageFormat.Png );
+			exportImage.Save( exportFileName, ImageFormat.Png );
 			return true;
 		}
 	}

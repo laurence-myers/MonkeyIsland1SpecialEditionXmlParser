@@ -4,37 +4,26 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class ExportToBinaryWithDialogCommand : BaseCommand
+	public class ExportToBinaryWithDialogCommand( byte[] bytes ) : BaseCommand
 	{
-		private SaveFileDialog saveFileDialog;
-
-		public Byte[] Bytes
+		private readonly SaveFileDialog saveFileDialog = new SaveFileDialog()
 		{
-			get;
-			set;
-		}
-
-		public ExportToBinaryWithDialogCommand()
-		{
-			this.saveFileDialog = new SaveFileDialog()
-			{
-				AddExtension = false,
-				AutoUpgradeEnabled = true,
-				CheckFileExists = false,
-				CheckPathExists = true,
-				CreatePrompt = false,
-				DefaultExt = "dat",
-				DereferenceLinks = true,
-				Filter = "Data files|*.dat|Binary files|*.bin|All files|*.*",
-				FilterIndex = 0,
-				OverwritePrompt = true,
-				RestoreDirectory = false,
-				ShowHelp = false,
-				SupportMultiDottedExtensions = true,
-				Title = "Binary Export",
-				ValidateNames = true,
-			};
-		}
+			AddExtension = false,
+			AutoUpgradeEnabled = true,
+			CheckFileExists = false,
+			CheckPathExists = true,
+			CreatePrompt = false,
+			DefaultExt = "dat",
+			DereferenceLinks = true,
+			Filter = "Data files|*.dat|Binary files|*.bin|All files|*.*",
+			FilterIndex = 0,
+			OverwritePrompt = true,
+			RestoreDirectory = false,
+			ShowHelp = false,
+			SupportMultiDottedExtensions = true,
+			Title = "Binary Export",
+			ValidateNames = true,
+		};
 
 		protected override bool InnerExecute()
 		{
@@ -43,10 +32,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			Command.ExportToBinary.ExportFileName = this.saveFileDialog.FileName;
-			Command.ExportToBinary.Bytes = this.Bytes;
-
-			var success = Command.ExportToBinary.Execute();
+			var success = new ExportToBinaryCommand( this.saveFileDialog.FileName, bytes ).Execute();
 			return success;
 		}
 	}
