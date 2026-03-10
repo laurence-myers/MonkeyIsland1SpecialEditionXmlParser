@@ -54,11 +54,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			Application.Exit();
 		}
 
-		private void NavigateToForumThread( object sender, EventArgs e )
-		{
-			Process.Start( "http://www.lucasforums.com/showthread.php?p=2809988#post2809988" );
-		}
-
 		private void ShowAboutForm( object sender, EventArgs e )
 		{
 			using( var aboutForm = new AboutBox() )

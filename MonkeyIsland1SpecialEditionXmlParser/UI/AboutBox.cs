@@ -17,7 +17,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.textBoxDescription.Text = string.Concat(
 				"Thanks to LucasArts for creating great games.",
 				Environment.NewLine, Environment.NewLine,
-				"Thanks to jott for his research on the file format http://www.lucasforums.com/showpost.php?p=2651346&postcount=84"
+				"Thanks to jott for his research on the file format http://www.lucasforums.com/showpost.php?p=2651346&postcount=84",
+				Environment.NewLine, Environment.NewLine,
+				"Originally posted to the (now defunct) LucasForums: http://www.lucasforums.com/showthread.php?p=2809988#post2809988"
 				);
 		}
 

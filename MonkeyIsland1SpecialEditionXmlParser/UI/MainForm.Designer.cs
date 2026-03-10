@@ -40,8 +40,6 @@
 			this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.windowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.forumLinkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
 			this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -135,24 +133,10 @@
 			// helpToolStripMenuItem
 			// 
 			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.forumLinkToolStripMenuItem,
-            this.toolStripMenuItem3,
             this.aboutToolStripMenuItem});
 			this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
 			this.helpToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.helpToolStripMenuItem.Text = "&Help";
-			// 
-			// forumLinkToolStripMenuItem
-			// 
-			this.forumLinkToolStripMenuItem.Name = "forumLinkToolStripMenuItem";
-			this.forumLinkToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.forumLinkToolStripMenuItem.Text = "Forum thread link";
-			this.forumLinkToolStripMenuItem.Click += new System.EventHandler(this.NavigateToForumThread);
-			// 
-			// toolStripMenuItem3
-			// 
-			this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-			this.toolStripMenuItem3.Size = new System.Drawing.Size(149, 6);
 			// 
 			// aboutToolStripMenuItem
 			// 
@@ -189,8 +173,6 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
 		private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem forumLinkToolStripMenuItem;
-		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
 		private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem recentToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
