@@ -6,6 +6,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		List<Unknown4> unknown4List
 	)
 	{
+		private Unknown4Group() : this(
+			unknown4List: null!
+		) {}
+
 		public int Index
 		{
 			get;

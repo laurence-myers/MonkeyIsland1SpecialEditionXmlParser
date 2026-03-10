@@ -8,6 +8,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		int unkn4
 	)
 	{
+		private Unknown4_2() : this(
+			unkn1: 0,
+			unkn2: 0,
+			unkn3: 0,
+			unkn4: 0
+		) {}
+
 		public int Unkn1
 		{
 			get;

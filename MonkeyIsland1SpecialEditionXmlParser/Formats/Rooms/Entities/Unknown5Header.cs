@@ -6,6 +6,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		int unknown5Address
 	)
 	{
+		private Unknown5Header() : this(
+			unknown5Count: 0,
+			unknown5Address: 0
+		) {}
+
 		public int Unknown5Count
 		{
 			get;

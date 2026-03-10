@@ -9,6 +9,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		float unkn4
 	)
 	{
+		private Unknown4() : this(
+			index: 0,
+			unknown41Address: 0,
+			unknown42Address: 0,
+			unkn3: 0,
+			unkn4: 0
+		) {}
+
 		public int Index
 		{
 			get;

@@ -7,6 +7,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		int unknownInteger3
 	)
 	{
+		private Frame() : this(
+			spriteIdentifier: 0,
+			unknownInteger2: 0,
+			unknownInteger3: 0
+		) {}
+
 		public int SpriteIdentifier
 		{
 			get;

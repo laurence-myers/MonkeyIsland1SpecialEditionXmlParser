@@ -3,6 +3,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
 	public class Sprite( int textureNumber, int textureX, int textureY, int textureWidth, int textureHeight, float screenX, float screenY, int unknownInteger1, int unknownInteger2, int unknownInteger3 )
 	{
+		private Sprite() : this(
+			textureNumber: 0,
+			textureX: 0,
+			textureY: 0,
+			textureWidth: 0,
+			textureHeight: 0,
+			screenX: 0,
+			screenY: 0,
+			unknownInteger1: 0,
+			unknownInteger2: 0,
+			unknownInteger3: 0
+		) {}
+
 		public int TextureNumber
 		{
 			get;

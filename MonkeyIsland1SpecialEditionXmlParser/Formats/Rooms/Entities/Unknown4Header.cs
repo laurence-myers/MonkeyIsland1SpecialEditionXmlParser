@@ -7,6 +7,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		int unknown4Address
 	)
 	{
+		private Unknown4Header() : this(
+			unknown4NameAddress: 0,
+			unknown4Count: 0,
+			unknown4Address: 0
+		) {}
+
 		public int Unknown4NameAddress
 		{
 			get;

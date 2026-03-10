@@ -7,6 +7,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		List<AnimationFrame> animationFrameList
 	)
 	{
+		private Animation() : this(
+			name: null!,
+			animationFrameList: null!
+		) {}
+		
 		/// <summary>
 		/// Gets or sets the name of the animation.
 		/// </summary>

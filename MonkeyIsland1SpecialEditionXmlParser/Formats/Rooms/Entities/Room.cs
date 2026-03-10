@@ -16,6 +16,20 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		List<Unknown5> unknown5List
 	)
 	{
+		private Room() : this(
+			header: new Header(),
+			staticSpriteHeaderList: null!,
+			spriteHeaderList: null!,
+			unknown6HeaderList: null!,
+			unknown4HeaderList: null!,
+			unknown5HeaderList: null!,
+			staticSpriteList: null!,
+			spriteGroupList: null!,
+			unknown6List: null!,
+			unknown4GroupList: null!,
+			unknown5List: null!
+		) {}
+
 		public Header Header
 		{
 			get;

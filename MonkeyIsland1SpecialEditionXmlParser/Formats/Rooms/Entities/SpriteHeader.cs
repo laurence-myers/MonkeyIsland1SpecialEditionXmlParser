@@ -8,6 +8,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		int spriteAddress
 	)
 	{
+		private SpriteHeader() : this(
+			index: 0,
+			identifier: 0,
+			spriteCount: 0,
+			spriteAddress: 0
+		) {}
+
 		/// <summary>
 		/// Gets or sets the index.
 		/// </summary>

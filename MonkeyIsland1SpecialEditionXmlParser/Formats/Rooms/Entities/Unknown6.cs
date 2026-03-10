@@ -7,6 +7,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		List<byte> byteList
 	)
 	{
+		private Unknown6() : this(
+			index: 0,
+			byteList: null!
+		) {}
+
 		public int Index
 		{
 			get;

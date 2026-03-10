@@ -11,6 +11,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		int staticSpriteAddress
 	)
 	{
+		private StaticSpriteHeader() : this(
+			index: 0,
+			identifier: 0,
+			unkn1: 0,
+			unkn2: 0,
+			staticSpriteCount: 0,
+			staticSpriteAddress: 0
+		) {}
+
 		/// <summary>
 		/// Gets or sets the index of the static sprite header.
 		/// </summary>

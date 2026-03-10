@@ -4,6 +4,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
 	public class Unknown5( int index, List<int> int32List )
 	{
+		private Unknown5() : this(
+			index: 0,
+			int32List: null!
+		) {}
+
 		public int Index
 		{
 			get;

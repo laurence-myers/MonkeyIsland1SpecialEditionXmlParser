@@ -9,6 +9,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		int unkn5
 	)
 	{
+		private Unknown4_1() : this(
+			unkn1: 0,
+			unkn2: 0,
+			unkn3: 0,
+			unkn4: 0,
+			unkn5: 0
+		) {}
+
 		public int Unkn1
 		{
 			get;

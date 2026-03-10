@@ -26,6 +26,31 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		string name
 	)
 	{
+		// Don't use this, it's just for XML serialization
+		public Header() : this(
+			identifier: 0,
+			nameAddress: 0,
+			unkn03: 0,
+			unkn04: 0,
+			staticSpriteHeaderCount: 0,
+			staticSpriteHeaderAddress: 0,
+			spriteHeaderCount: 0,
+			spriteHeaderAddress: 0,
+			unkn09: 0,
+			unkn10: 0,
+			unknown6HeaderAddress1: 0,
+			unknown6HeaderCount: 0,
+			unknown6HeaderAddress2: 0,
+			unknown4HeaderCount: 0,
+			unknown4HeaderAddress: 0,
+			unknown5HeaderCount: 0,
+			unknown5HeaderAddress: 0,
+			alwaysZero1: 0,
+			alwaysZero2: 0,
+			alwaysZero3: 0,
+			name: null!
+		) {}
+		
 		/// <summary>
 		/// Gets or sets the identifier.
 		/// </summary>

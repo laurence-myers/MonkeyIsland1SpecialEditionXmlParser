@@ -10,6 +10,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		int frameAddress
 	)
 	{
+		private AnimationFrame() : this(
+			index: 0,
+			spriteGroupIdentifier: 0,
+			unknownInteger1: 0,
+			frameCount: 0,
+			frameAddress: 0
+		) {}
+
 		/// <summary>
 		/// Gets or sets the index of the animation frame.
 		/// </summary>

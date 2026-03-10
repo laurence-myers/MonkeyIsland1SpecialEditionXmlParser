@@ -10,6 +10,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		int textureFileNameAddress
 	)
 	{
+		private StaticSprite() : this(
+			index: 0,
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+			textureFileNameAddress: 0
+		) {}
+
 		/// <summary>
 		/// Gets or sets the static sprite index.
 		/// </summary>

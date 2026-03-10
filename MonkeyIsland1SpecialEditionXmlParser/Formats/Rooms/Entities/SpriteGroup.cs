@@ -6,6 +6,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		List<Sprite> spriteList
 	)
 	{
+		private SpriteGroup() : this(
+			spriteList: null!
+		) {}
+
 		public List<Sprite> SpriteList
 		{
 			get;

@@ -3,6 +3,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
 	public class TextureFileName( string path, int index )
 	{
+		private TextureFileName() : this(
+			path: null!,
+			index: 0
+		) {}
+
 		/// <summary>
 		/// Gets or sets the index of the texture file name.
 		/// </summary>

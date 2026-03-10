@@ -4,6 +4,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
 	public class SpriteGroup( List<Sprite> spriteList, int identifier, int index )
 	{
+		private SpriteGroup() : this(
+			spriteList: null!,
+			identifier: 0,
+			index: 0
+		) {}
+
 		/// <summary>
 		/// Gets or sets the index of the sprite group.
 		/// </summary>

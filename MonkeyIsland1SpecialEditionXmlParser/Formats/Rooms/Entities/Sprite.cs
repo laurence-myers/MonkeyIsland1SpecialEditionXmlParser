@@ -13,6 +13,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		int layer
 	)
 	{
+		private Sprite() : this(
+			index: 0,
+			textureFileNameAddress: 0,
+			textureX: 0,
+			textureY: 0,
+			textureWidth: 0,
+			textureHeight: 0,
+			offsetX: 0,
+			offsetY: 0,
+			layer: 0
+		) {}
+
 		/// <summary>
 		/// Gets or sets the index of the sprite.
 		/// </summary>

@@ -13,6 +13,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		List<SpriteGroup> spriteGroupList
 	)
 	{
+		// Required for serialization
+		private Costume() : this(
+			header: null!,
+			textureHeaderList: null!,
+			animationHeaderList: null!,
+			pathPointList: null!,
+			spriteGroupHeaderList: null!,
+			textureFileNameList: null!,
+			animationList: null!,
+			spriteGroupList: null!
+		) {}
+		
 		/// <summary>
 		/// Gets or sets the header.
 		/// </summary>

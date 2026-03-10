@@ -24,6 +24,30 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		int unknownInteger12,
 		string name )
 	{
+		private Header() : this(
+			identifier: 0,
+			nameAddress: 0,
+			textureFileNameCount: 0,
+			textureHeaderAddress: 0,
+			animationCount: 0,
+			animationHeaderAddress: 0,
+			unknownInteger1: 0,
+			spriteGroupHeaderCount: 0,
+			spriteGroupHeaderAddress: 0,
+			unknownInteger4: 0,
+			pathPointCount: 0,
+			pathPointAddress: 0,
+			unknownInteger5: 0,
+			unknownInteger6: 0,
+			unknownInteger7: 0,
+			unknownInteger8: 0,
+			unknownInteger9: 0,
+			unknownInteger10: 0,
+			unknownInteger11: 0,
+			unknownInteger12: 0,
+			name: null!
+		) {}
+
 		/// <summary>
 		/// Gets or sets the numerical identification of the file.
 		/// </summary>
