@@ -2,7 +2,14 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class StaticSpriteHeader
+	public class StaticSpriteHeader(
+		int index,
+		int identifier,
+		int unkn1,
+		int unkn2,
+		int staticSpriteCount,
+		int staticSpriteAddress
+	)
 	{
 		/// <summary>
 		/// Gets or sets the index of the static sprite header.
@@ -11,7 +18,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = index;
 
 		/// <summary>
 		/// Gets or sets the identifier.
@@ -20,19 +27,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = identifier;
 
 		public int Unkn1
 		{
 			get;
 			set;
-		}
+		} = unkn1;
 
 		public int Unkn2
 		{
 			get;
 			set;
-		}
+		} = unkn2;
 
 		/// <summary>
 		/// Gets or sets the number of static sprites.
@@ -41,7 +48,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = staticSpriteCount;
 
 		/// <summary>
 		/// Gets or sets the byte address for the first static sprite.
@@ -50,7 +57,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = staticSpriteAddress;
 
 		public override string ToString()
 		{

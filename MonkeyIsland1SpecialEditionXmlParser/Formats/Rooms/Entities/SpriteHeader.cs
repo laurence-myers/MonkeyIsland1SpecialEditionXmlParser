@@ -1,7 +1,12 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class SpriteHeader
+	public class SpriteHeader(
+		int index,
+		int identifier,
+		int spriteCount,
+		int spriteAddress
+	)
 	{
 		/// <summary>
 		/// Gets or sets the index.
@@ -10,7 +15,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = index;
 
 		/// <summary>
 		/// Gets or sets the identifier.
@@ -18,8 +23,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		public int Identifier
 		{
 			get;
-			set;
-		}
+		} = identifier;
 
 		/// <summary>
 		/// Gets or sets the number of sprites.
@@ -27,8 +31,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		public int SpriteCount
 		{
 			get;
-			set;
-		}
+		} = spriteCount;
 
 		/// <summary>
 		/// Gets or sets the byte address for the first sprite.
@@ -36,8 +39,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		public int SpriteAddress
 		{
 			get;
-			set;
-		}
+		} = spriteAddress;
 
 		public override string ToString()
 		{

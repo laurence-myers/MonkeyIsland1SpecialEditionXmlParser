@@ -4,17 +4,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 {
 	public class LPAKFile : IEntity
 	{
-		public PakHeader PakHeader;
-		public PakIndex[] PakIndicies;
-		public PakFileEntry[] PakFileEntries;
-		public PakFileName[] PakFileNames;
+		public PakHeader PakHeader = null!;
+		public PakIndex[] PakIndicies = null!;
+		public PakFileEntry[] PakFileEntries = null!;
+		public PakFileName[] PakFileNames = null!;
 
 		[Ignore]
 		public string FileNameOnDisk
 		{
 			get;
 			set;
-		}
+		} = null!;
 
 		public override void IterationProcess()
 		{
@@ -31,7 +31,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 	public class PakHeader : IEntity
 	{
 		[Length( 4 )]
-		public string Name;
+		public string Name = null!;
 		public float Version;
 		public int StartOfIndex;
 		public int StartOfFileEntries;
@@ -44,7 +44,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 
 		public override void PostProcess()
 		{
-			this.Name = this.Name.Reverse();
+			this.Name = this.Name.Reverse() ?? "";
 		}
 	}
 
@@ -81,11 +81,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 	public class PakFileName : IEntity
 	{
 		[Length( -1 )]
-		public string FileName;
+		public string? FileName;
 
 		public override string ToString()
 		{
-			return this.FileName;
+			return this.FileName ?? string.Empty;
 		}
 	}
 

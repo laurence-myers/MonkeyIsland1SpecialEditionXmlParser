@@ -6,7 +6,7 @@ using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenImageFormCommand( Bitmap? image, string title ) : BaseCommand
+	public class OpenImageFormCommand( Bitmap? image, string? title ) : BaseCommand
 	{
 		protected override bool InnerExecute()
 		{
@@ -27,7 +27,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			{
 				return false;
 			}
-			spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite() { Image = image } );
+			spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite( image: image ) );
 
 			form.Show();
 			return true;

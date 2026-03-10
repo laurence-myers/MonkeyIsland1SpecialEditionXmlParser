@@ -18,8 +18,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			set;
 		}
 
-		public HexForm()
+		public HexForm( int fileIndex, Form mdiParent, LPAKFile lpakFile, FormWindowState windowState )
 		{
+			this.FileIndex = fileIndex;
+			this.MdiParent = mdiParent;
+			this.LPAKFile = lpakFile;
+			this.WindowState = windowState;
+			
 			this.InitializeComponent();
 		}
 

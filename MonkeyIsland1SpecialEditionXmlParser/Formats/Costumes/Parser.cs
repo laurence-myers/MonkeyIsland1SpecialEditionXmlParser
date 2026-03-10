@@ -32,52 +32,53 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 
 		public static Costume ReadCostume( BinaryReader reader )
 		{
-			var costume = new Costume();
-			costume.Header = Parser.ReadHeader( reader, costume );
-			costume.TextureHeaderList = Parser.ReadTextureHeaderList( reader, costume );
-			costume.AnimationHeaderList = Parser.ReadAnimationHeaderList( reader, costume );
-			costume.SpriteGroupHeaderList = Parser.ReadSpriteGroupHeaderList( reader, costume );
-			costume.PathPointList = Parser.ReadPathPointList( reader, costume );
-			costume.TextureFileNameList = Parser.ReadTextureFileNameList( reader, costume );
-			costume.AnimationList = Parser.ReadAnimationList( reader, costume );
-			costume.SpriteGroupList = Parser.ReadSpriteGroupList( reader, costume );
-			return costume;
+			var header = Parser.ReadHeader( reader );
+			var textureHeaderList = Parser.ReadTextureHeaderList( reader, header );
+			var animationHeaderList = Parser.ReadAnimationHeaderList( reader, header );
+			var spriteGroupHeaderList = Parser.ReadSpriteGroupHeaderList( reader, header );
+			var pathPointList = Parser.ReadPathPointList( reader, header );
+			var textureFileNameList = Parser.ReadTextureFileNameList( reader, header );
+			var animationList = Parser.ReadAnimationList( reader, animationHeaderList );
+			var spriteGroupList = Parser.ReadSpriteGroupList( reader, spriteGroupHeaderList );
+
+			return new Costume(
+				header: header,
+				textureHeaderList: textureHeaderList,
+				animationHeaderList: animationHeaderList,
+				spriteGroupHeaderList: spriteGroupHeaderList,
+				pathPointList: pathPointList,
+				textureFileNameList: textureFileNameList,
+				animationList: animationList,
+				spriteGroupList: spriteGroupList
+			);
 		}
 
-		private static Header ReadHeader( BinaryReader reader, Costume costume )
+		private static Header ReadHeader( BinaryReader reader )
 		{
-			var header = new Header()
-			{
-				Identifier = reader.ReadInt32(),
-				NameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
-				TextureFileNameCount = reader.ReadInt32(),
-				TextureHeaderAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
-				AnimationCount = reader.ReadInt32(),
-				AnimationHeaderAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
-				UnknownInteger1 = reader.ReadInt32(),
-				SpriteGroupHeaderCount = reader.ReadInt32(),
-				SpriteGroupHeaderAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
-				UnknownInteger4 = reader.ReadInt32(),
-				PathPointCount = reader.ReadInt32(),
-				PathPointAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
-				UnknownInteger5 = reader.ReadInt32(),
-				UnknownInteger6 = reader.ReadInt32(),
-				UnknownInteger7 = reader.ReadInt32(),
-				UnknownInteger8 = reader.ReadInt32(),
-				UnknownInteger9 = reader.ReadInt32(),
-				UnknownInteger10 = reader.ReadInt32(),
-				UnknownInteger11 = reader.ReadInt32(),
-				UnknownInteger12 = reader.ReadInt32(),
-				Name = reader.ReadStringMonkey(),
-			};
+			var header = new Header(
+				identifier: reader.ReadInt32(),
+				nameAddress: (int)reader.BaseStream.Position + reader.ReadInt32(),
+				textureFileNameCount: reader.ReadInt32(),
+				textureHeaderAddress: (int)reader.BaseStream.Position + reader.ReadInt32(),
+				animationCount: reader.ReadInt32(),
+				animationHeaderAddress: (int)reader.BaseStream.Position + reader.ReadInt32(),
+				unknownInteger1: reader.ReadInt32(), spriteGroupHeaderCount: reader.ReadInt32(),
+				spriteGroupHeaderAddress: (int)reader.BaseStream.Position + reader.ReadInt32(),
+				unknownInteger4: reader.ReadInt32(), pathPointCount: reader.ReadInt32(),
+				pathPointAddress: (int)reader.BaseStream.Position + reader.ReadInt32(),
+				unknownInteger5: reader.ReadInt32(), unknownInteger6: reader.ReadInt32(),
+				unknownInteger7: reader.ReadInt32(), unknownInteger8: reader.ReadInt32(),
+				unknownInteger9: reader.ReadInt32(), unknownInteger10: reader.ReadInt32(),
+				unknownInteger11: reader.ReadInt32(), unknownInteger12: reader.ReadInt32(),
+				name: reader.ReadStringMonkey() );
 			return header;
 		}
 
-		private static List<TextureHeader> ReadTextureHeaderList( BinaryReader reader, Costume costume )
+		private static List<TextureHeader> ReadTextureHeaderList( BinaryReader reader, Header header )
 		{
 			var list = new List<TextureHeader>();
 
-			while( reader.BaseStream.Position < costume.Header.AnimationHeaderAddress )
+			while( reader.BaseStream.Position < header.AnimationHeaderAddress )
 			{
 				var textureHeader = new TextureHeader()
 				{
@@ -92,11 +93,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 			return list;
 		}
 
-		private static List<AnimationHeader> ReadAnimationHeaderList( BinaryReader reader, Costume costume )
+		private static List<AnimationHeader> ReadAnimationHeaderList( BinaryReader reader, Header header )
 		{
 			var list = new List<AnimationHeader>();
 
-			for( var index = 0; index < costume.Header.AnimationCount; index++ )
+			for( var index = 0; index < header.AnimationCount; index++ )
 			{
 				var animationHeader = new AnimationHeader()
 				{
@@ -111,11 +112,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 			return list;
 		}
 
-		private static List<SpriteGroupHeader> ReadSpriteGroupHeaderList( BinaryReader reader, Costume costume )
+		private static List<SpriteGroupHeader> ReadSpriteGroupHeaderList( BinaryReader reader, Header header )
 		{
 			var list = new List<SpriteGroupHeader>();
 
-			for( var index = 0; index < costume.Header.SpriteGroupHeaderCount; index++ )
+			for( var index = 0; index < header.SpriteGroupHeaderCount; index++ )
 			{
 				var spriteGroupHeader = new SpriteGroupHeader()
 				{
@@ -130,14 +131,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 			return list;
 		}
 
-		private static List<PathPoint> ReadPathPointList( BinaryReader reader, Costume costume )
+		private static List<PathPoint> ReadPathPointList( BinaryReader reader, Header header )
 		{
 			var list = new List<PathPoint>();
 
-			if( costume.Header.PathPointCount > 0 )
+			if( header.PathPointCount > 0 )
 			{
 				var position = reader.BaseStream.Position;
-				for( var index = 0; index < costume.Header.PathPointCount; index++ )
+				for( var index = 0; index < header.PathPointCount; index++ )
 				{
 					var pathPoint = new PathPoint()
 					{
@@ -156,48 +157,46 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 			return list;
 		}
 
-		private static List<TextureFileName> ReadTextureFileNameList( BinaryReader reader, Costume costume )
+		private static List<TextureFileName> ReadTextureFileNameList( BinaryReader reader, Header header )
 		{
 			var list = new List<TextureFileName>();
 
-			for( var index = 0; index < costume.Header.TextureFileNameCount; index++ )
+			for( var index = 0; index < header.TextureFileNameCount; index++ )
 			{
-				var textureFileName = new TextureFileName()
-				{
-					Index = index,
-					Path = reader.ReadStringMonkey(),
-				};
+				var textureFileName = new TextureFileName(
+					index: index,
+					path: reader.ReadStringMonkey()
+				);
 				list.Add( textureFileName );
 			}
 
 			return list;
 		}
 
-		private static List<Animation> ReadAnimationList( BinaryReader reader, Costume costume )
+		private static List<Animation> ReadAnimationList( BinaryReader reader, List<AnimationHeader> animationHeaders )
 		{
 			var list = new List<Animation>();
 
-			for( var index = 0; index < costume.AnimationHeaderList.Count; index++ )
+			for( var index = 0; index < animationHeaders.Count; index++ )
 			{
 				// get current animation header
-				var animationHeader = costume.AnimationHeaderList[index];
+				var animationHeader = animationHeaders[index];
 
 				// position reader at animation name
 				reader.BaseStream.Position = animationHeader.NameAddress;
 
 				// create animation entity
-				var animation = new Animation()
-				{
-					Name = reader.ReadStringMonkey(),
-					AnimationFrameList = Parser.ReadAnimationFrameList( reader, costume, animationHeader ),
-				};
+				var animation = new Animation(
+					name: reader.ReadStringMonkey(),
+					animationFrameList: Parser.ReadAnimationFrameList( reader, animationHeader )
+				);
 				list.Add( animation );
 			}
 
 			return list;
 		}
 
-		private static List<AnimationFrame> ReadAnimationFrameList( BinaryReader reader, Costume costume, AnimationHeader animationHeader )
+		private static List<AnimationFrame> ReadAnimationFrameList( BinaryReader reader, AnimationHeader animationHeader )
 		{
 			var list = new List<AnimationFrame>();
 
@@ -207,22 +206,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				// position reader at the first animation frame
 				reader.BaseStream.Position = animationHeader.AnimationFrameAddress + index * 16;
 
-				var animationFrame = new AnimationFrame()
-				{
-					Index = index,
-					SpriteGroupIdentifier = reader.ReadInt32(),
-					UnknownInteger1 = reader.ReadInt32(),
-					FrameCount = reader.ReadInt32(),
-					FrameAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
-				};
-				animationFrame.FrameList = Parser.ReadFrameList( reader, costume, animationFrame );
+				var animationFrame = new AnimationFrame(
+					index: index,
+					spriteGroupIdentifier: reader.ReadInt32(),
+					unknownInteger1: reader.ReadInt32(),
+					frameCount: reader.ReadInt32(),
+					frameAddress: (int)reader.BaseStream.Position + reader.ReadInt32()
+				);
+				animationFrame.FrameList = Parser.ReadFrameList( reader, animationFrame );
 				list.Add( animationFrame );
 			}
 
 			return list;
 		}
 
-		private static List<Frame> ReadFrameList( BinaryReader reader, Costume costume, AnimationFrame animationFrame )
+		private static List<Frame> ReadFrameList( BinaryReader reader, AnimationFrame animationFrame )
 		{
 			var list = new List<Frame>();
 
@@ -230,38 +228,36 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 
 			for( var index = 0; index < animationFrame.FrameCount; index++ )
 			{
-				var frame = new Frame()
-				{
-					SpriteIdentifier = reader.ReadInt32(),
-					UnknownInteger2 = reader.ReadInt32(),
-					UnknownInteger3 = reader.ReadInt32(),
-				};
+				var frame = new Frame(
+					spriteIdentifier: reader.ReadInt32(),
+					unknownInteger2: reader.ReadInt32(),
+					unknownInteger3: reader.ReadInt32()
+				);
 				list.Add( frame );
 			}
 
 			return list;
 		}
 
-		private static List<SpriteGroup> ReadSpriteGroupList( BinaryReader reader, Costume costume )
+		private static List<SpriteGroup> ReadSpriteGroupList( BinaryReader reader, List<SpriteGroupHeader> spriteGroupHeaders )
 		{
 			var list = new List<SpriteGroup>();
 
-			for( var index = 0; index < costume.SpriteGroupHeaderList.Count; index++ )
+			for( var index = 0; index < spriteGroupHeaders.Count; index++ )
 			{
-				var spriteGroupHeader = costume.SpriteGroupHeaderList[index];
-				var spriteGroup = new SpriteGroup()
-				{
-					Index = index,
-					Identifier = spriteGroupHeader.Identifier,
-					SpriteList = Parser.ReadSpriteList( reader, costume, spriteGroupHeader ),
-				};
+				var spriteGroupHeader = spriteGroupHeaders[index];
+				var spriteGroup = new SpriteGroup(
+					index: index,
+					identifier: spriteGroupHeader.Identifier,
+					spriteList: Parser.ReadSpriteList( reader, spriteGroupHeader )
+				);
 				list.Add( spriteGroup );
 			}
 
 			return list;
 		}
 
-		private static List<Sprite> ReadSpriteList( BinaryReader reader, Costume costume, SpriteGroupHeader spriteGroupHeader )
+		private static List<Sprite> ReadSpriteList( BinaryReader reader, SpriteGroupHeader spriteGroupHeader )
 		{
 			var list = new List<Sprite>();
 
@@ -270,19 +266,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 
 			for( var index = 0; index < spriteGroupHeader.SpriteCount; index++ )
 			{
-				var sprite = new Sprite()
-				{
-					TextureNumber = reader.ReadInt32(),
-					TextureX = reader.ReadInt32(),
-					TextureY = reader.ReadInt32(),
-					TextureWidth = reader.ReadInt32(),
-					TextureHeight = reader.ReadInt32(),
-					ScreenX = reader.ReadSingle(),
-					ScreenY = reader.ReadSingle(),
-					UnknownInteger1 = reader.ReadInt32(),
-					UnknownInteger2 = reader.ReadInt32(),
-					UnknownInteger3 = reader.ReadInt32(),
-				};
+				var sprite = new Sprite(
+					textureNumber: reader.ReadInt32(),
+					textureX: reader.ReadInt32(),
+					textureY: reader.ReadInt32(),
+					textureWidth: reader.ReadInt32(),
+					textureHeight: reader.ReadInt32(),
+					screenX: reader.ReadSingle(),
+					screenY: reader.ReadSingle(),
+					unknownInteger1: reader.ReadInt32(),
+					unknownInteger2: reader.ReadInt32(),
+					unknownInteger3: reader.ReadInt32()
+				);
 				list.Add( sprite );
 			}
 

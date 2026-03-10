@@ -1,45 +1,51 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Unknown4
+	public class Unknown4(
+		int index,
+		int unknown41Address,
+		int unknown42Address,
+		float unkn3,
+		float unkn4
+	)
 	{
 		public int Index
 		{
 			get;
 			set;
-		}
+		} = index;
 
 		public int Unknown4_1Address
 		{
 			get;
 			set;
-		}
+		} = unknown41Address;
 
 		public int Unknown4_2Address
 		{
 			get;
 			set;
-		}
+		} = unknown42Address;
 
 		public float Unkn3
 		{
 			get;
 			set;
-		}
+		} = unkn3;
 
 		public float Unkn4
 		{
 			get;
 			set;
-		}
+		} = unkn4;
 
-		public Unknown4_1 Unknown4_1
+		public Unknown4_1? Unknown4_1
 		{
 			get;
 			set;
 		}
 
-		public Unknown4_2 Unknown4_2
+		public Unknown4_2? Unknown4_2
 		{
 			get;
 			set;

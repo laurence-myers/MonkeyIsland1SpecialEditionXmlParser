@@ -124,7 +124,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 
 		private static void Is<T>( this T actual, T expected )
 		{
-			if( !actual.Equals( expected ) )
+			if( (actual is null && expected is not null) ||
+			   (actual is not null && expected is null) ||
+			   (actual is not null && !actual.Equals( expected ) ))
 			{
 				throw new Exception( actual + " != " + expected );
 			}

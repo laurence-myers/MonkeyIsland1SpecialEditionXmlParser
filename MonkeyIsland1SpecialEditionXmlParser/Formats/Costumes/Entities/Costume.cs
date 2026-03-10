@@ -2,7 +2,16 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
-	public class Costume
+	public class Costume(
+		Header header,
+		List<TextureHeader> textureHeaderList,
+		List<AnimationHeader> animationHeaderList,
+		List<PathPoint> pathPointList,
+		List<SpriteGroupHeader> spriteGroupHeaderList,
+		List<TextureFileName> textureFileNameList,
+		List<Animation> animationList,
+		List<SpriteGroup> spriteGroupList
+	)
 	{
 		/// <summary>
 		/// Gets or sets the header.
@@ -11,7 +20,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = header;
 
 		/// <summary>
 		/// Gets or sets the list of texture headers.
@@ -20,7 +29,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = textureHeaderList;
 
 		/// <summary>
 		/// Gets or sets the list of animation headers.
@@ -29,7 +38,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = animationHeaderList;
 
 		/// <summary>
 		/// Gets or sets the list of unknown entries before the texture file names.
@@ -38,7 +47,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = pathPointList;
 
 		/// <summary>
 		/// Gets or sets the list of sprite group headers.
@@ -47,7 +56,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = spriteGroupHeaderList;
 
 		/// <summary>
 		/// Gets or sets the list of texture file names.
@@ -56,7 +65,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = textureFileNameList;
 
 		/// <summary>
 		/// Gets or sets the list of animations.
@@ -65,7 +74,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = animationList;
 
 		/// <summary>
 		/// Gets or sets the list of sprite groups.
@@ -74,7 +83,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = spriteGroupList;
 
 		public override string ToString()
 		{

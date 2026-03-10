@@ -4,7 +4,7 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenCostumeFormCommand( LPAKFile lpakFile, string fileName, int fileIndex ) : BaseCommand
+	public class OpenCostumeFormCommand( LPAKFile lpakFile, string? fileName, int fileIndex ) : BaseCommand
 	{
 		protected override bool InnerExecute()
 		{
@@ -13,13 +13,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			var form = new CostumeForm()
+			var form = new CostumeForm(
+				fileIndex: fileIndex,
+				lpakFile: lpakFile,
+				mdiParent: MainForm.Instance!,
+				windowState: FormWindowState.Normal
+			)
 			{
-				FileIndex = fileIndex,
-				LPAKFile = lpakFile,
-				MdiParent = MainForm.Instance,
 				Text = fileName,
-				WindowState = FormWindowState.Normal,
 			};
 			form.Show();
 

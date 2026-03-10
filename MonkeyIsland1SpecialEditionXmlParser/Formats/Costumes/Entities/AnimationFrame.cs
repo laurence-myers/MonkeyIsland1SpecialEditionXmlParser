@@ -2,7 +2,13 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
-	public class AnimationFrame
+	public class AnimationFrame(
+		int index,
+		int spriteGroupIdentifier,
+		int unknownInteger1,
+		int frameCount,
+		int frameAddress
+	)
 	{
 		/// <summary>
 		/// Gets or sets the index of the animation frame.
@@ -11,7 +17,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = index;
 
 		/// <summary>
 		/// Gets or sets the identifier of the sprite group.
@@ -20,13 +26,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = spriteGroupIdentifier;
 
 		public int UnknownInteger1
 		{
 			get;
 			set;
-		}
+		} = unknownInteger1;
 
 		/// <summary>
 		/// Gets or sets the number of frames.
@@ -35,7 +41,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = frameCount;
 
 		/// <summary>
 		/// Gets or sets the byte address of the first frame.
@@ -44,12 +50,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = frameAddress;
 
 		/// <summary>
 		/// Gets or sets the list of frame.
 		/// </summary>
-		public List<Frame> FrameList
+		public List<Frame>? FrameList
 		{
 			get;
 			set;

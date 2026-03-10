@@ -110,7 +110,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				foreach( var animFrame in animation.AnimationFrameList )
 				{
 					frameListAddresses.Add( writer.BaseStream.Position );
-					foreach( var frame in animFrame.FrameList )
+					foreach( var frame in animFrame?.FrameList ?? [] )
 					{
 						writer.Write( frame.SpriteIdentifier );
 						writer.Write( frame.UnknownInteger2 );

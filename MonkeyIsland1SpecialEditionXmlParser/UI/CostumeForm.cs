@@ -16,7 +16,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 	{
 		private static readonly List<CostumeForm> instances = new List<CostumeForm>();
 
-		public Costume Costume
+		public Costume? Costume
 		{
 			get;
 			set;
@@ -42,8 +42,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		public CostumeForm()
+		public CostumeForm( int fileIndex, LPAKFile lpakFile, Form mdiParent, FormWindowState windowState )
 		{
+			this.FileIndex = fileIndex;
+			this.LPAKFile = lpakFile;
+			this.MdiParent = mdiParent;
+			this.WindowState = windowState;
+			
 			CostumeForm.instances.Add( this );
 			this.FormClosed += delegate { CostumeForm.instances.Remove( this ); };
 			
@@ -70,7 +75,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.dataGridView1.DataSource = null;
 			Application.DoEvents();
 
-			foreach( var animation in this.Costume.AnimationList )
+			foreach( var animation in this.Costume?.AnimationList ?? [] )
 			{
 				var rowIndex = this.dataGridView1.Rows.Add();
 				var row = this.dataGridView1.Rows[rowIndex];
@@ -94,7 +99,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			var openImageExportDialogCommand = new OpenImageExportDialogCommand( string.Concat( this.Costume.Header.Name, this.Costume.Header.Identifier ) );
+			var openImageExportDialogCommand = new OpenImageExportDialogCommand( string.Concat( this.Costume?.Header.Name, this.Costume?.Header.Identifier ) );
 			if( !openImageExportDialogCommand.Execute() )
 			{
 				return;
@@ -105,12 +110,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var spritePadding = openImageExportDialogCommand.SpritePadding;
 			var animationName = this.dataGridView1.Rows[args.RowIndex].Cells["animationColumn"].Value as string;
 
-			this.ExportAsPngFiles( directory, filePrefix, animationName, spritePadding );
+			this.ExportAsPngFiles( directory, filePrefix, animationName!, spritePadding );
 		}
 
 		private void ExportAllAsPngFiles( object sender, EventArgs e )
 		{
-			var openImageExportDialogCommand = new OpenImageExportDialogCommand( string.Concat( this.Costume.Header.Name, this.Costume.Header.Identifier ) );
+			var openImageExportDialogCommand = new OpenImageExportDialogCommand( string.Concat( this.Costume?.Header.Name, this.Costume?.Header.Identifier ) );
 			if( !openImageExportDialogCommand.Execute() )
 			{
 				return;
@@ -119,7 +124,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var filePrefix = openImageExportDialogCommand.FilePrefix;
 			var spritePadding = openImageExportDialogCommand.SpritePadding;
 
-			foreach( var animation in this.Costume.AnimationList )
+			foreach( var animation in this.Costume?.AnimationList ?? [] )
 			{
 				this.ExportAsPngFiles( directory, filePrefix, animation.Name, spritePadding );
 			}
@@ -132,6 +137,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsXmlFile( object sender, EventArgs args )
 		{
+			if(this.Costume is null)
+			{
+				return;
+			}
 			new ExportToXmlCommand( this.Costume, string.Concat( this.Costume.Header.Identifier, "_", this.Costume.Header.Name, ".xml" ) ).Execute();
 		}
 	}

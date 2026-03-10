@@ -1,7 +1,28 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
-	public class Header
+	public class Header(
+		int identifier,
+		int nameAddress,
+		int textureFileNameCount,
+		int textureHeaderAddress,
+		int animationCount,
+		int animationHeaderAddress,
+		int unknownInteger1,
+		int spriteGroupHeaderCount,
+		int spriteGroupHeaderAddress,
+		int unknownInteger4,
+		int pathPointCount,
+		int pathPointAddress,
+		int unknownInteger5,
+		int unknownInteger6,
+		int unknownInteger7,
+		int unknownInteger8,
+		int unknownInteger9,
+		int unknownInteger10,
+		int unknownInteger11,
+		int unknownInteger12,
+		string name )
 	{
 		/// <summary>
 		/// Gets or sets the numerical identification of the file.
@@ -10,7 +31,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = identifier;
 
 		/// <summary>
 		/// Gets or sets the byte address of the Name of the file.
@@ -19,7 +40,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = nameAddress;
 
 		/// <summary>
 		/// Gets or sets the number of texture file names in the file.
@@ -28,7 +49,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = textureFileNameCount;
 
 		/// <summary>
 		/// Gets or sets the byte address of the first texture header.
@@ -37,7 +58,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = textureHeaderAddress;
 
 		/// <summary>
 		/// Gets or sets the number of animations in the file.
@@ -46,7 +67,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = animationCount;
 
 		/// <summary>
 		/// Gets or sets the byte address to the first animation header.
@@ -55,13 +76,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = animationHeaderAddress;
 
 		public int UnknownInteger1
 		{
 			get;
 			set;
-		}
+		} = unknownInteger1;
 
 		/// <summary>
 		/// Gets or sets the number of sprite group headers.
@@ -70,7 +91,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = spriteGroupHeaderCount;
 
 		/// <summary>
 		/// Gets or sets the byte address of the first sprite group header.
@@ -79,13 +100,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = spriteGroupHeaderAddress;
 
 		public int UnknownInteger4
 		{
 			get;
 			set;
-		}
+		} = unknownInteger4;
 
 
 		/// <summary>
@@ -95,7 +116,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = pathPointCount;
 
 		/// <summary>
 		/// Gets or sets the byte address to the first path point.
@@ -104,55 +125,55 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = pathPointAddress;
 
 		public int UnknownInteger5
 		{
 			get;
 			set;
-		}
+		} = unknownInteger5;
 
 		public int UnknownInteger6
 		{
 			get;
 			set;
-		}
+		} = unknownInteger6;
 
 		public int UnknownInteger7
 		{
 			get;
 			set;
-		}
+		} = unknownInteger7;
 
 		public int UnknownInteger8
 		{
 			get;
 			set;
-		}
+		} = unknownInteger8;
 
 		public int UnknownInteger9
 		{
 			get;
 			set;
-		}
+		} = unknownInteger9;
 
 		public int UnknownInteger10
 		{
 			get;
 			set;
-		}
+		} = unknownInteger10;
 
 		public int UnknownInteger11
 		{
 			get;
 			set;
-		}
+		} = unknownInteger11;
 
 		public int UnknownInteger12
 		{
 			get;
 			set;
-		}
+		} = unknownInteger12;
 
 		/// <summary>
 		/// Gets or sets the name of the file.
@@ -161,7 +182,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = name;
 
 		public override string ToString()
 		{

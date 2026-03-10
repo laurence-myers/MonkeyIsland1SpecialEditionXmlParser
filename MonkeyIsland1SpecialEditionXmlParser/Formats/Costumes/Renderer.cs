@@ -11,16 +11,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 {
 	public static class Renderer
 	{
-		public static void Render( Costume costume, string animationName, string directory, string filePrefix, Padding spritePadding, LPAKFile lpakFile )
+		public static void Render( Costume? costume, string animationName, string directory, string filePrefix, Padding spritePadding, LPAKFile lpakFile )
 		{
-			var animation = costume.AnimationList.FirstOrDefault( a => a.Name == animationName );
+			var animation = costume?.AnimationList.FirstOrDefault( a => a.Name == animationName );
 			if( animation == null )
 			{
 				throw new Exception( "Animation not found" );
 			}
 
-			var textures = costume.TextureFileNameList.Select( f => lpakFile.LoadImage( f.Path ) ).ToArray();
-			if( textures.Any( t => t == null ) )
+			var textures = costume?.TextureFileNameList.Select( f => lpakFile.LoadImage( f.Path ) ).ToArray();
+			if( textures?.Any( t => t == null ) ?? false )
 			{
 				throw new Exception( "Unable to load one or more textures" );
 			}
@@ -29,12 +29,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 
 			foreach( var animationFrame in animation.AnimationFrameList )
 			{
-				var spriteGroup = costume.SpriteGroupList.FirstOrDefault( sg => sg.Identifier == animationFrame.SpriteGroupIdentifier );
+				var spriteGroup = costume?.SpriteGroupList.FirstOrDefault( sg => sg.Identifier == animationFrame.SpriteGroupIdentifier );
 				if( spriteGroup == null )
 				{
 					continue;
 				}
 
+				if( animationFrame.FrameList is null)
+				{
+					continue;
+				}
 				var sprites = animationFrame.FrameList
 					.Where( f => f.SpriteIdentifier > -1 && f.SpriteIdentifier < spriteGroup.SpriteList.Count )
 					.Select( f => spriteGroup.SpriteList[f.SpriteIdentifier] )
@@ -57,18 +61,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 
 				foreach( var sprite in sprites )
 				{
-					if( sprite.TextureNumber < 0 )
+					if( sprite.TextureNumber < 0 || textures is null)
 					{
 						continue;
 					}
 
 					var texture = textures[sprite.TextureNumber];
+					if( texture is null)
+					{
+						continue;
+					}
 					var destPoints
 						= flip
 						? new[] { new Point( sprite.TextureWidth + spritePadding.Right, y + spritePadding.Top ), new Point( 0 + spritePadding.Left, y + spritePadding.Top ), new Point( sprite.TextureWidth + spritePadding.Right, y + sprite.TextureHeight + spritePadding.Top ) }
 						: new[] { new Point( 0 + spritePadding.Left, y + spritePadding.Top ), new Point( sprite.TextureWidth + spritePadding.Right, y + spritePadding.Top ), new Point( 0 + spritePadding.Left, y + sprite.TextureHeight + spritePadding.Top ) }
 						;
-						new Rectangle( 0, y, sprite.TextureWidth, sprite.TextureHeight );
 					var srcRect = new Rectangle(sprite.TextureX, sprite.TextureY, sprite.TextureWidth, sprite.TextureHeight);
 					imageGraphics.DrawImage( texture, destPoints, srcRect, GraphicsUnit.Pixel );
 					y += srcRect.Height + spritePadding.Vertical;

@@ -4,14 +4,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK
 {
 	public static class Parser
 	{
-		public static LPAKFile Parse( string fileName )
+		public static LPAKFile? Parse( string fileName )
 		{
-			LPAKFile file = null;
+			LPAKFile? file = null;
 			Helper.ReadBinaryFile( fileName, reader =>
 			{
 				file = GenericReader.Read( reader, typeof( LPAKFile ), null, 0 ) as LPAKFile;
 			} );
-			file.FileNameOnDisk = fileName;
+			file?.FileNameOnDisk = fileName;
 			return file;
 		}
 	}

@@ -12,28 +12,32 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
 	public partial class LPAKForm : Form
 	{
-		public LPAKFile LPAKFile
+		private LPAKFile LPAKFile
 		{
 			get;
 			set;
 		}
 
-		public string FileName
+		private string FileName
 		{
 			get;
 			set;
 		}
 
-		public LPAKForm()
+		public LPAKForm( string fileName, Form mdiParent, LPAKFile lpakFile, FormWindowState windowState )
 		{
 			this.InitializeComponent();
+			this.FileName = fileName;
+			this.MdiParent = mdiParent;
+			this.LPAKFile = lpakFile;
+			this.WindowState = windowState;
 		}
 
 		private void HandleFormLoad( object sender, EventArgs args )
 		{
 			var rootNode = new TreeNode()
 			{
-				Text = Path.GetFileName( this.FileName ),
+				Text = Path.GetFileName( this.FileName ) ?? "",
 			};
 			this.treeView1.Nodes.Add( rootNode );
 
@@ -88,15 +92,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private string FileNameToDisplayName( string fileName )
 		{
-			string languageCode = null;
-			string language = null;
+			string? language = null;
 
 			fileName = Path.GetFileNameWithoutExtension( fileName );
 			fileName = fileName.Substring( 0, fileName.LastIndexOf( '.' ) );
 
 			if( fileName[2] == '.' )
 			{
-				languageCode = fileName.Substring( 0, 2 );
+				var languageCode = fileName.Substring( 0, 2 );
 				language = this.LanguageCodeToDisplayName( languageCode );
 				fileName = fileName.Substring( 3 );
 			}
@@ -110,7 +113,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			builder.Append( identifier.ToString( "000" ), " - ", fileName );
 			if( !string.IsNullOrEmpty( language ) )
 			{
-				builder.Append( " (", language, ")" );
+				builder.Append( " (", language!, ")" );
 			}
 
 			return builder.ToString();
@@ -133,7 +136,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		private void HandleMouseDoubleClick( object sender, TreeNodeMouseClickEventArgs args )
+		private void HandleMouseDoubleClick( object sender, TreeNodeMouseClickEventArgs? args )
 		{
 			if( args == null )
 			{
@@ -157,7 +160,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		private void HandleLevel1BeforeExpand( TreeNode node )
+		private void HandleLevel1BeforeExpand( TreeNode? node )
 		{
 			if( node == null )
 			{
@@ -173,7 +176,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			for( var index = 0; index < this.LPAKFile.PakFileNames.Length; index++ )
 			{
 				var fileName = this.LPAKFile.PakFileNames[index].FileName;
-				if( string.IsNullOrWhiteSpace( fileName ) )
+				if( string.IsNullOrWhiteSpace( fileName ) || fileName is null )
 				{
 					continue;
 				}
@@ -306,7 +309,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		private void HandleBeforeExpand( object sender, TreeViewCancelEventArgs args )
+		private void HandleBeforeExpand( object sender, TreeViewCancelEventArgs? args )
 		{
 			if( args == null )
 			{
@@ -420,6 +423,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
 			// Initially only supported for costumes
 			if( string.IsNullOrWhiteSpace( fileName )
+			   || fileName is null
 			   || !fileName.EndsWith( ".costume.xml" ) )
 			{
 				return;
@@ -431,7 +435,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			var costume = new Costume();
+			Costume? costume = null;
 			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
 			{
 				reader.BaseStream.Position = entry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
@@ -458,6 +462,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
 			// Initially only supported for costumes
 			if( string.IsNullOrWhiteSpace( fileName )
+			   || fileName is null
 			   || !fileName.EndsWith( ".costume.xml" ) )
 			{
 				return;

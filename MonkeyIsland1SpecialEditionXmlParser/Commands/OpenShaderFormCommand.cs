@@ -4,7 +4,7 @@ using MonkeyIsland1SpecialEditionXmlParser.UI;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenShaderFormCommand( LPAKFile lpakFile, string fileName, int fileIndex ) : BaseCommand
+	public class OpenShaderFormCommand( LPAKFile lpakFile, string? fileName, int fileIndex ) : BaseCommand
 	{
 		protected override bool InnerExecute()
 		{
@@ -13,13 +13,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			var form = new ShaderForm()
+			var form = new ShaderForm(
+				fileIndex: fileIndex,
+				mdiParent: MainForm.Instance!,
+				lpakFile: lpakFile,
+				windowState: FormWindowState.Normal
+			)
 			{
-				FileIndex = fileIndex,
-				MdiParent = MainForm.Instance,
-				LPAKFile = lpakFile,
-				Text = fileName,
-				WindowState = FormWindowState.Normal,
+				Text = fileName,	
 			};
 			form.Show();
 

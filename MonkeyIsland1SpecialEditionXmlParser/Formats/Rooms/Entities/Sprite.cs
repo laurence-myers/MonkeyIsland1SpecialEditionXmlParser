@@ -1,7 +1,17 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Sprite
+	public class Sprite(
+		int index,
+		int textureFileNameAddress,
+		int textureX,
+		int textureY,
+		int textureWidth,
+		int textureHeight,
+		float offsetX,
+		float offsetY,
+		int layer
+	)
 	{
 		/// <summary>
 		/// Gets or sets the index of the sprite.
@@ -10,7 +20,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = index;
 
 		/// <summary>
 		/// Gets or sets the byte address for the texture file name.
@@ -19,12 +29,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = textureFileNameAddress;
 
 		/// <summary>
 		/// Gets or sets the texture file name.
 		/// </summary>
-		public string TextureFileName
+		public string? TextureFileName
 		{
 			get;
 			set;
@@ -37,7 +47,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = textureX;
 
 		/// <summary>
 		/// Gets or sets the Y component of the sprite's rectangle.
@@ -46,7 +56,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = textureY;
 
 		/// <summary>
 		/// Gets or sets the width of the sprite's rectangle.
@@ -55,7 +65,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = textureWidth;
 
 		/// <summary>
 		/// Gets or sets the height of the sprite's rectangle.
@@ -64,7 +74,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = textureHeight;
 
 		/// <summary>
 		/// Gets or sets X component of the offset.
@@ -73,7 +83,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = offsetX;
 
 		/// <summary>
 		/// Gets or sets Y component of the offset.
@@ -82,7 +92,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = offsetY;
 
 		/// <summary>
 		/// Gets or sets layer index. NB: this might be a sort order.
@@ -91,7 +101,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = layer;
 
 		public override string ToString()
 		{

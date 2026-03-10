@@ -14,7 +14,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private static readonly List<RoomForm> instances = new List<RoomForm>();
 		private float scale = 0.5f;
 
-		public Room Room
+		private Room? Room
 		{
 			get;
 			set;
@@ -40,8 +40,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		public RoomForm()
+		public RoomForm( int fileIndex, LPAKFile lpakFile, Form mdiParent, FormWindowState windowState )
 		{
+			this.FileIndex = fileIndex;
+			this.LPAKFile = lpakFile;
+			this.MdiParent = mdiParent;
+			this.WindowState = windowState;
+			
 			RoomForm.instances.Add( this );
 			this.FormClosed += delegate { RoomForm.instances.Remove( this ); };
 
@@ -52,11 +57,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void RenderRoom()
 		{
-			if( this.LPAKFile == null )
-			{
-				return;
-			}
-
 			var fileEntry = this.LPAKFile.PakFileEntries[this.FileIndex];
 			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
 			{
@@ -64,7 +64,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				this.Room = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoom( reader );
 			} );
 
-			for( var index = 0; index < this.Room.StaticSpriteList.Count; index++ )
+			for( var index = 0; index < this.Room?.StaticSpriteList.Count; index++ )
 			{
 				var staticSpriteList = this.Room.StaticSpriteList[index];
 				var staticSprite = this.RenderStaticSpriteList( staticSpriteList );
@@ -73,12 +73,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					continue;
 				}
 
-				this.spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite()
-				{
-					Image = staticSprite,
-					Layer = index,
-					Name = "StaticSprite" + index,
-				} );
+				this.spriteSetPreviewControl.Sprites.Add(
+					new SpriteSetPreviewControlSprite(
+						image: staticSprite,
+						layer: index,
+						name: "StaticSprite" + index
+					)
+				);
 			}
 
 			//for( var index = 0; index < this.Room.SpriteGroupList.Count; index++ )
@@ -127,7 +128,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			return bitmap;
 		}
 
-		private Bitmap RenderSpriteGroup(SpriteGroup spriteGroup)
+		private Bitmap? RenderSpriteGroup(SpriteGroup spriteGroup)
 		{
 			if( spriteGroup == null || spriteGroup.SpriteList == null || spriteGroup.SpriteList.Count == 0 )
 			{
@@ -161,7 +162,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			return bitmap;
 		}
 
-		private Image LoadTexture( string fileName )
+		private Image? LoadTexture( string? fileName )
 		{
 			var image = this.LPAKFile.LoadImage( fileName );
 			return image;
@@ -169,17 +170,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void ExportAsXml( object sender, EventArgs args )
 		{
-			new ExportToXmlCommand( this.Room, string.Concat( this.Room.Header.Identifier, "_", this.Room.Header.Name, ".xml" ) ).Execute();
+			new ExportToXmlCommand( this.Room!, string.Concat( this.Room!.Header.Identifier, "_", this.Room.Header.Name, ".xml" ) ).Execute();
 		}
 
 		private void ExportAsMergedPng( object sender, EventArgs args )
 		{
-			new ExportRoomToMergedPngWithDialogCommand( this.LPAKFile, this.Room ).Execute();
+			new ExportRoomToMergedPngWithDialogCommand( this.LPAKFile!, this.Room! ).Execute();
 		}
 
 		private void ExportAsPng( object sender, EventArgs args )
 		{
-			new ExportRoomToPngWithDialogCommand( this.LPAKFile, this.Room ).Execute();
+			new ExportRoomToPngWithDialogCommand( this.LPAKFile!, this.Room! ).Execute();
 		}
 	}
 }

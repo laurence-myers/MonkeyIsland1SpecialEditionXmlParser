@@ -2,7 +2,7 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
-	public class SpriteGroup
+	public class SpriteGroup( List<Sprite> spriteList, int identifier, int index )
 	{
 		/// <summary>
 		/// Gets or sets the index of the sprite group.
@@ -11,7 +11,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = index;
 
 		/// <summary>
 		/// Gets or sets the sprite group identifier.
@@ -20,7 +20,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = identifier;
 
 		/// <summary>
 		/// Gets or sets the list of sprites.
@@ -29,7 +29,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = spriteList;
 
 		public override string ToString()
 		{

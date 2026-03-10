@@ -2,7 +2,10 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
-	public class Animation
+	public class Animation(
+		string name,
+		List<AnimationFrame> animationFrameList
+	)
 	{
 		/// <summary>
 		/// Gets or sets the name of the animation.
@@ -11,7 +14,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = name;
 
 		/// <summary>
 		/// Gets or sets a list of frames for the animation.
@@ -20,7 +23,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = animationFrameList;
 
 		public override string ToString()
 		{

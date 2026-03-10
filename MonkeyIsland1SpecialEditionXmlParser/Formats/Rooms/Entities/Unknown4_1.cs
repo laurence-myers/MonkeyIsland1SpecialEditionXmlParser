@@ -1,37 +1,43 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Unknown4_1
+	public class Unknown4_1(
+		int unkn1,
+		int unkn2,
+		int unkn3,
+		int unkn4,
+		int unkn5
+	)
 	{
 		public int Unkn1
 		{
 			get;
 			set;
-		}
+		} = unkn1;
 
 		public int Unkn2
 		{
 			get;
 			set;
-		}
+		} = unkn2;
 
 		public int Unkn3
 		{
 			get;
 			set;
-		}
+		} = unkn3;
 
 		public int Unkn4
 		{
 			get;
 			set;
-		}
+		} = unkn4;
 
 		public int Unkn5
 		{
 			get;
 			set;
-		}
+		} = unkn5;
 
 		public override string ToString()
 		{

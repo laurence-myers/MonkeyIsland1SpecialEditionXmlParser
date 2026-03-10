@@ -7,7 +7,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
 	public partial class MainForm : System.Windows.Forms.Form
 	{
-		public static MainForm Instance
+		public static MainForm? Instance
 		{
 			get;
 			private set;

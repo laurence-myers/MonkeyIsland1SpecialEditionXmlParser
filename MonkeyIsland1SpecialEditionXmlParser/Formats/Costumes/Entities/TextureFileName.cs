@@ -1,7 +1,7 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
-	public class TextureFileName
+	public class TextureFileName( string path, int index )
 	{
 		/// <summary>
 		/// Gets or sets the index of the texture file name.
@@ -10,7 +10,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = index;
 
 		/// <summary>
 		/// Gets or sets the relative texture file name.
@@ -19,7 +19,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			get;
 			set;
-		}
+		} = path;
 
 		public override string ToString()
 		{

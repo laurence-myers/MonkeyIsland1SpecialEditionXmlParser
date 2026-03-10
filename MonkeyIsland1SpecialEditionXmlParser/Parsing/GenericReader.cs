@@ -8,9 +8,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Parsing
 {
 	public static class GenericReader
 	{
-		public static object Read( BinaryReader reader, Type type, IEntity entityParent, int entityIndex )
+		public static object Read( BinaryReader reader, Type type, IEntity? entityParent, int entityIndex )
 		{
 			var entity = Activator.CreateInstance( type ) as IEntity;
+			if( entity is null )
+			{
+				throw new NotSupportedException( "Type not supported: " + type.FullName );
+			}
 			entity.PreProcess();
 			
 			var fields = type.GetFields( BindingFlags.Public | BindingFlags.Instance ).OfType<MemberInfo>();
@@ -43,21 +47,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Parsing
 				// handle IEntity fields
 				if( typeof( IEntity ).IsAssignableFrom( memberType ) )
 				{
-					var value = GenericReader.Read( reader, memberType, entity, 0 );
+					var value = GenericReader.Read( reader, memberType!, entity, 0 );
 					member.SetMemberValue( entity, value );
 					continue;
 				}
 
 				// handle IEntity array fields
-				if( memberType.IsArray )
+				if( (memberType?.IsArray ?? false) )
 				{
 					var elementType = memberType.GetElementType();
 					var array = member.GetMemberValue( entity ) as object[];
 					if( typeof( IEntity ).IsAssignableFrom( elementType ) )
 					{
-						for( var index = 0; index < array.Length; index++ )
+						for( var index = 0; index < array?.Length; index++ )
 						{
-							var value = GenericReader.Read( reader, elementType, entity, index );
+							var value = GenericReader.Read( reader, elementType!, entity, index );
 							array[index] = value;
 						}
 						continue;
@@ -68,7 +72,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Parsing
 					{
 						throw new NotSupportedException( "Type not supported: " + memberType.FullName );
 					}
-					for( var index = 0; index < array.Length; index++ )
+					for( var index = 0; index < array?.Length; index++ )
 					{
 						var value = method.Invoke( reader, null );
 						array[index] = value;
@@ -102,10 +106,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Parsing
 				// handle standard .net types
 				{
 					var binaryReaderType = typeof( BinaryReader );
-					var method = binaryReaderType.GetMethod( "Read" + memberType.Name, BindingFlags.Instance | BindingFlags.Public );
+					var method = binaryReaderType.GetMethod( "Read" + memberType?.Name, BindingFlags.Instance | BindingFlags.Public );
 					if( method == null )
 					{
-						throw new NotSupportedException( "Type not supported: " + memberType.FullName );
+						throw new NotSupportedException( "Type not supported: " + memberType?.FullName );
 					}
 
 					var value = method.Invoke( reader, null );

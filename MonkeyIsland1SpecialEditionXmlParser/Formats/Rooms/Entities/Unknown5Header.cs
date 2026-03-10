@@ -1,19 +1,22 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Unknown5Header
+	public class Unknown5Header(
+		int unknown5Count,
+		int unknown5Address
+	)
 	{
 		public int Unknown5Count
 		{
 			get;
 			set;
-		}
+		} = unknown5Count;
 
 		public int Unknown5Address
 		{
 			get;
 			set;
-		}
+		} = unknown5Address;
 
 		public override string ToString()
 		{

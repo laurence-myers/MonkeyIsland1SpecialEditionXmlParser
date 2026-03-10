@@ -14,7 +14,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		private static UserSettings instance;
+		private static UserSettings? instance;
 		public static UserSettings Instance
 		{
 			get
@@ -34,37 +34,31 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		public string[] RecentXsltFileNames
+		public string[]? RecentXsltFileNames
 		{
 			get;
 			set;
 		}
 
-		public string[] RecentExportFileNames
+		public string[]? RecentExportFileNames
 		{
 			get;
 			set;
 		}
 
-		public string[] RecentLPAKFileNames
+		public string[]? RecentLPAKFileNames
 		{
 			get;
 			set;
 		}
 
-		public string[] RecentCostumeFileNames
+		public string[]? RecentImageExportDirectories
 		{
 			get;
 			set;
 		}
 
-		public string[] RecentImageExportDirectories
-		{
-			get;
-			set;
-		}
-
-		public string[] RecentImageExportFilePrefixes
+		public string[]? RecentImageExportFilePrefixes
 		{
 			get;
 			set;

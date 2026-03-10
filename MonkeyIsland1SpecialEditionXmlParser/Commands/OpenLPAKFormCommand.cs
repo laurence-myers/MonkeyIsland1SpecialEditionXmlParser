@@ -18,13 +18,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return false;
 			}
 
-			var form = new LPAKForm()
+			var form = new LPAKForm(
+				fileName: fileName,
+				mdiParent: MainForm.Instance!,
+				lpakFile: lpakFile,
+				windowState: FormWindowState.Normal
+			)
 			{
-				FileName = fileName,
-				MdiParent = MainForm.Instance,
-				LPAKFile = lpakFile,
 				Text = fileName,
-				WindowState = FormWindowState.Normal,
 			};
 			form.Show();
 

@@ -145,8 +145,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 		public static void WriteObjectToFile( string fileName, object value )
 		{
-			Stream stream = null;
-			XmlSerializer serializer = null;
+			Stream? stream = null;
+			XmlSerializer? serializer = null;
 
 			try
 			{
@@ -167,8 +167,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 		public static T ReadObjectFromFile<T>( string fileName )
 		{
-			Stream stream = null;
-			XmlSerializer serializer = null;
+			Stream? stream = null;
+			XmlSerializer? serializer = null;
 
 			try
 			{
@@ -188,7 +188,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			}
 		}
 
-		public static string[] UpdateRecentList( this string[] array, string entry, int maxEntries )
+		public static string[] UpdateRecentList( this string[]? array, string entry, int maxEntries )
 		{
 			if( array == null )
 			{
@@ -207,7 +207,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		/// <returns>
 		/// Full path to the executing assembly.
 		/// </returns>
-		public static string GetExecutingAssemblyDirectory()
+		public static string? GetExecutingAssemblyDirectory()
 		{
 			var assembly = Assembly.GetExecutingAssembly();
 			var location = assembly.Location;
@@ -347,7 +347,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return list;
 		}
 
-		public static string Reverse( this string text )
+		public static string? Reverse( this string? text )
 		{
 			if( text == null )
 			{
@@ -408,7 +408,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return index;
 		}
 
-		public static string[] Split( this string text, StringSplitOptions options, params char[] separators )
+		public static string[] Split( this string? text, StringSplitOptions options, params char[] separators )
 		{
 			if( text == null )
 			{
@@ -430,8 +430,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 		public static void ReadBinaryFile( string fileName, Action<BinaryReader> action )
 		{
-			Stream stream = null;
-			BinaryReader reader = null;
+			Stream? stream = null;
+			BinaryReader? reader = null;
 
 			try
 			{
@@ -457,8 +457,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 		public static void WriteBinaryFile( string fileName, Action<BinaryWriter> action )
 		{
-			Stream stream = null;
-			BinaryWriter writer = null;
+			Stream? stream = null;
+			BinaryWriter? writer = null;
 
 			try
 			{
@@ -519,7 +519,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 		public static Image ImageFromDxtBytes( byte[] bytes )
 		{
-			Image image = null;
+			Image? image = null;
 			var tempFileName = Path.GetTempFileName();
 			Helper.WriteBinaryFile( tempFileName, writer =>
 			{
@@ -552,11 +552,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return image;
 		}
 
-		public static Image LoadImage( this LPAKFile file, string fileName )
+		public static Image? LoadImage( this LPAKFile file, string? fileName )
 		{
 			var index = file.PakFileNames.IndexOfPredicate( e => e.FileName == fileName );
 			var entry = file.PakFileEntries[index];
-			Image image = null;
+			Image? image = null;
 			Helper.ReadBinaryFile( file.FileNameOnDisk, reader =>
 			{
 				reader.BaseStream.Position = entry.OffsetToStartOfData + file.PakHeader.StartOfData;
@@ -566,7 +566,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return image;
 		}
 
-		public static Type GetFieldOrPropertyType( this MemberInfo member )
+		public static Type? GetFieldOrPropertyType( this MemberInfo member )
 		{
 			var field = member as FieldInfo;
 			if( field != null )
@@ -583,7 +583,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return null;
 		}
 
-		public static void SetMemberValue( this MemberInfo member, object instance, object value )
+		public static void SetMemberValue( this MemberInfo member, object instance, object? value )
 		{
 			var field = member as FieldInfo;
 			if( field != null )
@@ -600,7 +600,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			}
 		}
 
-		public static object GetMemberValue( this MemberInfo member, object instance )
+		public static object? GetMemberValue( this MemberInfo member, object instance )
 		{
 			var field = member as FieldInfo;
 			if( field != null )

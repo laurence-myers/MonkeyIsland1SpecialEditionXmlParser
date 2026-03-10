@@ -2,7 +2,9 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class Unknown4Group
+	public class Unknown4Group(
+		List<Unknown4> unknown4List
+	)
 	{
 		public int Index
 		{
@@ -14,6 +16,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = unknown4List;
 	}
 }

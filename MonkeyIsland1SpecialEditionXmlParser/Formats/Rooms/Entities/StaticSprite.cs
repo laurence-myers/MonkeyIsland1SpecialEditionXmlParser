@@ -1,7 +1,14 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
-	public class StaticSprite
+	public class StaticSprite(
+		int index,
+		int x,
+		int y,
+		int width,
+		int height,
+		int textureFileNameAddress
+	)
 	{
 		/// <summary>
 		/// Gets or sets the static sprite index.
@@ -10,7 +17,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = index;
 
 		/// <summary>
 		/// Gets or sets the X component of the position.
@@ -19,7 +26,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = x;
 
 		/// <summary>
 		/// Gets or sets the Y component of the position.
@@ -28,7 +35,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = y;
 
 		/// <summary>
 		/// Gets or sets the width.
@@ -37,7 +44,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = width;
 
 		/// <summary>
 		/// Gets or sets the height.
@@ -46,7 +53,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = height;
 
 		/// <summary>
 		/// Gets or sets the byte address of the texture file name.
@@ -55,12 +62,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		{
 			get;
 			set;
-		}
+		} = textureFileNameAddress;
 
 		/// <summary>
 		/// Gets or sets the texture file name.
 		/// </summary>
-		public string TextureFileName
+		public string? TextureFileName
 		{
 			get;
 			set;
