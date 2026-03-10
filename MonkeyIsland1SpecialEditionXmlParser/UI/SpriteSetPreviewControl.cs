@@ -23,7 +23,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		protected override void OnPaintBackground( PaintEventArgs args )
 		{
-			args.Graphics.ClearWithTransparancyGrid();
+			args.Graphics.ClearWithTransparencyGrid();
 
 			var sprites = this.Sprites;
 			if( sprites == null || sprites.Count == 0 )

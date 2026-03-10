@@ -92,38 +92,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 		}
 
 		/// <summary>
-		/// Reads a color from the current stream.
-		/// </summary>
-		/// <param name="reader">
-		/// The reader to read from.
-		/// </param>
-		/// <returns>
-		/// The color being read.
-		/// </returns>
-		public static Color ReadColor( this BinaryReader reader )
-		{
-			var argb = reader.ReadInt32();
-			var color = Color.FromArgb( argb );
-			return color;
-		}
-
-		/// <summary>
-		/// Returns the next available 32-bit integer and does not advance the byte position.
-		/// </summary>
-		/// <param name="reader">
-		/// The reader to peek at.
-		/// </param>
-		/// <returns>
-		/// The 32-bit integer being peeked at.
-		/// </returns>
-		public static int PeekInt32( this BinaryReader reader )
-		{
-			var value = reader.ReadInt32();
-			reader.BaseStream.Position -= 4;
-			return value;
-		}
-
-		/// <summary>
 		/// Returns a value indicating whether or not the specified value is between min (inclusive) and max (exclusive).
 		/// </summary>
 		/// <param name="value">
@@ -235,27 +203,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return value;
 		}
 
-		public static int[] FindOffsets( this BinaryReader reader, int targetAddress )
-		{
-			var originalPosition = reader.BaseStream.Position;
-			reader.BaseStream.Position = 0;
-
-			var offsets = new List<int>();
-
-			while( reader.BaseStream.Position < targetAddress )
-			{
-				var currentPosition = (int)reader.BaseStream.Position;
-				var currentOffset = reader.ReadInt32();
-				if( currentOffset + currentPosition == targetAddress )
-				{
-					offsets.Add( currentPosition );
-				}
-			}
-
-			reader.BaseStream.Position = originalPosition;
-			return offsets.ToArray();
-		}
-
 		public static int[] ReadInt32s( this BinaryReader reader, int count )
 		{
 			var integers = new int[count];
@@ -266,38 +213,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			return integers;
 		}
 
-		public static Int16[] ReadInt16s( this byte[] bytes )
-		{
-			var integers = new Int16[bytes.Length / 2];
-			for( var index = 0; index < bytes.Length; index++ )
-			{
-				integers[index / 2] = BitConverter.ToInt16( bytes, index );
-			}
-			return integers;
-		}
-
-		public static int[] ReadInt32s( this byte[] bytes )
-		{
-			var integers = new int[bytes.Length / 4];
-			for( var index = 0; index < bytes.Length; index++ )
-			{
-				integers[index/ 4] = BitConverter.ToInt32( bytes, index );
-			}
-			return integers;
-		}
-
-
-		public static float[] ReadFloats( this byte[] bytes )
-		{
-			var floats = new float[bytes.Length / 4];
-			for( var index = 0; index < bytes.Length; index++ )
-			{
-				floats[index / 4] = BitConverter.ToSingle( bytes, index );
-			}
-			return floats;
-		}
-
-		public static void ClearWithTransparancyGrid( this Graphics graphics )
+		public static void ClearWithTransparencyGrid( this Graphics graphics )
 		{
 			var gray = new SolidBrush( Color.FromArgb( 255, 191, 191, 191 ) );
 			for( var y = graphics.VisibleClipBounds.Y; y < graphics.VisibleClipBounds.Height; y += 10 )
@@ -309,42 +225,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 					graphics.FillRectangle( brush, x, y, 10, 10 );
 				}
 			}
-		}
-
-		public static List<Int16> ToInt16List( this List<byte> byteList )
-		{
-			var bytes = byteList.ToArray();
-			var list = new List<Int16>();
-			for( var index = 0; index < bytes.Length; index += 2 )
-			{
-				var value = BitConverter.ToInt16( bytes, index );
-				list.Add( value );
-			}
-			return list;
-		}
-
-		public static List<Int32> ToInt32List( this List<byte> byteList )
-		{
-			var bytes = byteList.ToArray();
-			var list = new List<Int32>();
-			for( var index = 0; index < bytes.Length; index += 4 )
-			{
-				var value = BitConverter.ToInt32( bytes, index );
-				list.Add( value );
-			}
-			return list;
-		}
-
-		public static List<float> ToFloatList( this List<byte> byteList )
-		{
-			var bytes = byteList.ToArray();
-			var list = new List<float>();
-			for( var index = 0; index < bytes.Length; index += 4 )
-			{
-				var value = BitConverter.ToSingle( bytes, index );
-				list.Add( value );
-			}
-			return list;
 		}
 
 		public static string? Reverse( this string? text )
@@ -382,44 +262,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			}
 
 			return -1;
-		}
-
-		public static int IndexOfPredicate( this TreeNodeCollection nodes, Predicate<TreeNode> predicate )
-		{
-			for( var index = 0; index < nodes.Count; index++ )
-			{
-				var node = nodes[index];
-				if( predicate( node ) )
-				{
-					return index;
-				}
-			}
-
-			return -1;
-		}
-
-		public static int IndexOfPredicate( this TreeNodeCollection nodes, Predicate<TreeNode> predicate, int notFoundValue )
-		{
-			var index = nodes.IndexOfPredicate( predicate );
-			if( index == -1 )
-			{
-				return notFoundValue;
-			}
-			return index;
-		}
-
-		public static string[] Split( this string? text, StringSplitOptions options, params char[] separators )
-		{
-			if( text == null )
-			{
-				return new string[0];
-			}
-			if( text == string.Empty )
-			{
-				return new string[] { string.Empty };
-			}
-			var result = text.Split( separators, options );
-			return result;
 		}
 
 		public static StringBuilder Append( this StringBuilder builder, params object[] args )
@@ -508,13 +350,6 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			}
 
 			return builder.ToString();
-		}
-
-		public static string WriteTempFile( byte[] content )
-		{
-			var fileName = Path.GetTempFileName();
-			File.WriteAllBytes( fileName, content );
-			return fileName;
 		}
 
 		public static Image ImageFromDxtBytes( byte[] bytes )
