@@ -20,7 +20,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			var form = new RoomForm(
 				fileIndex: fileIndex,
 				lpakFile: lpakFile,
-				mdiParent: MainForm.Instance!,
+				mdiParent: MainForm.Instance,
 				windowState: FormWindowState.Normal
 			)
 			{

@@ -19,7 +19,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 
 			var form = new HexForm(
 				fileIndex: fileIndex,
-				mdiParent: MainForm.Instance!,
+				mdiParent: MainForm.Instance,
 				lpakFile: lpakFile,
 				windowState: FormWindowState.Normal
 			)

@@ -5,23 +5,37 @@ using MonkeyIsland1SpecialEditionXmlParser.Commands;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
-	public partial class MainForm : System.Windows.Forms.Form
+	public partial class MainForm : System.Windows.Forms.Form, IDisposable
 	{
-		public static MainForm? Instance
+		private static MainForm? _instance;
+
+		public static MainForm Instance
 		{
-			get;
-			private set;
+			get
+			{
+				MainForm._instance ??= new MainForm();
+				return MainForm._instance;
+			}
+			private set
+			{
+				MainForm._instance = value;
+			}
 		}
 
-		public MainForm()
+		private MainForm()
 		{
-			MainForm.Instance = this;
 			this.InitializeComponent();
 
 			if( !UserSettings.Instance.DontShowQuickStart )
 			{
 				this.Paint += this.OpenQuickStartDialog;
 			}
+		}
+
+		public new void Dispose()
+		{
+			base.Dispose();
+			MainForm._instance = null;
 		}
 
 		private void OpenQuickStartDialog( object sender, EventArgs args )

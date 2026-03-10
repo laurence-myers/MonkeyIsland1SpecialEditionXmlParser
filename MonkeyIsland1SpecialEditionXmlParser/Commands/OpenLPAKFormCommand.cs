@@ -20,7 +20,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 
 			var form = new LPAKForm(
 				fileName: fileName,
-				mdiParent: MainForm.Instance!,
+				mdiParent: MainForm.Instance,
 				lpakFile: lpakFile,
 				windowState: FormWindowState.Normal
 			)

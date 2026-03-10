@@ -16,7 +16,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			var form = new CostumeForm(
 				fileIndex: fileIndex,
 				lpakFile: lpakFile,
-				mdiParent: MainForm.Instance!,
+				mdiParent: MainForm.Instance,
 				windowState: FormWindowState.Normal
 			)
 			{

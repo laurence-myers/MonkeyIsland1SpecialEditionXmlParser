@@ -15,7 +15,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 
 			var form = new ShaderForm(
 				fileIndex: fileIndex,
-				mdiParent: MainForm.Instance!,
+				mdiParent: MainForm.Instance,
 				lpakFile: lpakFile,
 				windowState: FormWindowState.Normal
 			)

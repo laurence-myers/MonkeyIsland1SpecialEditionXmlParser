@@ -13,7 +13,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			Application.EnableVisualStyles();
 			Application.ThreadException += Program.HandleThreadException;
 
-			using( var mainForm = new MainForm() )
+			using( var mainForm = MainForm.Instance )
 			{
 				Application.Run( mainForm );
 			}
