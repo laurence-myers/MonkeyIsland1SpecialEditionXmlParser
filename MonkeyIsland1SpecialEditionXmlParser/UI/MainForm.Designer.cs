@@ -42,6 +42,11 @@
 			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
+			
+			this.statusStrip = new System.Windows.Forms.StatusStrip();
+			this.statusStrip.SuspendLayout();
+			this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+			
 			this.SuspendLayout();
 			// 
 			// menuStrip1
@@ -144,6 +149,30 @@
 			this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.aboutToolStripMenuItem.Text = "About";
 			this.aboutToolStripMenuItem.Click += new System.EventHandler(this.ShowAboutForm);
+			
+			// statusStrip
+			statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+				toolStripStatusLabel
+			});
+			// statusStrip.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Table;
+			
+			// statusStrip.Location = new System.Drawing.Point(0, 248);
+			statusStrip.Name = "statusStrip";
+			// statusStrip.Size = new System.Drawing.Size(292, 25);
+			
+			/// toolStripStatusLabel
+			// toolStripStatusLabel.BorderSides = ((System.Windows.Forms.ToolStripStatusLabelBorderSides)((((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left | System.Windows.Forms.ToolStripStatusLabelBorderSides.Top)
+			// 		| System.Windows.Forms.ToolStripStatusLabelBorderSides.Right)
+			// 	| System.Windows.Forms.ToolStripStatusLabelBorderSides.Bottom)));
+			// toolStripStatusLabel.BorderStyle = System.Windows.Forms.Border3DStyle.Raised;
+			// toolStripStatusLabel.IsLink = true;
+			toolStripStatusLabel.Name = "toolStripStatusLabel";
+			// toolStripStatusLabel.Size = new System.Drawing.Size(246, 20);
+			toolStripStatusLabel.Spring = true;
+			toolStripStatusLabel.Text = "Ready";
+			toolStripStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			toolStripStatusLabel.Alignment = System.Windows.Forms.ToolStripItemAlignment.Left;
+
 			// 
 			// MainForm
 			// 
@@ -151,6 +180,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(776, 653);
 			this.Controls.Add(this.menuStrip1);
+			this.Controls.Add(this.statusStrip);
 			this.IsMdiContainer = true;
 			this.MainMenuStrip = this.menuStrip1;
 			this.Name = "MainForm";
@@ -158,6 +188,8 @@
 			this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
+			this.statusStrip.ResumeLayout(false);
+			this.statusStrip.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -178,5 +210,7 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
 		private System.Windows.Forms.ToolStripMenuItem dummyToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem windowToolStripMenuItem;
+		private System.Windows.Forms.StatusStrip statusStrip;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
 	}
 }

@@ -5,15 +5,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class AddRecentLPAKFileNameCommand( string recentFileName ) : BaseCommand
 	{
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( string.IsNullOrWhiteSpace( recentFileName ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid recent file name" );
 			}
 			if( !File.Exists( recentFileName ) )
 			{
-				return false;
+				return CommandResult.Fail( "Recent file does not exist" );
 			}
 
 			UserSettings.Instance.RecentLPAKFileNames = Helper.UpdateRecentList(
@@ -23,7 +23,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				);
 			UserSettings.Instance.Save();
 
-			return true;
+			return CommandResult.Success("");
 		}
 	}
 }

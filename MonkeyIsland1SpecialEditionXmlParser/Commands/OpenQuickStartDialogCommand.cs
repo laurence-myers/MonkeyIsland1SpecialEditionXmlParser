@@ -8,10 +8,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 		{
 		};
 
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			this.quickStartForm.ShowDialog( MainForm.Instance );
-			return true;
+			return CommandResult.Success(string.Empty);
 		}
 	}
 }

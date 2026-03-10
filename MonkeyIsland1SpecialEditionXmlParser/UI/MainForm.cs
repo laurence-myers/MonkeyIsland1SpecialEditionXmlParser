@@ -86,5 +86,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				this.recentToolStripMenuItem.DropDownItems.Add( "dummy" );
 			}
 		}
+
+		public void SetStatusText( string text )
+		{
+			this.toolStripStatusLabel.Text = text;
+		}
 	}
 }

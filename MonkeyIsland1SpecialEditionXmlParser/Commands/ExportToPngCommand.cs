@@ -5,19 +5,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class ExportToPngCommand( Bitmap exportImage, string exportFileName ) : BaseCommand
 	{
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( exportImage == null )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid export image" );
 			}
 			if( string.IsNullOrWhiteSpace( exportFileName ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid export file name" );
 			}
 
 			exportImage.Save( exportFileName, ImageFormat.Png );
-			return true;
+			return CommandResult.Success( $"Exported to PNG: {exportFileName}" );
 		}
 	}
 }

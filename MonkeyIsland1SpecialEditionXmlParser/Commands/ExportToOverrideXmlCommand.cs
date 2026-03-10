@@ -4,26 +4,26 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class ExportToOverrideXmlCommand( string? lpakFilePath, string? resourcePath, object? obj ) : BaseCommand
 	{
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( string.IsNullOrWhiteSpace( lpakFilePath ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid LPAK file path" );
 			}
 			if( string.IsNullOrWhiteSpace( resourcePath ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid resource path" );
 			}
 			if( obj == null )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid object to export" );
 			}
 
 			// Get the directory containing the LPAK file
 			var lpakDirectory = Path.GetDirectoryName( lpakFilePath );
 			if( lpakDirectory == null || resourcePath == null )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid LPAK directory or resource path" );
 			}
 
 			// Combine with the resource path to create the full export path
@@ -38,7 +38,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 
 			Helper.WriteObjectToFile( exportPath, obj );
 
-			return true;
+			return CommandResult.Success( $"Exported to override XML: {exportPath}" );
 		}
 	}
 }

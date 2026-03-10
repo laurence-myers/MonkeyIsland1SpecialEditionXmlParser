@@ -25,24 +25,23 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			ValidateNames = true,
 		};
 
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( exportImage == null )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid export image" );
 			}
 			if( string.IsNullOrWhiteSpace( exportFileName ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid export file name" );
 			}
 
 			if( this.saveFileDialog.ShowDialog( MainForm.Instance ) != DialogResult.OK )
 			{
-				return false;
+				return CommandResult.Fail( "Export cancelled by user" );
 			}
 
-			var success = new ExportToPngCommand( exportImage, this.saveFileDialog.FileName ).Execute();
-			return success;
+			return new ExportToPngCommand( exportImage, this.saveFileDialog.FileName ).Execute();
 		}
 	}
 }

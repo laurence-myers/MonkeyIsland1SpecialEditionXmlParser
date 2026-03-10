@@ -56,11 +56,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			this.ExportFileName = exportFileName;
 		}
 
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( this.xmlExportDialog.ShowDialog( MainForm.Instance ) != DialogResult.OK )
 			{
-				return false;
+				return CommandResult.Fail( string.Empty );
 			}
 
 			var exportFileName = this.ExportFileName;
@@ -89,7 +89,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				}
 			}
 			
-			return true;
+			return CommandResult.Success($"Exported to XML: {exportFileName}");
 		}
 	}
 }

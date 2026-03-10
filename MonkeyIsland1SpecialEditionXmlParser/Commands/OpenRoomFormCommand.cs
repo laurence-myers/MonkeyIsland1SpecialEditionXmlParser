@@ -6,15 +6,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class OpenRoomFormCommand( LPAKFile lpakFile, string? fileName, int fileIndex ) : BaseCommand
 	{
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
-			if( lpakFile == null )
-			{
-				return false;
-			}
 			if( string.IsNullOrWhiteSpace( fileName ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid file name" );
 			}
 
 			var form = new RoomForm(
@@ -28,7 +24,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			};
 			form.Show();
 
-			return true;
+			return CommandResult.Success(string.Empty);
 		}
 	}
 }

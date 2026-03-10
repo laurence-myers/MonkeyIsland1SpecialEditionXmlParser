@@ -26,15 +26,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			ValidateNames = true,
 		};
 
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( this.imageExportDialog.ShowDialog( MainForm.Instance ) != DialogResult.OK )
 			{
-				return false;
+				return CommandResult.Fail( "" );
 			}
 
-			var success = new ExportRoomToMergedPngCommand( this.imageExportDialog.FileName, lpakFile, room ).Execute();
-			return success;
+			return new ExportRoomToMergedPngCommand( this.imageExportDialog.FileName, lpakFile, room ).Execute();
 		}
 	}
 }

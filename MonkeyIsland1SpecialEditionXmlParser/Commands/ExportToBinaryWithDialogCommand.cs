@@ -25,15 +25,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			ValidateNames = true,
 		};
 
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( this.saveFileDialog.ShowDialog( MainForm.Instance ) != DialogResult.OK )
 			{
-				return false;
+				return CommandResult.Fail( "" );
 			}
 
-			var success = new ExportToBinaryCommand( this.saveFileDialog.FileName, bytes ).Execute();
-			return success;
+			return new ExportToBinaryCommand( this.saveFileDialog.FileName, bytes ).Execute();
 		}
 	}
 }

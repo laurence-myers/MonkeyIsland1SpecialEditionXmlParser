@@ -9,19 +9,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class ExportRoomToPngCommand( string exportPath, LPAKFile lpakFile, Room room ) : BaseCommand
 	{
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( string.IsNullOrWhiteSpace( exportPath ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid export path" );
 			}
 			if( !Directory.Exists( exportPath ) )
 			{
-				return false;
+				return CommandResult.Fail( "Export path does not exist" );
 			}
 			if( room.StaticSpriteList == null )
 			{
-				return false;
+				return CommandResult.Fail( "Room has no static sprites" );
 			}
 
 			var width = room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.X + ss.Width ) );
@@ -50,7 +50,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				}
 			}
 
-			return true;
+			return CommandResult.Success( $"Exported room to {exportPath}" );
 		}
 	}
 }

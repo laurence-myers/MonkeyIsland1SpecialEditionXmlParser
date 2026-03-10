@@ -27,17 +27,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 
 		private string? FileName;
 
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( this.openFileDialog.ShowDialog( MainForm.Instance ) != DialogResult.OK )
 			{
-				return false;
+				return CommandResult.Fail( string.Empty );
 			}
 
 			this.FileName = openFileDialog.FileName;
 
-			var success = new OpenFileCommand( this.FileName ).Execute();
-			return success;
+			return new OpenFileCommand( this.FileName ).Execute();
 		}
 	}
 }

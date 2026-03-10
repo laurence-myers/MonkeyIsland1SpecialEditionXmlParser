@@ -1,14 +1,28 @@
-﻿namespace MonkeyIsland1SpecialEditionXmlParser.Commands
+﻿global using CommandResult = MonkeyIsland1SpecialEditionXmlParser.Lib.Result<string, string>;
+using MonkeyIsland1SpecialEditionXmlParser.UI;
+
+namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
+
 	public abstract class BaseCommand
 	{
-		public bool Execute()
+		public CommandResult Execute()
 		{
-			var success = this.InnerExecute();
+			var result = this.InnerExecute();
 
-			return success;
+			var statusText = result.IsSuccess switch
+			{
+				true => result.Value,
+				false => result.Error,
+			};
+			if( !string.IsNullOrEmpty( statusText ) )
+			{
+				MainForm.Instance.SetStatusText( statusText );
+			}
+			
+			return result;
 		}
 
-		protected abstract bool InnerExecute();
+		protected abstract CommandResult InnerExecute();
 	}
 }

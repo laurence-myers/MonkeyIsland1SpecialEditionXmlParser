@@ -45,13 +45,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			this.FilePrefix = filePrefix;
 		}
 
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( this.imageExportDialog.ShowDialog( MainForm.Instance ) != DialogResult.OK )
 			{
-				return false;
+				return CommandResult.Fail( string.Empty );
 			}
-			return true;
+			return CommandResult.Success( string.Empty );
 		}
 	}
 }

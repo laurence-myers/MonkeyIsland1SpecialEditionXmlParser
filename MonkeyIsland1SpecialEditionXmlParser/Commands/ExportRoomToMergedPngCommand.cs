@@ -9,15 +9,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class ExportRoomToMergedPngCommand( string exportFileName, LPAKFile lpakFile, Room room ) : BaseCommand
 	{
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( string.IsNullOrWhiteSpace( exportFileName ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid export file name" );
 			}
 			if( room.StaticSpriteList == null )
 			{
-				return false;
+				return CommandResult.Fail( "Room has no static sprite list" );
 			}
 
 			var width = room.StaticSpriteList.Max( ssl => ssl.Max( ss => ss.X + ss.Width ) );
@@ -49,7 +49,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			}
 
 			image.Save( exportFileName, ImageFormat.Png );
-			return true;
+			return CommandResult.Success( $"Exported room to merged PNG: {exportFileName}" );
 		}
 	}
 }

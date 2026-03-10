@@ -7,15 +7,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class OpenLPAKFormCommand( LPAKFile lpakFile, string fileName ) : BaseCommand
 	{
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( string.IsNullOrWhiteSpace( fileName ) )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid file name" );
 			}
 			if( !File.Exists( fileName ) )
 			{
-				return false;
+				return CommandResult.Fail( "File does not exist" );
 			}
 
 			var form = new LPAKForm(
@@ -29,7 +29,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			};
 			form.Show();
 
-			return true;
+			return CommandResult.Success(string.Empty);
 		}
 	}
 }

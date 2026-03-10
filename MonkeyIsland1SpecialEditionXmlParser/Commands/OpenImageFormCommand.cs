@@ -8,11 +8,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
 	public class OpenImageFormCommand( Bitmap? image, string? title ) : BaseCommand
 	{
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( image == null )
 			{
-				return false;
+				return CommandResult.Fail( "Invalid image" );
 			}
 
 			var form = new ImageViewerForm()
@@ -25,12 +25,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			var spriteSetPreviewControl = form.Controls.OfType<SpriteSetPreviewControl>().FirstOrDefault();
 			if( spriteSetPreviewControl == null )
 			{
-				return false;
+				return CommandResult.Fail( "SpriteSetPreviewControl not found" );
 			}
 			spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite( image: image ) );
 
 			form.Show();
-			return true;
+			return CommandResult.Success(string.Empty);
 		}
 	}
 }

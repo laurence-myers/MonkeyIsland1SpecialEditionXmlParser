@@ -100,7 +100,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			var openImageExportDialogCommand = new OpenImageExportDialogCommand( string.Concat( this.Costume?.Header.Name, this.Costume?.Header.Identifier ) );
-			if( !openImageExportDialogCommand.Execute() )
+			if( !openImageExportDialogCommand.Execute().IsSuccess )
 			{
 				return;
 			}
@@ -116,7 +116,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private void ExportAllAsPngFiles( object sender, EventArgs e )
 		{
 			var openImageExportDialogCommand = new OpenImageExportDialogCommand( string.Concat( this.Costume?.Header.Name, this.Costume?.Header.Identifier ) );
-			if( !openImageExportDialogCommand.Execute() )
+			if( !openImageExportDialogCommand.Execute().IsSuccess )
 			{
 				return;
 			}

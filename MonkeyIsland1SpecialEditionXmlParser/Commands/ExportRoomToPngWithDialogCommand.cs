@@ -12,15 +12,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			ShowNewFolderButton = true,
 		};
 
-		protected override bool InnerExecute()
+		protected override CommandResult InnerExecute()
 		{
 			if( this.imageExportDialog.ShowDialog( MainForm.Instance ) != DialogResult.OK )
 			{
-				return false;
+				return CommandResult.Fail( "" );
 			}
 
-			var success = new ExportRoomToPngCommand( this.imageExportDialog.SelectedPath, lpakFile, room ).Execute();
-			return success;
+			return new ExportRoomToPngCommand( this.imageExportDialog.SelectedPath, lpakFile, room ).Execute();
 		}
 	}
 }
