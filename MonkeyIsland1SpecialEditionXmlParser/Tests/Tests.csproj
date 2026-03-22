@@ -53,6 +53,12 @@
       <Content Include="Fixtures\001 - guybrush-skin.xml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+      <Content Include="Fixtures\028 - bar.dat">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content> 
+      <Content Include="Fixtures\028 - bar.xml">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\MonkeyIsland1SpecialEditionXmlParser.csproj">

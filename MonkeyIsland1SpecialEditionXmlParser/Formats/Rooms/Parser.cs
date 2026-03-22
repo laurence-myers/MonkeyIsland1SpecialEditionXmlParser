@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
@@ -8,6 +7,30 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 {
 	public static class Parser
 	{
+		/// <summary>
+		/// Reads a Room from a single .dat file.
+		/// </summary>
+		/// <param name="fileName">The path to the .dat file.</param>
+		/// <returns>The parsed Room object.</returns>
+		public static Room ReadRoomFromBinaryFile( string fileName )
+		{
+			using( var stream = File.OpenRead( fileName ) )
+			using( var reader = new BinaryReader( stream ) )
+			{
+				return ReadRoom( reader );
+			}
+		}
+
+		/// <summary>
+		/// Reads a Room from an XML file.
+		/// </summary>
+		/// <param name="fileName">The path to the XML file.</param>
+		/// <returns>The parsed Room object.</returns>
+		public static Room ReadRoomFromXmlFile( string fileName )
+		{
+			return Helper.ReadObjectFromFile<Room>( fileName );
+		}
+		
 		public static Room ReadRoom( BinaryReader reader )
 		{
 			// read header
