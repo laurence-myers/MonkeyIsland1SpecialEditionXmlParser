@@ -1,4 +1,6 @@
 using System.IO;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
@@ -31,8 +33,28 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return CommandResult.Fail( "Override XML file does not exist" );
 			}
 
-			// Load the Costume from the XML file
-			var costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostumeFromXmlFile( overrideXmlPath );
+			// Load the entity from the XML file
+			var isCostume = overrideXmlPath.EndsWith( ".costume.xml" );
+			var isRoom = overrideXmlPath.EndsWith( ".room.xml" );
+
+			if( !isCostume && !isRoom )
+			{
+				return CommandResult.Fail( "Unsupported entity type" );
+			}
+			
+			object? entity = null;
+			if( isCostume )
+			{
+				entity = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostumeFromXmlFile( overrideXmlPath );				
+			} else if( isRoom )
+			{
+				entity = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoomFromXmlFile( overrideXmlPath );
+			}
+			
+			if( entity == null )
+			{
+				return CommandResult.Fail( "Failed to load entity from XML" );
+			}
 
 			// Construct the binary resource path (without the "overrides/" prefix)
 			var binaryResourcePath = Path.Combine( lpakDirectory, resourcePath );
@@ -44,8 +66,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				Directory.CreateDirectory( binaryDirectory );
 			}
 
-			// Pack the Costume to the binary file
-			MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Packer.WriteCostumeToBinaryFile( binaryResourcePath, costume );
+			// Pack the entity to the binary file
+			if( isCostume )
+			{
+				MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Packer.WriteCostumeToBinaryFile( binaryResourcePath, (entity as Costume)! );				
+			} else if( isRoom )
+			{
+				MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Packer.WriteRoomToBinaryFile( binaryResourcePath, (entity as Room)! );
+			}
+			
 
 			return CommandResult.Success( $"Override written to {binaryResourcePath}" );
 		}

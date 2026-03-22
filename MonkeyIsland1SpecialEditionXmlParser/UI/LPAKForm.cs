@@ -421,10 +421,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
-			// Initially only supported for costumes
 			if( string.IsNullOrWhiteSpace( fileName )
 			   || fileName is null
-			   || !fileName.EndsWith( ".costume.xml" ) )
+			   )
+			{
+				return;
+			}
+
+			var isCostume = fileName.EndsWith( ".costume.xml" );
+			var isRoom = fileName.EndsWith( ".room.xml" );
+
+			if( !isCostume && !isRoom )
 			{
 				return;
 			}
@@ -435,14 +442,29 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			Costume? costume = null;
-			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
+			object? data = null;
+			if( isCostume )
 			{
-				reader.BaseStream.Position = entry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
-				costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostume( reader );
-			} );
+				Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
+				{
+					reader.BaseStream.Position = entry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
+					data = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostume( reader );
+				} );
+			} else if( isRoom)
+			{
+				Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
+				{
+					reader.BaseStream.Position = entry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
+					data = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoom( reader );
+				} );
+			}
 
-			new ExportToOverrideXmlCommand( this.LPAKFile.FileNameOnDisk, fileName, costume ).Execute();
+			if( data == null )
+			{
+				return;
+			}
+
+			new ExportToOverrideXmlCommand( this.LPAKFile.FileNameOnDisk, fileName, data ).Execute();
 		}
 
 		private void ApplyOverride( object sender, EventArgs args )
@@ -460,10 +482,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
-			// Initially only supported for costumes
 			if( string.IsNullOrWhiteSpace( fileName )
 			   || fileName is null
-			   || !fileName.EndsWith( ".costume.xml" ) )
+			  )
+			{
+				return;
+			}
+
+			var isCostume = fileName.EndsWith( ".costume.xml" );
+			var isRoom = fileName.EndsWith( ".room.xml" );
+
+			if( !isCostume && !isRoom )
 			{
 				return;
 			}
