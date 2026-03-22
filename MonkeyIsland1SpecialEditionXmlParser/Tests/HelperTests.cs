@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using MonkeyIsland1SpecialEditionXmlParser;
-using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes;
 using NUnit.Framework;
 using CostumeParser = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser;
 using RoomParser = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser;
@@ -107,27 +106,41 @@ namespace Tests
 			}
 		}
 
-		[Test]
-		public void WriteCostumeToBinaryFile_RoundTripFromBinary_ProducesSameValues()
+		public static IEnumerable RoundTripFromBinary_TestCases()
+		{
+			yield return new TestCaseData(
+				"001 - guybrush-skin",
+				(Func<string, object>)( CostumeParser.ReadCostumeFromBinaryFile ),
+				(Action<string, object>)( ( path, obj ) => MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Packer.WriteCostumeToBinaryFile( path, (MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities.Costume)obj ) )
+			);
+			yield return new TestCaseData(
+				"028 - bar",
+				(Func<string, object>)( MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoomFromBinaryFile ),
+				(Action<string, object>)( ( path, obj ) => MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Packer.WriteRoomToBinaryFile( path, (MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities.Room)obj ) )
+			);
+		}
+
+		[Test, TestCaseSource(nameof(HelperTests.RoundTripFromBinary_TestCases))]
+		public void RoundTripFromBinary_ProducesSameValues(string fixtureName, Func<string, object> parseFromBinary, Action<string, object> writeToBinary)
 		{
 			// Arrange
-			var datFilePath = Path.Combine( TestContext.CurrentContext.TestDirectory, "Fixtures", "001 - guybrush-skin.dat" );
+			var datFilePath = Path.Combine( TestContext.CurrentContext.TestDirectory, "Fixtures", fixtureName + ".dat" );
 			var tempDatPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".dat" );
 
 			try
 			{
 				// Act
-				var originalCostume = CostumeParser.ReadCostumeFromBinaryFile( datFilePath );
-				Packer.WriteCostumeToBinaryFile( tempDatPath, originalCostume );
-				var roundTripCostume = CostumeParser.ReadCostumeFromBinaryFile( tempDatPath );
+				var originalEntity = parseFromBinary( datFilePath );
+				writeToBinary( tempDatPath, originalEntity );
+				var roundTripEntity = parseFromBinary( tempDatPath );
 
 				// Assert
-				
+
 				var originalXmlPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
 				var roundTripXmlPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
 
-				Helper.WriteObjectToFile( originalXmlPath, originalCostume );
-				Helper.WriteObjectToFile( roundTripXmlPath, roundTripCostume );
+				Helper.WriteObjectToFile( originalXmlPath, originalEntity );
+				Helper.WriteObjectToFile( roundTripXmlPath, roundTripEntity );
 
 				var originalDoc = XDocument.Load( originalXmlPath );
 				var roundTripDoc = XDocument.Load( roundTripXmlPath );
@@ -138,7 +151,7 @@ namespace Tests
 				File.Delete( originalXmlPath );
 				File.Delete( roundTripXmlPath );
 
-				Assert.That( roundTripDoc.ToString(), Is.EqualTo( originalDoc.ToString() ), "Round-tripped costume should match original costume" );
+				Assert.That( roundTripDoc.ToString(), Is.EqualTo( originalDoc.ToString() ), "Round-tripped entity should match original entity" );
 			}
 			finally
 			{
@@ -149,26 +162,42 @@ namespace Tests
 			}
 		}
 
-		[Test]
-		public void WriteCostumeToBinaryFile_RoundTripFromXml_ProducesSameValues()
+		public static IEnumerable RoundTripFromXml_TestCases()
+		{
+			yield return new TestCaseData(
+				"001 - guybrush-skin",
+				(Func<string, object>)( CostumeParser.ReadCostumeFromXmlFile ),
+				(Func<string, object>)( CostumeParser.ReadCostumeFromBinaryFile ),
+				(Action<string, object>)( ( path, obj ) => MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Packer.WriteCostumeToBinaryFile( path, (MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities.Costume)obj ) )
+			);
+			yield return new TestCaseData(
+				"028 - bar",
+				(Func<string, object>)( MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoomFromXmlFile ),
+				(Func<string, object>)( MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoomFromBinaryFile ),
+				(Action<string, object>)( ( path, obj ) => MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Packer.WriteRoomToBinaryFile( path, (MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities.Room)obj ) )
+			);
+		}
+
+		[Test, TestCaseSource(nameof(HelperTests.RoundTripFromXml_TestCases))]
+		public void RoundTripFromXml_ProducesSameValues(string fixtureName, Func<string, object> parseFromXml, Func<string, object> parseFromBinary, Action<string, object> writeToBinary)
 		{
 			// Arrange
-			var xmlFilePath = Path.Combine( TestContext.CurrentContext.TestDirectory, "Fixtures", "001 - guybrush-skin.xml" );
+			var xmlFilePath = Path.Combine( TestContext.CurrentContext.TestDirectory, "Fixtures", fixtureName + ".xml" );
 			var tempDatPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".dat" );
 
 			try
 			{
 				// Act
-				var originalCostume = CostumeParser.ReadCostumeFromXmlFile( xmlFilePath );
-				Packer.WriteCostumeToBinaryFile( tempDatPath, originalCostume );
-				var roundTripCostume = CostumeParser.ReadCostumeFromBinaryFile( tempDatPath );
+				var originalEntity = parseFromXml( xmlFilePath );
+				writeToBinary( tempDatPath, originalEntity );
+				var roundTripEntity = parseFromBinary( tempDatPath );
 
 				// Assert
 				var originalXmlPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
 				var roundTripXmlPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".xml" );
 
-				Helper.WriteObjectToFile( originalXmlPath, originalCostume );
-				Helper.WriteObjectToFile( roundTripXmlPath, roundTripCostume );
+				Helper.WriteObjectToFile( originalXmlPath, originalEntity );
+				Helper.WriteObjectToFile( roundTripXmlPath, roundTripEntity );
 
 				var originalDoc = XDocument.Load( originalXmlPath );
 				var roundTripDoc = XDocument.Load( roundTripXmlPath );
@@ -179,7 +208,7 @@ namespace Tests
 				File.Delete( originalXmlPath );
 				File.Delete( roundTripXmlPath );
 
-				Assert.That( roundTripDoc.ToString(), Is.EqualTo( originalDoc.ToString() ), "Round-tripped costume from XML should match original costume" );
+				Assert.That( roundTripDoc.ToString(), Is.EqualTo( originalDoc.ToString() ), "Round-tripped entity from XML should match original entity" );
 			}
 			finally
 			{

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
+﻿namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
 	public class StaticSpriteHeader(
 		int index,

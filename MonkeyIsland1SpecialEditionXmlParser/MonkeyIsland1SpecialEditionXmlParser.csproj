@@ -112,6 +112,7 @@
     <Compile Include="Formats\Rooms\Entities\TextureHeader.cs" />
     <Compile Include="Formats\Rooms\Entities\StaticSpriteHeader.cs" />
     <Compile Include="Formats\Rooms\Entities\Unknown6.cs" />
+    <Compile Include="Formats\Rooms\Packer.cs" />
     <Compile Include="Formats\Rooms\Parser.cs" />
     <Compile Include="Formats\Rooms\SanityChecker.cs" />
     <Compile Include="Lib\Result.cs" />

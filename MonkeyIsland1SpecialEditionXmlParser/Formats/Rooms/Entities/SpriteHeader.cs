@@ -1,4 +1,6 @@
 ﻿
+using System.Xml.Serialization;
+
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
 	public class SpriteHeader(
@@ -27,25 +29,31 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		/// <summary>
 		/// Gets or sets the identifier.
 		/// </summary>
+		[XmlIgnore]
 		public int Identifier
 		{
 			get;
+			set;
 		} = identifier;
 
 		/// <summary>
 		/// Gets or sets the number of sprites.
 		/// </summary>
+		[XmlIgnore]
 		public int SpriteCount
 		{
 			get;
+			set;
 		} = spriteCount;
 
 		/// <summary>
 		/// Gets or sets the byte address for the first sprite.
 		/// </summary>
+		[XmlIgnore]
 		public int SpriteAddress
 		{
 			get;
+			set;
 		} = spriteAddress;
 
 		public override string ToString()
