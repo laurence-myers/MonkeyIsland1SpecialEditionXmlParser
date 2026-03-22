@@ -1,4 +1,8 @@
-﻿[ 2026/03/08 ]
+﻿[ 2026/03/22 ]
+---------------------------------------------------------------
+- Added "Export override XML" and "Apply override" for Room entities
+
+[ 2026/03/08 ]
 ---------------------------------------------------------------
 - Added "Export override XML"
 - Added "Apply override"
