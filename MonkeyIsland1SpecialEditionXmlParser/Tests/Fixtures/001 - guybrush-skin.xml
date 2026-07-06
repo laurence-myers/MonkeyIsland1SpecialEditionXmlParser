@@ -1,23 +1,23 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <Costume xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Header>
     <Identifier>1</Identifier>
-    <NameAddress>184328908</NameAddress>
+    <NameAddress>80</NameAddress>
     <TextureFileNameCount>3</TextureFileNameCount>
-    <TextureHeaderAddress>184328924</TextureHeaderAddress>
+    <TextureHeaderAddress>96</TextureHeaderAddress>
     <AnimationCount>48</AnimationCount>
-    <AnimationHeaderAddress>184328956</AnimationHeaderAddress>
+    <AnimationHeaderAddress>128</AnimationHeaderAddress>
     <UnknownInteger1>0</UnknownInteger1>
     <SpriteGroupHeaderCount>3</SpriteGroupHeaderCount>
-    <SpriteGroupHeaderAddress>184329724</SpriteGroupHeaderAddress>
-    <UnknownInteger4>2</UnknownInteger4>
+    <SpriteGroupHeaderAddress>896</SpriteGroupHeaderAddress>
+    <PathPointTypeCount>2</PathPointTypeCount>
     <PathPointCount>10</PathPointCount>
-    <PathPointAddress>184329772</PathPointAddress>
+    <PathPointAddress>944</PathPointAddress>
     <UnknownInteger5>1</UnknownInteger5>
     <UnknownInteger6>0</UnknownInteger6>
-    <UnknownInteger7>1048576000</UnknownInteger7>
-    <UnknownInteger8>1065353216</UnknownInteger8>
-    <UnknownInteger9>1065353216</UnknownInteger9>
+    <UnknownFloat7>0.25</UnknownFloat7>
+    <UnknownFloat8>1</UnknownFloat8>
+    <UnknownFloat9>1</UnknownFloat9>
     <UnknownInteger10>0</UnknownInteger10>
     <UnknownInteger11>0</UnknownInteger11>
     <UnknownInteger12>0</UnknownInteger12>
@@ -26,407 +26,407 @@
   <TextureHeaderList>
     <TextureHeader>
       <TextureSpriteCount1>24</TextureSpriteCount1>
-      <TextureFileNameAddress1>184329900</TextureFileNameAddress1>
+      <TextureFileNameAddress1>1072</TextureFileNameAddress1>
       <TextureSpriteCount2>32</TextureSpriteCount2>
-      <TextureFileNameAddress2>184329964</TextureFileNameAddress2>
+      <TextureFileNameAddress2>1136</TextureFileNameAddress2>
     </TextureHeader>
     <TextureHeader>
       <TextureSpriteCount1>1</TextureSpriteCount1>
-      <TextureFileNameAddress1>184330028</TextureFileNameAddress1>
+      <TextureFileNameAddress1>1200</TextureFileNameAddress1>
       <TextureSpriteCount2>0</TextureSpriteCount2>
       <TextureFileNameAddress2>0</TextureFileNameAddress2>
     </TextureHeader>
   </TextureHeaderList>
   <AnimationHeaderList>
     <AnimationHeader>
-      <NameAddress>184330092</NameAddress>
+      <NameAddress>1264</NameAddress>
       <Identifier>4</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330108</AnimationFrameAddress>
+      <AnimationFrameAddress>1280</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330140</NameAddress>
+      <NameAddress>1312</NameAddress>
       <Identifier>5</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330156</AnimationFrameAddress>
+      <AnimationFrameAddress>1328</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330188</NameAddress>
+      <NameAddress>1360</NameAddress>
       <Identifier>6</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330204</AnimationFrameAddress>
+      <AnimationFrameAddress>1376</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330236</NameAddress>
+      <NameAddress>1408</NameAddress>
       <Identifier>7</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330252</AnimationFrameAddress>
+      <AnimationFrameAddress>1424</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330284</NameAddress>
+      <NameAddress>1456</NameAddress>
       <Identifier>8</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330300</AnimationFrameAddress>
+      <AnimationFrameAddress>1472</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330332</NameAddress>
+      <NameAddress>1504</NameAddress>
       <Identifier>9</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330348</AnimationFrameAddress>
+      <AnimationFrameAddress>1520</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330380</NameAddress>
+      <NameAddress>1552</NameAddress>
       <Identifier>10</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330396</AnimationFrameAddress>
+      <AnimationFrameAddress>1568</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330428</NameAddress>
+      <NameAddress>1600</NameAddress>
       <Identifier>11</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330444</AnimationFrameAddress>
+      <AnimationFrameAddress>1616</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330476</NameAddress>
+      <NameAddress>1648</NameAddress>
       <Identifier>12</Identifier>
       <AnimationFrameCount>4</AnimationFrameCount>
-      <AnimationFrameAddress>184330492</AnimationFrameAddress>
+      <AnimationFrameAddress>1664</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330556</NameAddress>
+      <NameAddress>1728</NameAddress>
       <Identifier>13</Identifier>
       <AnimationFrameCount>3</AnimationFrameCount>
-      <AnimationFrameAddress>184330572</AnimationFrameAddress>
+      <AnimationFrameAddress>1744</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330620</NameAddress>
+      <NameAddress>1792</NameAddress>
       <Identifier>14</Identifier>
       <AnimationFrameCount>3</AnimationFrameCount>
-      <AnimationFrameAddress>184330636</AnimationFrameAddress>
+      <AnimationFrameAddress>1808</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330684</NameAddress>
+      <NameAddress>1856</NameAddress>
       <Identifier>15</Identifier>
       <AnimationFrameCount>3</AnimationFrameCount>
-      <AnimationFrameAddress>184330700</AnimationFrameAddress>
+      <AnimationFrameAddress>1872</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330748</NameAddress>
+      <NameAddress>1920</NameAddress>
       <Identifier>16</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330764</AnimationFrameAddress>
+      <AnimationFrameAddress>1936</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330796</NameAddress>
+      <NameAddress>1968</NameAddress>
       <Identifier>17</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330812</AnimationFrameAddress>
+      <AnimationFrameAddress>1984</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330844</NameAddress>
+      <NameAddress>2016</NameAddress>
       <Identifier>18</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330860</AnimationFrameAddress>
+      <AnimationFrameAddress>2032</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330892</NameAddress>
+      <NameAddress>2064</NameAddress>
       <Identifier>19</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330908</AnimationFrameAddress>
+      <AnimationFrameAddress>2080</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330940</NameAddress>
+      <NameAddress>2112</NameAddress>
       <Identifier>20</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184330956</AnimationFrameAddress>
+      <AnimationFrameAddress>2128</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184330988</NameAddress>
+      <NameAddress>2160</NameAddress>
       <Identifier>21</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331004</AnimationFrameAddress>
+      <AnimationFrameAddress>2176</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331036</NameAddress>
+      <NameAddress>2208</NameAddress>
       <Identifier>22</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331052</AnimationFrameAddress>
+      <AnimationFrameAddress>2224</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331084</NameAddress>
+      <NameAddress>2256</NameAddress>
       <Identifier>23</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331100</AnimationFrameAddress>
+      <AnimationFrameAddress>2272</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331132</NameAddress>
+      <NameAddress>2304</NameAddress>
       <Identifier>24</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331148</AnimationFrameAddress>
+      <AnimationFrameAddress>2320</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331164</NameAddress>
+      <NameAddress>2336</NameAddress>
       <Identifier>25</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331180</AnimationFrameAddress>
+      <AnimationFrameAddress>2352</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331196</NameAddress>
+      <NameAddress>2368</NameAddress>
       <Identifier>26</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331212</AnimationFrameAddress>
+      <AnimationFrameAddress>2384</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331228</NameAddress>
+      <NameAddress>2400</NameAddress>
       <Identifier>27</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331244</AnimationFrameAddress>
+      <AnimationFrameAddress>2416</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331260</NameAddress>
+      <NameAddress>2432</NameAddress>
       <Identifier>28</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331276</AnimationFrameAddress>
+      <AnimationFrameAddress>2448</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331292</NameAddress>
+      <NameAddress>2464</NameAddress>
       <Identifier>29</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331308</AnimationFrameAddress>
+      <AnimationFrameAddress>2480</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331324</NameAddress>
+      <NameAddress>2496</NameAddress>
       <Identifier>30</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331340</AnimationFrameAddress>
+      <AnimationFrameAddress>2512</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331356</NameAddress>
+      <NameAddress>2528</NameAddress>
       <Identifier>31</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331372</AnimationFrameAddress>
+      <AnimationFrameAddress>2544</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331388</NameAddress>
+      <NameAddress>2560</NameAddress>
       <Identifier>32</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331404</AnimationFrameAddress>
+      <AnimationFrameAddress>2576</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331420</NameAddress>
+      <NameAddress>2592</NameAddress>
       <Identifier>33</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331436</AnimationFrameAddress>
+      <AnimationFrameAddress>2608</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331452</NameAddress>
+      <NameAddress>2624</NameAddress>
       <Identifier>34</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331468</AnimationFrameAddress>
+      <AnimationFrameAddress>2640</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331484</NameAddress>
+      <NameAddress>2656</NameAddress>
       <Identifier>35</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331500</AnimationFrameAddress>
+      <AnimationFrameAddress>2672</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331516</NameAddress>
+      <NameAddress>2688</NameAddress>
       <Identifier>38</Identifier>
       <AnimationFrameCount>1</AnimationFrameCount>
-      <AnimationFrameAddress>184331532</AnimationFrameAddress>
+      <AnimationFrameAddress>2704</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331548</NameAddress>
+      <NameAddress>2720</NameAddress>
       <Identifier>40</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331564</AnimationFrameAddress>
+      <AnimationFrameAddress>2736</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331596</NameAddress>
+      <NameAddress>2768</NameAddress>
       <Identifier>41</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331612</AnimationFrameAddress>
+      <AnimationFrameAddress>2784</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331644</NameAddress>
+      <NameAddress>2816</NameAddress>
       <Identifier>42</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331660</AnimationFrameAddress>
+      <AnimationFrameAddress>2832</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331692</NameAddress>
+      <NameAddress>2864</NameAddress>
       <Identifier>43</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331708</AnimationFrameAddress>
+      <AnimationFrameAddress>2880</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331740</NameAddress>
+      <NameAddress>2912</NameAddress>
       <Identifier>44</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331756</AnimationFrameAddress>
+      <AnimationFrameAddress>2928</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331788</NameAddress>
+      <NameAddress>2960</NameAddress>
       <Identifier>45</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331804</AnimationFrameAddress>
+      <AnimationFrameAddress>2976</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331836</NameAddress>
+      <NameAddress>3008</NameAddress>
       <Identifier>46</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331852</AnimationFrameAddress>
+      <AnimationFrameAddress>3024</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331884</NameAddress>
+      <NameAddress>3056</NameAddress>
       <Identifier>47</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331900</AnimationFrameAddress>
+      <AnimationFrameAddress>3072</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331932</NameAddress>
+      <NameAddress>3104</NameAddress>
       <Identifier>48</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331948</AnimationFrameAddress>
+      <AnimationFrameAddress>3120</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184331980</NameAddress>
+      <NameAddress>3152</NameAddress>
       <Identifier>49</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184331996</AnimationFrameAddress>
+      <AnimationFrameAddress>3168</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184332028</NameAddress>
+      <NameAddress>3200</NameAddress>
       <Identifier>50</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184332044</AnimationFrameAddress>
+      <AnimationFrameAddress>3216</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184332076</NameAddress>
+      <NameAddress>3248</NameAddress>
       <Identifier>51</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184332092</AnimationFrameAddress>
+      <AnimationFrameAddress>3264</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184332124</NameAddress>
+      <NameAddress>3296</NameAddress>
       <Identifier>52</Identifier>
       <AnimationFrameCount>2</AnimationFrameCount>
-      <AnimationFrameAddress>184332140</AnimationFrameAddress>
+      <AnimationFrameAddress>3312</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184332172</NameAddress>
+      <NameAddress>3344</NameAddress>
       <Identifier>56</Identifier>
       <AnimationFrameCount>4</AnimationFrameCount>
-      <AnimationFrameAddress>184332204</AnimationFrameAddress>
+      <AnimationFrameAddress>3376</AnimationFrameAddress>
     </AnimationHeader>
     <AnimationHeader>
-      <NameAddress>184332268</NameAddress>
+      <NameAddress>3440</NameAddress>
       <Identifier>57</Identifier>
       <AnimationFrameCount>3</AnimationFrameCount>
-      <AnimationFrameAddress>184332300</AnimationFrameAddress>
+      <AnimationFrameAddress>3472</AnimationFrameAddress>
     </AnimationHeader>
   </AnimationHeaderList>
   <PathPointList>
     <PathPoint>
-      <UnknownByte1>0</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>0</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>2.400463</UnknownFloat1>
-      <UnknownFloat2>0.400077164</UnknownFloat2>
+      <X>2.400463</X>
+      <Y>0.400077164</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>0</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>0</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>4.00077152</UnknownFloat1>
-      <UnknownFloat2>1.60030866</UnknownFloat2>
+      <X>4.00077152</X>
+      <Y>1.60030866</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>0</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>0</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>-4.400849</UnknownFloat1>
-      <UnknownFloat2>-5.201003</UnknownFloat2>
+      <X>-4.400849</X>
+      <Y>-5.201003</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>1</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>1</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>6.00115728</UnknownFloat1>
-      <UnknownFloat2>-269.251923</UnknownFloat2>
+      <X>6.00115728</X>
+      <Y>-269.251923</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>1</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>1</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>-4.400849</UnknownFloat1>
-      <UnknownFloat2>-267.251556</UnknownFloat2>
+      <X>-4.400849</X>
+      <Y>-267.251556</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>1</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>1</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>-4.400849</UnknownFloat1>
-      <UnknownFloat2>-267.251556</UnknownFloat2>
+      <X>-4.400849</X>
+      <Y>-267.251556</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>1</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>1</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>-4.400849</UnknownFloat1>
-      <UnknownFloat2>-267.251556</UnknownFloat2>
+      <X>-4.400849</X>
+      <Y>-267.251556</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>1</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>1</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>-4.400849</UnknownFloat1>
-      <UnknownFloat2>-267.251556</UnknownFloat2>
+      <X>-4.400849</X>
+      <Y>-267.251556</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>1</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>1</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>-4.400849</UnknownFloat1>
-      <UnknownFloat2>-267.251556</UnknownFloat2>
+      <X>-4.400849</X>
+      <Y>-267.251556</Y>
     </PathPoint>
     <PathPoint>
-      <UnknownByte1>1</UnknownByte1>
-      <UnknownByte2>1</UnknownByte2>
+      <Type>1</Type>
+      <Flag>1</Flag>
       <UnknownByte3>0</UnknownByte3>
       <UnknownByte4>0</UnknownByte4>
-      <UnknownFloat1>-4.400849</UnknownFloat1>
-      <UnknownFloat2>-267.251556</UnknownFloat2>
+      <X>-4.400849</X>
+      <Y>-267.251556</Y>
     </PathPoint>
   </PathPointList>
   <SpriteGroupHeaderList>
     <SpriteGroupHeader>
       <Identifier>0</Identifier>
-      <UnkownInteger1>0</UnkownInteger1>
+      <FirstSpriteIdentifier>0</FirstSpriteIdentifier>
       <SpriteCount>35</SpriteCount>
-      <SpriteAddress>184332348</SpriteAddress>
+      <SpriteAddress>3520</SpriteAddress>
     </SpriteGroupHeader>
     <SpriteGroupHeader>
       <Identifier>1</Identifier>
-      <UnkownInteger1>0</UnkownInteger1>
+      <FirstSpriteIdentifier>0</FirstSpriteIdentifier>
       <SpriteCount>25</SpriteCount>
-      <SpriteAddress>184333756</SpriteAddress>
+      <SpriteAddress>4928</SpriteAddress>
     </SpriteGroupHeader>
     <SpriteGroupHeader>
       <Identifier>2</Identifier>
-      <UnkownInteger1>23</UnkownInteger1>
+      <FirstSpriteIdentifier>23</FirstSpriteIdentifier>
       <SpriteCount>1</SpriteCount>
-      <SpriteAddress>184334764</SpriteAddress>
+      <SpriteAddress>5936</SpriteAddress>
     </SpriteGroupHeader>
   </SpriteGroupHeaderList>
   <TextureFileNameList>
@@ -450,28 +450,26 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184334812</FrameAddress>
+          <FrameAddress>5984</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>8</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184334828</FrameAddress>
+          <FrameAddress>6000</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -483,28 +481,26 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184334844</FrameAddress>
+          <FrameAddress>6016</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>8</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184334860</FrameAddress>
+          <FrameAddress>6032</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -516,28 +512,26 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184334876</FrameAddress>
+          <FrameAddress>6048</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184334892</FrameAddress>
+          <FrameAddress>6064</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -549,28 +543,26 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184334908</FrameAddress>
+          <FrameAddress>6080</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>21</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184334924</FrameAddress>
+          <FrameAddress>6096</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>14</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -582,63 +574,54 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>8</FrameCount>
-          <FrameAddress>184334940</FrameAddress>
+          <FrameAddress>6112</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>9</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>10</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>11</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>32</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>13</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>14</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>33</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335036</FrameAddress>
+          <FrameAddress>6208</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -650,63 +633,54 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>8</FrameCount>
-          <FrameAddress>184335052</FrameAddress>
+          <FrameAddress>6224</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>9</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>10</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>11</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>32</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>13</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>14</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>33</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335148</FrameAddress>
+          <FrameAddress>6320</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -718,53 +692,46 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>6</FrameCount>
-          <FrameAddress>184335164</FrameAddress>
+          <FrameAddress>6336</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>2</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>3</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>4</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>5</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>7</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335244</FrameAddress>
+          <FrameAddress>6416</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -776,53 +743,46 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>6</FrameCount>
-          <FrameAddress>184335260</FrameAddress>
+          <FrameAddress>6432</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>15</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>16</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>17</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>18</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>19</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>20</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335340</FrameAddress>
+          <FrameAddress>6512</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -834,45 +794,43 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335356</FrameAddress>
+          <FrameAddress>6528</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>8</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335372</FrameAddress>
+          <FrameAddress>6544</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>2</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>2</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>2</Index>
           <SpriteGroupIdentifier>2</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184335388</FrameAddress>
+          <FrameAddress>6560</FrameAddress>
           <FrameList />
         </AnimationFrame>
         <AnimationFrame>
           <Index>3</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184335388</FrameAddress>
+          <FrameAddress>6560</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -883,37 +841,35 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335388</FrameAddress>
+          <FrameAddress>6560</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>8</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335404</FrameAddress>
+          <FrameAddress>6576</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>2</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>2</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>2</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184335420</FrameAddress>
+          <FrameAddress>6592</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -924,37 +880,35 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335420</FrameAddress>
+          <FrameAddress>6592</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335436</FrameAddress>
+          <FrameAddress>6608</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>2</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>2</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>2</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184335452</FrameAddress>
+          <FrameAddress>6624</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -965,37 +919,35 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335452</FrameAddress>
+          <FrameAddress>6624</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>21</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184335468</FrameAddress>
+          <FrameAddress>6640</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>2</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>2</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>2</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184335484</FrameAddress>
+          <FrameAddress>6656</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1006,93 +958,78 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>15</FrameCount>
-          <FrameAddress>184335484</FrameAddress>
+          <FrameAddress>6656</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>7</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>8</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>9</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>7</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>11</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>10</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>11</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>8</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>9</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>7</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184335676</FrameAddress>
+          <FrameAddress>6848</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1103,93 +1040,78 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>15</FrameCount>
-          <FrameAddress>184335676</FrameAddress>
+          <FrameAddress>6848</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>7</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>8</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>9</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>7</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>11</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>10</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>11</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>8</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>9</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>7</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184335868</FrameAddress>
+          <FrameAddress>7040</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1200,103 +1122,86 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>17</FrameCount>
-          <FrameAddress>184335868</FrameAddress>
+          <FrameAddress>7040</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>1</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>1</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>5</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>4</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>1</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>3</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>2</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>3</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>1</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>2</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>3</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>5</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184336076</FrameAddress>
+          <FrameAddress>7248</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1307,83 +1212,70 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>13</FrameCount>
-          <FrameAddress>184336076</FrameAddress>
+          <FrameAddress>7248</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>13</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>13</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>13</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>14</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>13</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>13</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>14</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184336236</FrameAddress>
+          <FrameAddress>7408</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1394,23 +1286,22 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336236</FrameAddress>
+          <FrameAddress>7408</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184336252</FrameAddress>
+          <FrameAddress>7424</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1421,23 +1312,22 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336252</FrameAddress>
+          <FrameAddress>7424</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184336268</FrameAddress>
+          <FrameAddress>7440</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1448,23 +1338,22 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336268</FrameAddress>
+          <FrameAddress>7440</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184336284</FrameAddress>
+          <FrameAddress>7456</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1475,23 +1364,22 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336284</FrameAddress>
+          <FrameAddress>7456</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184336300</FrameAddress>
+          <FrameAddress>7472</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -1502,14 +1390,13 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336300</FrameAddress>
+          <FrameAddress>7472</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>18</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1521,14 +1408,13 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336316</FrameAddress>
+          <FrameAddress>7488</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>18</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1540,14 +1426,13 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336332</FrameAddress>
+          <FrameAddress>7504</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1559,19 +1444,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336348</FrameAddress>
+          <FrameAddress>7520</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>22</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>12</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1583,19 +1466,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336380</FrameAddress>
+          <FrameAddress>7552</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>18</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>19</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1607,19 +1488,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336412</FrameAddress>
+          <FrameAddress>7584</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>18</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>19</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1631,19 +1510,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336444</FrameAddress>
+          <FrameAddress>7616</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>15</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1655,19 +1532,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336476</FrameAddress>
+          <FrameAddress>7648</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>22</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1679,19 +1554,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336508</FrameAddress>
+          <FrameAddress>7680</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>18</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1703,19 +1576,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336540</FrameAddress>
+          <FrameAddress>7712</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>18</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>6</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1727,19 +1598,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336572</FrameAddress>
+          <FrameAddress>7744</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>21</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1751,19 +1620,17 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>2</FrameCount>
-          <FrameAddress>184336604</FrameAddress>
+          <FrameAddress>7776</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>22</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>24</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1775,29 +1642,25 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>4</FrameCount>
-          <FrameAddress>184336636</FrameAddress>
+          <FrameAddress>7808</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>0</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>21</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>20</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>15</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1809,38 +1672,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184336684</FrameAddress>
+          <FrameAddress>7856</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336732</FrameAddress>
+          <FrameAddress>7904</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1852,38 +1711,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184336748</FrameAddress>
+          <FrameAddress>7920</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336796</FrameAddress>
+          <FrameAddress>7968</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1895,38 +1750,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184336812</FrameAddress>
+          <FrameAddress>7984</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>30</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>30</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>30</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336860</FrameAddress>
+          <FrameAddress>8032</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1938,38 +1789,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184336876</FrameAddress>
+          <FrameAddress>8048</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>31</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>31</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>31</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336924</FrameAddress>
+          <FrameAddress>8096</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -1981,38 +1828,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184336940</FrameAddress>
+          <FrameAddress>8112</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>24</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>24</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>24</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184336988</FrameAddress>
+          <FrameAddress>8160</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2024,38 +1867,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184337004</FrameAddress>
+          <FrameAddress>8176</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>24</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>24</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>24</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337052</FrameAddress>
+          <FrameAddress>8224</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2067,38 +1906,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184337068</FrameAddress>
+          <FrameAddress>8240</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>27</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>27</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>27</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337116</FrameAddress>
+          <FrameAddress>8288</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2110,38 +1945,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184337132</FrameAddress>
+          <FrameAddress>8304</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>25</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>25</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>25</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337180</FrameAddress>
+          <FrameAddress>8352</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2153,38 +1984,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184337196</FrameAddress>
+          <FrameAddress>8368</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>26</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>26</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>26</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337244</FrameAddress>
+          <FrameAddress>8416</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2196,38 +2023,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184337260</FrameAddress>
+          <FrameAddress>8432</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>26</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>26</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>26</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337308</FrameAddress>
+          <FrameAddress>8480</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2239,38 +2062,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184337324</FrameAddress>
+          <FrameAddress>8496</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>29</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>29</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>29</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337372</FrameAddress>
+          <FrameAddress>8544</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2282,38 +2101,34 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>1</UnknownInteger1>
+          <PlaybackFlags>1</PlaybackFlags>
           <FrameCount>3</FrameCount>
-          <FrameAddress>184337388</FrameAddress>
+          <FrameAddress>8560</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>28</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>28</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
             <Frame>
               <SpriteIdentifier>28</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337436</FrameAddress>
+          <FrameAddress>8608</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>3</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>3</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2325,28 +2140,26 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337452</FrameAddress>
+          <FrameAddress>8624</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>2</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337468</FrameAddress>
+          <FrameAddress>8640</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>23</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
@@ -2358,45 +2171,43 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337484</FrameAddress>
+          <FrameAddress>8656</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>34</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337500</FrameAddress>
+          <FrameAddress>8672</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>2</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>2</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>2</Index>
           <SpriteGroupIdentifier>2</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184337516</FrameAddress>
+          <FrameAddress>8688</FrameAddress>
           <FrameList />
         </AnimationFrame>
         <AnimationFrame>
           <Index>3</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184337516</FrameAddress>
+          <FrameAddress>8688</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -2407,37 +2218,35 @@
         <AnimationFrame>
           <Index>0</Index>
           <SpriteGroupIdentifier>0</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337516</FrameAddress>
+          <FrameAddress>8688</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>34</SpriteIdentifier>
-              <UnknownInteger2>0</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>0</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>1</Index>
           <SpriteGroupIdentifier>1</SpriteGroupIdentifier>
-          <UnknownInteger1>3</UnknownInteger1>
+          <PlaybackFlags>3</PlaybackFlags>
           <FrameCount>1</FrameCount>
-          <FrameAddress>184337532</FrameAddress>
+          <FrameAddress>8704</FrameAddress>
           <FrameList>
             <Frame>
               <SpriteIdentifier>-1</SpriteIdentifier>
-              <UnknownInteger2>2</UnknownInteger2>
-              <UnknownInteger3>0</UnknownInteger3>
+              <Command>2</Command>
             </Frame>
           </FrameList>
         </AnimationFrame>
         <AnimationFrame>
           <Index>2</Index>
           <SpriteGroupIdentifier>4</SpriteGroupIdentifier>
-          <UnknownInteger1>0</UnknownInteger1>
+          <PlaybackFlags>0</PlaybackFlags>
           <FrameCount>0</FrameCount>
-          <FrameAddress>184337548</FrameAddress>
+          <FrameAddress>8720</FrameAddress>
           <FrameList />
         </AnimationFrame>
       </AnimationFrameList>
@@ -2447,6 +2256,7 @@
     <SpriteGroup>
       <Index>0</Index>
       <Identifier>0</Identifier>
+      <FirstSpriteIdentifier>0</FirstSpriteIdentifier>
       <SpriteList>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2456,9 +2266,9 @@
           <TextureHeight>346</TextureHeight>
           <ScreenX>-72.0138855</ScreenX>
           <ScreenY>-338.465271</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>-1</TextureNumber>
@@ -2468,9 +2278,9 @@
           <TextureHeight>0</TextureHeight>
           <ScreenX>0</ScreenX>
           <ScreenY>0</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2480,9 +2290,9 @@
           <TextureHeight>363</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2492,9 +2302,9 @@
           <TextureHeight>358</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2504,9 +2314,9 @@
           <TextureHeight>358</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2516,9 +2326,9 @@
           <TextureHeight>363</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2528,9 +2338,9 @@
           <TextureHeight>358</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2540,9 +2350,9 @@
           <TextureHeight>359</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2552,9 +2362,9 @@
           <TextureHeight>354</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2564,9 +2374,9 @@
           <TextureHeight>351</TextureHeight>
           <ScreenX>-66.01273</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2576,9 +2386,9 @@
           <TextureHeight>351</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2588,9 +2398,9 @@
           <TextureHeight>354</TextureHeight>
           <ScreenX>-90.0173645</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>2</TextureNumber>
@@ -2600,9 +2410,9 @@
           <TextureHeight>356</TextureHeight>
           <ScreenX>-42.0081024</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2612,9 +2422,9 @@
           <TextureHeight>355</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2624,9 +2434,9 @@
           <TextureHeight>356</TextureHeight>
           <ScreenX>-84.0162048</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2636,9 +2446,9 @@
           <TextureHeight>360</TextureHeight>
           <ScreenX>-66.01273</ScreenX>
           <ScreenY>-367.270844</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2648,9 +2458,9 @@
           <TextureHeight>360</TextureHeight>
           <ScreenX>-66.01273</ScreenX>
           <ScreenY>-367.270844</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2660,9 +2470,9 @@
           <TextureHeight>358</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2672,9 +2482,9 @@
           <TextureHeight>353</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2684,9 +2494,9 @@
           <TextureHeight>360</TextureHeight>
           <ScreenX>-66.01273</ScreenX>
           <ScreenY>-367.270844</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2696,9 +2506,9 @@
           <TextureHeight>358</TextureHeight>
           <ScreenX>-66.01273</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2708,9 +2518,9 @@
           <TextureHeight>203</TextureHeight>
           <ScreenX>-60.0115738</ScreenX>
           <ScreenY>-194.4375</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>-1</TextureNumber>
@@ -2720,9 +2530,9 @@
           <TextureHeight>0</TextureHeight>
           <ScreenX>0</ScreenX>
           <ScreenY>0</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2732,9 +2542,9 @@
           <TextureHeight>354</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>0</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>0</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2744,9 +2554,9 @@
           <TextureHeight>253</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-244.847229</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2756,9 +2566,9 @@
           <TextureHeight>235</TextureHeight>
           <ScreenX>-48.00926</ScreenX>
           <ScreenY>-230.444443</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2768,9 +2578,9 @@
           <TextureHeight>375</TextureHeight>
           <ScreenX>-42.0081024</ScreenX>
           <ScreenY>-367.270844</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2780,9 +2590,9 @@
           <TextureHeight>227</TextureHeight>
           <ScreenX>-48.00926</ScreenX>
           <ScreenY>-216.041672</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2792,9 +2602,9 @@
           <TextureHeight>376</TextureHeight>
           <ScreenX>-84.0162048</ScreenX>
           <ScreenY>-374.472229</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2804,9 +2614,9 @@
           <TextureHeight>396</TextureHeight>
           <ScreenX>-78.0150452</ScreenX>
           <ScreenY>-381.6736</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2816,9 +2626,9 @@
           <TextureHeight>355</TextureHeight>
           <ScreenX>-66.01273</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2828,9 +2638,9 @@
           <TextureHeight>348</TextureHeight>
           <ScreenX>-66.01273</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>2</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>2</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2840,9 +2650,9 @@
           <TextureHeight>349</TextureHeight>
           <ScreenX>-78.0150452</ScreenX>
           <ScreenY>-338.465271</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2852,9 +2662,9 @@
           <TextureHeight>348</TextureHeight>
           <ScreenX>-90.0173645</ScreenX>
           <ScreenY>-338.465271</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2864,15 +2674,16 @@
           <TextureHeight>354</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>3</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>3</PathPointIndex>
         </Sprite>
       </SpriteList>
     </SpriteGroup>
     <SpriteGroup>
       <Index>1</Index>
       <Identifier>1</Identifier>
+      <FirstSpriteIdentifier>0</FirstSpriteIdentifier>
       <SpriteList>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2882,9 +2693,9 @@
           <TextureHeight>132</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>4</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>4</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2894,9 +2705,9 @@
           <TextureHeight>132</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>5</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>5</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2906,9 +2717,9 @@
           <TextureHeight>125</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>6</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>6</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2918,9 +2729,9 @@
           <TextureHeight>125</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>7</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>7</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2930,9 +2741,9 @@
           <TextureHeight>132</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>8</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>8</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2942,9 +2753,9 @@
           <TextureHeight>132</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>9</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>9</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2954,9 +2765,9 @@
           <TextureHeight>136</TextureHeight>
           <ScreenX>-30.0057869</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2966,9 +2777,9 @@
           <TextureHeight>144</TextureHeight>
           <ScreenX>-30.0057869</ScreenX>
           <ScreenY>-360.069458</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -2978,9 +2789,9 @@
           <TextureHeight>136</TextureHeight>
           <ScreenX>-30.0057869</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -2990,9 +2801,9 @@
           <TextureHeight>136</TextureHeight>
           <ScreenX>-30.0057869</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -3002,9 +2813,9 @@
           <TextureHeight>136</TextureHeight>
           <ScreenX>-30.0057869</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3014,9 +2825,9 @@
           <TextureHeight>136</TextureHeight>
           <ScreenX>-30.0057869</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -3026,9 +2837,9 @@
           <TextureHeight>243</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -3038,9 +2849,9 @@
           <TextureHeight>250</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -3050,9 +2861,9 @@
           <TextureHeight>236</TextureHeight>
           <ScreenX>-54.0104179</ScreenX>
           <ScreenY>-338.465271</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3062,9 +2873,9 @@
           <TextureHeight>125</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>-1</TextureNumber>
@@ -3074,9 +2885,9 @@
           <TextureHeight>0</TextureHeight>
           <ScreenX>0</ScreenX>
           <ScreenY>0</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>-1</TextureNumber>
@@ -3086,9 +2897,9 @@
           <TextureHeight>0</TextureHeight>
           <ScreenX>0</ScreenX>
           <ScreenY>0</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3098,9 +2909,9 @@
           <TextureHeight>136</TextureHeight>
           <ScreenX>-30.0057869</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3110,9 +2921,9 @@
           <TextureHeight>136</TextureHeight>
           <ScreenX>-30.0057869</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3122,9 +2933,9 @@
           <TextureHeight>125</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3134,9 +2945,9 @@
           <TextureHeight>125</TextureHeight>
           <ScreenX>-36.0069427</ScreenX>
           <ScreenY>-352.868042</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3146,9 +2957,9 @@
           <TextureHeight>243</TextureHeight>
           <ScreenX>-42.0081024</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>0</TextureNumber>
@@ -3158,9 +2969,9 @@
           <TextureHeight>243</TextureHeight>
           <ScreenX>-48.00926</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3170,15 +2981,16 @@
           <TextureHeight>243</TextureHeight>
           <ScreenX>-48.00926</ScreenX>
           <ScreenY>-345.666656</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
       </SpriteList>
     </SpriteGroup>
     <SpriteGroup>
       <Index>2</Index>
       <Identifier>2</Identifier>
+      <FirstSpriteIdentifier>23</FirstSpriteIdentifier>
       <SpriteList>
         <Sprite>
           <TextureNumber>1</TextureNumber>
@@ -3188,9 +3000,9 @@
           <TextureHeight>75</TextureHeight>
           <ScreenX>78.0150452</ScreenX>
           <ScreenY>-201.638885</ScreenY>
-          <UnknownInteger1>0</UnknownInteger1>
-          <UnknownInteger2>0</UnknownInteger2>
-          <UnknownInteger3>-1</UnknownInteger3>
+          <MoveX>0</MoveX>
+          <MoveY>0</MoveY>
+          <PathPointIndex>-1</PathPointIndex>
         </Sprite>
       </SpriteList>
     </SpriteGroup>

@@ -1,10 +1,15 @@
 ﻿
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
+	/// <summary>
+	/// A pair of texture entries; the file stores one of these records per two texture file
+	/// names (the second half is zero when the texture count is odd).
+	/// </summary>
 	public class TextureHeader
 	{
 		/// <summary>
-		/// Gets or sets the number of sprites on the texture.
+		/// Gets or sets the number of sprites that reference the texture (sprites with
+		/// TextureNumber -1 are not counted).
 		/// </summary>
 		public int TextureSpriteCount1
 		{
@@ -22,7 +27,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the number of sprites on the texture.
+		/// Gets or sets the number of sprites that reference the texture (sprites with
+		/// TextureNumber -1 are not counted).
 		/// </summary>
 		public int TextureSpriteCount2
 		{

@@ -72,7 +72,9 @@
     <Compile Include="Commands\OpenQuickStartDialogCommand.cs" />
     <Compile Include="Commands\OpenRoomFormCommand.cs" />
     <Compile Include="Commands\OpenSpriteSheetEditorCommand.cs" />
+    <Compile Include="Commands\OpenCostumeSpriteSheetEditorCommand.cs" />
     <Compile Include="Commands\SaveRoomOverrideCommand.cs" />
+    <Compile Include="Commands\SaveCostumeOverrideCommand.cs" />
     <Compile Include="Commands\OpenHexFormCommand.cs" />
     <Compile Include="Commands\OpenShaderFormCommand.cs" />
     <Compile Include="Commands\OpenLPAKFormCommand.cs" />
@@ -96,6 +98,7 @@
     <Compile Include="Formats\Costumes\Parser.cs" />
     <Compile Include="Formats\Costumes\Renderer.cs" />
     <Compile Include="Formats\Costumes\SanityChecker.cs" />
+    <Compile Include="Formats\IAtlasSprite.cs" />
     <Compile Include="Formats\LPAK\LPAKFile.cs" />
     <Compile Include="Formats\LPAK\Parser.cs" />
     <Compile Include="Formats\Rooms\Entities\RoomObjectImage.cs" />
@@ -121,6 +124,7 @@
     <Compile Include="Formats\Rooms\SanityChecker.cs" />
     <Compile Include="Formats\Rooms\Renderer.cs" />
     <Compile Include="Formats\Scumm\ClassicDataLocator.cs" />
+    <Compile Include="Formats\Scumm\Entities\ClassicCostume.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicData.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicObject.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicRoom.cs" />
@@ -202,11 +206,21 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="UI\RoomPreviewControlSprite.cs" />
+    <Compile Include="UI\CostumePreviewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\CostumePreviewControlSprite.cs" />
     <Compile Include="UI\SpriteSheetEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\SpriteSheetEditorForm.Designer.cs">
       <DependentUpon>SpriteSheetEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\CostumeSpriteSheetEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\CostumeSpriteSheetEditorForm.Designer.cs">
+      <DependentUpon>CostumeSpriteSheetEditorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\SpriteSetPreviewControl.cs">
       <SubType>Component</SubType>
@@ -276,6 +290,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\SpriteSheetEditorForm.resx">
       <DependentUpon>SpriteSheetEditorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\CostumeSpriteSheetEditorForm.resx">
+      <DependentUpon>CostumeSpriteSheetEditorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\XmlExportDialog.resx">
       <DependentUpon>XmlExportDialog.cs</DependentUpon>

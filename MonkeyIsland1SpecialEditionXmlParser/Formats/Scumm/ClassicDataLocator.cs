@@ -142,15 +142,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 				}
 
 				var roomNames = new Dictionary<int, string>();
+				var costumeList = new List<ClassicCostume>();
 				var indexIndex = lpakFile.FindEntryIndex( name => name.EndsWith( ".000", StringComparison.OrdinalIgnoreCase ) );
 				if( indexIndex >= 0 && lpakFile.PakFileEntries[indexIndex].IsCompressed == 0 )
 				{
 					roomNames = Parser.ReadRoomNamesFromEncodedBytes( lpakFile.ReadEntryBytes( indexIndex ) );
+					costumeList = ReadCostumesSafely(
+						() => Parser.ReadCostumesFromEncodedBytes( lpakFile.ReadEntryBytes( dataIndex ), lpakFile.ReadEntryBytes( indexIndex ) ) );
 				}
 
 				var data = new ClassicData(
 					roomList: roomList,
 					roomNames: roomNames,
+					costumeList: costumeList,
 					source: string.Concat( Path.GetFileName( lpakFile.FileNameOnDisk ), ":", lpakFile.PakFileNames[dataIndex].FileName )
 				);
 				ApplyRoomNames( data );
@@ -176,9 +180,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 					? Parser.ReadRoomNamesFromIndexFile( files.IndexFileName )
 					: new Dictionary<int, string>();
 
+				var costumeList = files.IndexFileName != null
+					? ReadCostumesSafely( () => Parser.ReadCostumesFromFiles( files.DataFileName, files.IndexFileName! ) )
+					: new List<ClassicCostume>();
+
 				var data = new ClassicData(
 					roomList: roomList,
 					roomNames: roomNames,
+					costumeList: costumeList,
 					source: files.DataFileName
 				);
 				ApplyRoomNames( data );
@@ -187,6 +196,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 			catch( Exception )
 			{
 				return null;
+			}
+		}
+
+		/// <summary>
+		/// Costumes are optional extra data; a parse failure must not lose the rooms.
+		/// </summary>
+		private static List<ClassicCostume> ReadCostumesSafely( Func<List<ClassicCostume>> read )
+		{
+			try
+			{
+				return read();
+			}
+			catch( Exception )
+			{
+				return new List<ClassicCostume>();
 			}
 		}
 

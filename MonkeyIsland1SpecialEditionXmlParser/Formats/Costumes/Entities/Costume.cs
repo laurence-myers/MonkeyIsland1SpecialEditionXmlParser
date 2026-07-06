@@ -53,7 +53,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		} = animationHeaderList;
 
 		/// <summary>
-		/// Gets or sets the list of unknown entries before the texture file names.
+		/// Gets or sets the list of path points (attachment points referenced by sprites via
+		/// <see cref="Sprite.PathPointIndex"/>).
 		/// </summary>
 		public List<PathPoint> PathPointList
 		{

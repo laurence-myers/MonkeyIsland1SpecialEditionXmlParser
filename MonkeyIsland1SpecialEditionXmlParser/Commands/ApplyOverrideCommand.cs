@@ -45,15 +45,32 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 			object? entity = null;
 			if( isCostume )
 			{
-				entity = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostumeFromXmlFile( overrideXmlPath );				
+				entity = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostumeFromXmlFile( overrideXmlPath );
 			} else if( isRoom )
 			{
 				entity = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoomFromXmlFile( overrideXmlPath );
 			}
-			
+
 			if( entity == null )
 			{
 				return CommandResult.Fail( "Failed to load entity from XML" );
+			}
+
+			// never write an entity the parser (or the game) would reject
+			try
+			{
+				if( isCostume )
+				{
+					MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.SanityChecker.Check( (entity as Costume)! );
+				}
+				else if( isRoom )
+				{
+					MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.SanityChecker.Check( (entity as Room)! );
+				}
+			}
+			catch( System.Exception exception )
+			{
+				return CommandResult.Fail( "Sanity check failed: " + exception.Message );
 			}
 
 			// Construct the binary resource path (without the "overrides/" prefix)

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
 
@@ -64,11 +64,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				animationHeaderAddress: (int)reader.BaseStream.Position + reader.ReadInt32(),
 				unknownInteger1: reader.ReadInt32(), spriteGroupHeaderCount: reader.ReadInt32(),
 				spriteGroupHeaderAddress: (int)reader.BaseStream.Position + reader.ReadInt32(),
-				unknownInteger4: reader.ReadInt32(), pathPointCount: reader.ReadInt32(),
+				pathPointTypeCount: reader.ReadInt32(), pathPointCount: reader.ReadInt32(),
 				pathPointAddress: (int)reader.BaseStream.Position + reader.ReadInt32(),
 				unknownInteger5: reader.ReadInt32(), unknownInteger6: reader.ReadInt32(),
-				unknownInteger7: reader.ReadInt32(), unknownInteger8: reader.ReadInt32(),
-				unknownInteger9: reader.ReadInt32(), unknownInteger10: reader.ReadInt32(),
+				unknownFloat7: reader.ReadSingle(), unknownFloat8: reader.ReadSingle(),
+				unknownFloat9: reader.ReadSingle(), unknownInteger10: reader.ReadInt32(),
 				unknownInteger11: reader.ReadInt32(), unknownInteger12: reader.ReadInt32(),
 				name: reader.ReadStringMonkey() );
 			return header;
@@ -121,9 +121,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				var spriteGroupHeader = new SpriteGroupHeader()
 				{
 					Identifier = reader.ReadInt32(),
-					UnkownInteger1 = reader.ReadInt32(),
+					FirstSpriteIdentifier = reader.ReadInt32(),
 					SpriteCount = reader.ReadInt32(),
-					SpriteAddress = (int)reader.BaseStream.Position + reader.ReadInt32(),
+					SpriteAddress = reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				};
 				list.Add( spriteGroupHeader );
 			}
@@ -142,16 +142,23 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				{
 					var pathPoint = new PathPoint()
 					{
-						UnknownByte1 = reader.ReadByte(),
-						UnknownByte2 = reader.ReadByte(),
+						Type = reader.ReadByte(),
+						Flag = reader.ReadByte(),
 						UnknownByte3 = reader.ReadByte(),
 						UnknownByte4 = reader.ReadByte(),
-						UnknownFloat1 = reader.ReadSingle(),
-						UnknownFloat2 = reader.ReadSingle(),
+						X = reader.ReadSingle(),
+						Y = reader.ReadSingle(),
 					};
 					list.Add( pathPoint );
 				}
-				reader.PadTheMonkey( position );
+
+				// unlike strings, lists are only padded when their size is not already a
+				// multiple of 16 (PadTheMonkey would skip 16 extra bytes in that case)
+				var mod = ( reader.BaseStream.Position - position ) % 16;
+				if( mod != 0 )
+				{
+					reader.BaseStream.Position += 16 - mod;
+				}
 			}
 
 			return list;
@@ -209,7 +216,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				var animationFrame = new AnimationFrame(
 					index: index,
 					spriteGroupIdentifier: reader.ReadInt32(),
-					unknownInteger1: reader.ReadInt32(),
+					playbackFlags: reader.ReadInt32(),
 					frameCount: reader.ReadInt32(),
 					frameAddress: (int)reader.BaseStream.Position + reader.ReadInt32()
 				);
@@ -224,14 +231,27 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 		{
 			var list = new List<Frame>();
 
-			reader.BaseStream.Position = animationFrame.FrameAddress;
-
 			for( var index = 0; index < animationFrame.FrameCount; index++ )
 			{
+				reader.BaseStream.Position = animationFrame.FrameAddress + index * 12;
+
+				var spriteIdentifier = reader.ReadInt32();
+				var command = reader.ReadInt32();
+
+				// the third field is a relative pointer to a shared sound name string (or 0)
+				var soundNameFieldPosition = reader.BaseStream.Position;
+				var soundNameOffset = reader.ReadInt32();
+				string? soundName = null;
+				if( soundNameOffset != 0 )
+				{
+					reader.BaseStream.Position = soundNameFieldPosition + soundNameOffset;
+					soundName = reader.ReadStringMonkeyNoPadding();
+				}
+
 				var frame = new Frame(
-					spriteIdentifier: reader.ReadInt32(),
-					unknownInteger2: reader.ReadInt32(),
-					unknownInteger3: reader.ReadInt32()
+					spriteIdentifier: spriteIdentifier,
+					command: command,
+					soundName: soundName
 				);
 				list.Add( frame );
 			}
@@ -249,6 +269,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				var spriteGroup = new SpriteGroup(
 					index: index,
 					identifier: spriteGroupHeader.Identifier,
+					firstSpriteIdentifier: spriteGroupHeader.FirstSpriteIdentifier,
 					spriteList: Parser.ReadSpriteList( reader, spriteGroupHeader )
 				);
 				list.Add( spriteGroup );
@@ -274,9 +295,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 					textureHeight: reader.ReadInt32(),
 					screenX: reader.ReadSingle(),
 					screenY: reader.ReadSingle(),
-					unknownInteger1: reader.ReadInt32(),
-					unknownInteger2: reader.ReadInt32(),
-					unknownInteger3: reader.ReadInt32()
+					moveX: reader.ReadSingle(),
+					moveY: reader.ReadSingle(),
+					pathPointIndex: reader.ReadInt32()
 				);
 				list.Add( sprite );
 			}

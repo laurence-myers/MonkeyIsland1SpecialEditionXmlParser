@@ -30,10 +30,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			// store the original position
 			var position = reader.BaseStream.Position;
 
-			// figure out how long the string is
+			// figure out how long the string is (-1 = end of stream, on malformed data)
 			int @byte;
-			while( ( @byte = reader.BaseStream.ReadByte() ) != 0 ) ;
-			var endPosition = reader.BaseStream.Position - 1;
+			while( ( @byte = reader.BaseStream.ReadByte() ) > 0 ) ;
+			var endPosition = @byte == 0 ? reader.BaseStream.Position - 1 : reader.BaseStream.Position;
 			var length = (int)( endPosition - position );
 
 			// restore the original position
@@ -53,10 +53,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 			// store the original position
 			var position = reader.BaseStream.Position;
 
-			// figure out how long the string is
+			// figure out how long the string is (-1 = end of stream, on malformed data)
 			int @byte;
-			while( ( @byte = reader.BaseStream.ReadByte() ) != 0 ) ;
-			var endPosition = reader.BaseStream.Position - 1;
+			while( ( @byte = reader.BaseStream.ReadByte() ) > 0 ) ;
+			var endPosition = @byte == 0 ? reader.BaseStream.Position - 1 : reader.BaseStream.Position;
 			var length = (int)( endPosition - position );
 
 			// restore the original position
@@ -526,6 +526,36 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 				room = Formats.Rooms.Parser.ReadRoom( reader );
 			} );
 			return room;
+		}
+
+		/// <summary>
+		/// Loads a costume by file index, preferring a loose override file when one exists.
+		/// </summary>
+		public static Formats.Costumes.Entities.Costume? LoadCostume( this LPAKFile file, int fileIndex )
+		{
+			var fileName = file.PakFileNames[fileIndex].FileName;
+			if( string.IsNullOrWhiteSpace( fileName ) )
+			{
+				return null;
+			}
+
+			// Check if an override file exists
+			var overrideFilePath = Formats.LPAK.Parser.GetOverrideFilePath( file.FileNameOnDisk, fileName! );
+			if( overrideFilePath != null )
+			{
+				// Load from override file
+				return Formats.Costumes.Parser.ReadCostumeFromBinaryFile( overrideFilePath );
+			}
+
+			// Load from LPAK
+			Formats.Costumes.Entities.Costume? costume = null;
+			var fileEntry = file.PakFileEntries[fileIndex];
+			Helper.ReadBinaryFile( file.FileNameOnDisk, reader =>
+			{
+				reader.BaseStream.Position = fileEntry.OffsetToStartOfData + file.PakHeader.StartOfData;
+				costume = Formats.Costumes.Parser.ReadCostume( reader );
+			} );
+			return costume;
 		}
 
 		/// <summary>

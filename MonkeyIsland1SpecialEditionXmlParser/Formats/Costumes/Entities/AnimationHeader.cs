@@ -13,7 +13,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		}
 
 		/// <summary>
-		/// Gets or sets the animation identifier.
+		/// Gets or sets the animation identifier: the classic SCUMM animation number,
+		/// chore * 4 + direction (0 = Left/west, 1 = Right/east, 2 = Front/south,
+		/// 3 = Back/north). E.g. InitLeft = 4, WalkLeft = 8, StandLeft = 12,
+		/// StartTalkLeft = 16, StopTalkLeft = 20.
 		/// </summary>
 		public int Identifier
 		{

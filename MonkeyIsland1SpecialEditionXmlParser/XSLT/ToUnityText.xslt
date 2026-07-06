@@ -19,9 +19,10 @@
 				<xsl:variable name="spriteGroup" select="$costume/SpriteGroupList/SpriteGroup[Identifier = $spriteGroupIdentifier]"/>
 				<xsl:variable name="index" select="Index"/>
 				<xsl:if test="count($spriteGroup) != 0">
+					<xsl:variable name="firstSpriteIdentifier" select="$spriteGroup/FirstSpriteIdentifier"/>
 					<xsl:for-each select="FrameList/Frame">
 						<xsl:variable name="spriteIdentifier" select="SpriteIdentifier"/>
-						<xsl:variable name="sprite" select="$spriteGroup/SpriteList/Sprite[position() - 1 = $spriteIdentifier]"/>
+						<xsl:variable name="sprite" select="$spriteGroup/SpriteList/Sprite[position() - 1 = $spriteIdentifier - $firstSpriteIdentifier]"/>
 						<xsl:variable name="frameIndex" select="position() - 1"/>
 						<xsl:variable name="flip">
 							<xsl:choose>

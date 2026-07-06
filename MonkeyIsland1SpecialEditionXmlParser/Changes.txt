@@ -1,5 +1,32 @@
 ﻿[ 2026/07/06 ]
 ---------------------------------------------------------------
+- Decoded the "unknown" costume fields and renamed them: sprite
+  MoveX/MoveY (floats, HD-scaled classic move deltas) and
+  PathPointIndex; frame Command and SoundName (frames can trigger
+  sounds via a shared name string at the end of the file, which the
+  old parser dropped); sprite group FirstSpriteIdentifier (frame
+  sprite ids are relative to it - fixes wrong/missing sprites in
+  costumes like seaweed and little-jojo); track PlaybackFlags;
+  path point Type/Flag/X/Y; header PathPointTypeCount and the
+  0.25/1.0/1.0 floats
+- Fixed costume parsing (path point lists whose size is a multiple
+  of 16 no longer corrupt the texture file names) and rewrote the
+  costume packer to reproduce the original layout: all 122 costumes
+  in the retail pak now repack byte-identically (previously none did)
+- Added classic SCUMM costume parsing (COST resources + the DCOS
+  directory) - limbs and cels with their relX/relY/moveX/moveY,
+  matched to SE sprite groups/sprites for calibration
+- Added Costume Spritesheet Editor (right-click a costume / File
+  menu in the costume viewer): animation preview with playback and
+  per-frame stepping, atlas view with drag/arrow-key nudging,
+  numeric editing of texture rect, screen position and move deltas,
+  classic-cel overlay with per-sprite delta readout and an
+  "Align to classic position" button to fix mis-aligned sprites
+- Added "Save override" for costumes: writes the loose override
+  binary the game loads plus the overrides XML export
+- Costume texture PNG export/import (same override mechanism as
+  the room editor)
+- Costume viewer and editor now respect loose override files
 - Replaced the bundled DevIL.NET2 wrapper and native DevIL DLLs
   (DevIL.dll/ILU.dll/ILUT.dll) with the managed Pfim NuGet package
   for decoding DXT textures; no native runtime is shipped anymore

@@ -65,12 +65,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			var fileEntry = this.LPAKFile.PakFileEntries[this.FileIndex];
-			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
-			{
-				reader.BaseStream.Position = fileEntry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
-				this.Costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Parser.ReadCostume( reader );
-			} );
+			// prefer a loose override file (previously saved edits) over the LPAK entry
+			this.Costume = this.LPAKFile.LoadCostume( this.FileIndex );
 
 			this.dataGridView1.DataSource = null;
 			Application.DoEvents();
@@ -142,6 +138,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 			new ExportToXmlCommand( this.Costume, string.Concat( this.Costume.Header.Identifier, "_", this.Costume.Header.Name, ".xml" ) ).Execute();
+		}
+
+		private void OpenSpriteSheetEditor( object sender, EventArgs args )
+		{
+			var fileName = this.LPAKFile.PakFileNames[this.FileIndex].FileName;
+			new OpenCostumeSpriteSheetEditorCommand( this.LPAKFile, fileName, this.FileIndex ).Execute();
 		}
 	}
 }

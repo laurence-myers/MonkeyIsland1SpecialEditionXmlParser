@@ -10,12 +10,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities
 	public class ClassicData(
 		List<ClassicRoom> roomList,
 		Dictionary<int, string> roomNames,
+		List<ClassicCostume> costumeList,
 		string source
 	)
 	{
 		private ClassicData() : this(
 			roomList: new List<ClassicRoom>(),
 			roomNames: new Dictionary<int, string>(),
+			costumeList: new List<ClassicCostume>(),
 			source: ""
 		) {}
 
@@ -38,6 +40,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities
 		} = roomNames;
 
 		/// <summary>
+		/// Gets or sets the costumes, in costume number order. Empty when the index file
+		/// (with the DCOS costume directory) was not available.
+		/// </summary>
+		public List<ClassicCostume> CostumeList
+		{
+			get;
+			set;
+		} = costumeList;
+
+		/// <summary>
 		/// Gets or sets a human readable description of where the data was loaded from.
 		/// </summary>
 		public string Source
@@ -52,6 +64,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities
 		public ClassicRoom? FindRoom( int roomNumber )
 		{
 			return this.RoomList.FirstOrDefault( r => r.RoomNumber == roomNumber );
+		}
+
+		/// <summary>
+		/// Finds a costume by its classic costume number (matches the SE costume's
+		/// Header.Identifier).
+		/// </summary>
+		public ClassicCostume? FindCostume( int costumeId )
+		{
+			return this.CostumeList.FirstOrDefault( c => c.CostumeId == costumeId );
 		}
 
 		public override string ToString()

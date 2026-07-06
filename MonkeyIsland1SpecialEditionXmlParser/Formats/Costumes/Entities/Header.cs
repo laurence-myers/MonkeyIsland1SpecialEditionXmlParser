@@ -1,4 +1,4 @@
-﻿
+
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
 	public class Header(
@@ -11,14 +11,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		int unknownInteger1,
 		int spriteGroupHeaderCount,
 		int spriteGroupHeaderAddress,
-		int unknownInteger4,
+		int pathPointTypeCount,
 		int pathPointCount,
 		int pathPointAddress,
 		int unknownInteger5,
 		int unknownInteger6,
-		int unknownInteger7,
-		int unknownInteger8,
-		int unknownInteger9,
+		float unknownFloat7,
+		float unknownFloat8,
+		float unknownFloat9,
 		int unknownInteger10,
 		int unknownInteger11,
 		int unknownInteger12,
@@ -34,14 +34,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 			unknownInteger1: 0,
 			spriteGroupHeaderCount: 0,
 			spriteGroupHeaderAddress: 0,
-			unknownInteger4: 0,
+			pathPointTypeCount: 0,
 			pathPointCount: 0,
 			pathPointAddress: 0,
 			unknownInteger5: 0,
 			unknownInteger6: 0,
-			unknownInteger7: 0,
-			unknownInteger8: 0,
-			unknownInteger9: 0,
+			unknownFloat7: 0.25f,
+			unknownFloat8: 1f,
+			unknownFloat9: 1f,
 			unknownInteger10: 0,
 			unknownInteger11: 0,
 			unknownInteger12: 0,
@@ -49,7 +49,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		) {}
 
 		/// <summary>
-		/// Gets or sets the numerical identification of the file.
+		/// Gets or sets the numerical identification of the file. Matches the classic SCUMM
+		/// costume number.
 		/// </summary>
 		public int Identifier
 		{
@@ -102,6 +103,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 			set;
 		} = animationHeaderAddress;
 
+		/// <summary>
+		/// Unknown. Observed values 0 to 4 in the retail data; does not correlate with the
+		/// sound, path point, texture or animation counts.
+		/// </summary>
 		public int UnknownInteger1
 		{
 			get;
@@ -126,15 +131,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 			set;
 		} = spriteGroupHeaderAddress;
 
-		public int UnknownInteger4
+		/// <summary>
+		/// Gets or sets the number of distinct path point types used by the costume
+		/// (the highest <see cref="PathPoint.Type"/> plus one); 0 when there are no
+		/// path points.
+		/// </summary>
+		public int PathPointTypeCount
 		{
 			get;
 			set;
-		} = unknownInteger4;
-
+		} = pathPointTypeCount;
 
 		/// <summary>
-		/// Gets or sets the number of 12 byte records before the texture file names.
+		/// Gets or sets the number of path points.
 		/// </summary>
 		public int PathPointCount
 		{
@@ -143,7 +152,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		} = pathPointCount;
 
 		/// <summary>
-		/// Gets or sets the byte address to the first path point.
+		/// Gets or sets the byte address to the first path point. Points at the position
+		/// where path points would be written even when <see cref="PathPointCount"/> is 0.
 		/// </summary>
 		public int PathPointAddress
 		{
@@ -151,48 +161,73 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 			set;
 		} = pathPointAddress;
 
+		/// <summary>
+		/// Unknown. 0 or 1 in the retail data; 1 mostly on main speaking characters
+		/// (guybrush, stan, lechuck, ...), 0 on props and background costumes.
+		/// </summary>
 		public int UnknownInteger5
 		{
 			get;
 			set;
 		} = unknownInteger5;
 
+		/// <summary>
+		/// Unknown. Always 0 in the retail data.
+		/// </summary>
 		public int UnknownInteger6
 		{
 			get;
 			set;
 		} = unknownInteger6;
 
-		public int UnknownInteger7
+		/// <summary>
+		/// Unknown. Always 0.25 in the retail data.
+		/// </summary>
+		public float UnknownFloat7
 		{
 			get;
 			set;
-		} = unknownInteger7;
+		} = unknownFloat7;
 
-		public int UnknownInteger8
+		/// <summary>
+		/// Unknown. Always 1.0 in the retail data.
+		/// </summary>
+		public float UnknownFloat8
 		{
 			get;
 			set;
-		} = unknownInteger8;
+		} = unknownFloat8;
 
-		public int UnknownInteger9
+		/// <summary>
+		/// Unknown. Always 1.0 in the retail data.
+		/// </summary>
+		public float UnknownFloat9
 		{
 			get;
 			set;
-		} = unknownInteger9;
+		} = unknownFloat9;
 
+		/// <summary>
+		/// Unknown. Always 0 in the retail data.
+		/// </summary>
 		public int UnknownInteger10
 		{
 			get;
 			set;
 		} = unknownInteger10;
 
+		/// <summary>
+		/// Unknown. Always 0 in the retail data.
+		/// </summary>
 		public int UnknownInteger11
 		{
 			get;
 			set;
 		} = unknownInteger11;
 
+		/// <summary>
+		/// Unknown. Always 0 in the retail data.
+		/// </summary>
 		public int UnknownInteger12
 		{
 			get;

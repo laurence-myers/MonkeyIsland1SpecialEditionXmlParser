@@ -1,7 +1,7 @@
-﻿
+
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
-	public class Sprite( int textureNumber, int textureX, int textureY, int textureWidth, int textureHeight, float screenX, float screenY, int unknownInteger1, int unknownInteger2, int unknownInteger3 )
+	public class Sprite( int textureNumber, int textureX, int textureY, int textureWidth, int textureHeight, float screenX, float screenY, float moveX, float moveY, int pathPointIndex ) : IAtlasSprite
 	{
 		private Sprite() : this(
 			textureNumber: 0,
@@ -11,11 +11,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 			textureHeight: 0,
 			screenX: 0,
 			screenY: 0,
-			unknownInteger1: 0,
-			unknownInteger2: 0,
-			unknownInteger3: 0
+			moveX: 0,
+			moveY: 0,
+			pathPointIndex: -1
 		) {}
 
+		/// <summary>
+		/// Gets or sets the index into the costume's texture file name list, or -1 for no texture.
+		/// </summary>
 		public int TextureNumber
 		{
 			get;
@@ -46,34 +49,54 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 			set;
 		} = textureHeight;
 
+		/// <summary>
+		/// Gets or sets the horizontal draw position relative to the actor origin, in HD pixels.
+		/// Corresponds to the classic costume cel's relX scaled by the HD scale factor.
+		/// </summary>
 		public float ScreenX
 		{
 			get;
 			set;
 		} = screenX;
 
+		/// <summary>
+		/// Gets or sets the vertical draw position relative to the actor origin, in HD pixels.
+		/// Corresponds to the classic costume cel's relY scaled by the HD scale factor.
+		/// </summary>
 		public float ScreenY
 		{
 			get;
 			set;
 		} = screenY;
 
-		public int UnknownInteger1
+		/// <summary>
+		/// Gets or sets how far the actor moves horizontally when this sprite is shown, in HD
+		/// pixels. Corresponds to the classic costume cel's moveX scaled by the HD scale factor.
+		/// </summary>
+		public float MoveX
 		{
 			get;
 			set;
-		} = unknownInteger1;
+		} = moveX;
 
-		public int UnknownInteger2
+		/// <summary>
+		/// Gets or sets how far the actor moves vertically when this sprite is shown, in HD
+		/// pixels. Corresponds to the classic costume cel's moveY scaled by the HD scale factor.
+		/// </summary>
+		public float MoveY
 		{
 			get;
 			set;
-		} = unknownInteger2;
+		} = moveY;
 
-		public int UnknownInteger3
+		/// <summary>
+		/// Gets or sets the index into the costume's path point list (attachment points used by
+		/// e.g. sword fighting costumes), or -1 for none.
+		/// </summary>
+		public int PathPointIndex
 		{
 			get;
 			set;
-		} = unknownInteger3;
+		} = pathPointIndex;
 	}
 }

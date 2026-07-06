@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
+	/// <summary>
+	/// One limb track of an animation: the sequence of frames shown by a single sprite group
+	/// while the animation plays.
+	/// </summary>
 	public class AnimationFrame(
 		int index,
 		int spriteGroupIdentifier,
-		int unknownInteger1,
+		int playbackFlags,
 		int frameCount,
 		int frameAddress
 	)
@@ -13,7 +17,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		private AnimationFrame() : this(
 			index: 0,
 			spriteGroupIdentifier: 0,
-			unknownInteger1: 0,
+			playbackFlags: 0,
 			frameCount: 0,
 			frameAddress: 0
 		) {}
@@ -28,7 +32,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		} = index;
 
 		/// <summary>
-		/// Gets or sets the identifier of the sprite group.
+		/// Gets or sets the identifier of the sprite group (the classic SCUMM limb number).
 		/// </summary>
 		public int SpriteGroupIdentifier
 		{
@@ -36,11 +40,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 			set;
 		} = spriteGroupIdentifier;
 
-		public int UnknownInteger1
+		/// <summary>
+		/// Gets or sets the playback flags for this track. Observed values: 3 on looping
+		/// animations (Init/Walk/Stand/Talk), 1 on one-shot animations (chores), 0 on
+		/// empty tracks, 2 rare.
+		/// </summary>
+		public int PlaybackFlags
 		{
 			get;
 			set;
-		} = unknownInteger1;
+		} = playbackFlags;
 
 		/// <summary>
 		/// Gets or sets the number of frames.
@@ -73,7 +82,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			return string.Concat(
 				this.SpriteGroupIdentifier, "; ",
-				this.UnknownInteger1, "; ",
+				this.PlaybackFlags, "; ",
 				this.FrameCount, "; ",
 				this.FrameAddress
 				);

@@ -144,6 +144,299 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 		}
 
 		/// <summary>
+		/// Reads all costumes from classic data files (monkey1.001 resource file plus
+		/// monkey1.000 index file; the index is required because only its DCOS directory
+		/// maps costume numbers to rooms and offsets).
+		/// </summary>
+		public static List<ClassicCostume> ReadCostumesFromFiles( string dataFileName, string indexFileName )
+		{
+			return ReadCostumesFromEncodedBytes( File.ReadAllBytes( dataFileName ), File.ReadAllBytes( indexFileName ) );
+		}
+
+		/// <summary>
+		/// Reads all costumes from the still XOR encoded contents of the resource and index files.
+		/// </summary>
+		public static List<ClassicCostume> ReadCostumesFromEncodedBytes( byte[] dataBytes, byte[] indexBytes )
+		{
+			XorDecode( dataBytes, Parser.XorKey );
+			XorDecode( indexBytes, Parser.XorKey );
+			using( var dataStream = new MemoryStream( dataBytes ) )
+			using( var dataReader = new BinaryReader( dataStream ) )
+			using( var indexStream = new MemoryStream( indexBytes ) )
+			using( var indexReader = new BinaryReader( indexStream ) )
+			{
+				return ReadCostumes( dataReader, indexReader );
+			}
+		}
+
+		/// <summary>
+		/// Reads all costumes from already decoded resource and index streams.
+		/// </summary>
+		public static List<ClassicCostume> ReadCostumes( BinaryReader dataReader, BinaryReader indexReader )
+		{
+			var costumeList = new List<ClassicCostume>();
+
+			// the DCOS directory in the index file maps each costume number to a room
+			// number and an offset relative to that room's ROOM block
+			var directory = ReadCostumeDirectory( indexReader );
+
+			// the LOFF table in the resource file maps room numbers to absolute offsets
+			var offsetByRoomNumber = new Dictionary<int, long>();
+			foreach( var lecf in ReadBlocks( dataReader, 0, dataReader.BaseStream.Length ) )
+			{
+				if( lecf.Tag != "LECF" )
+				{
+					continue;
+				}
+				foreach( var child in ReadBlocks( dataReader, lecf.PayloadPosition, lecf.EndPosition ) )
+				{
+					if( child.Tag == "LOFF" )
+					{
+						dataReader.BaseStream.Position = child.PayloadPosition;
+						var count = dataReader.ReadByte();
+						for( var index = 0; index < count; index++ )
+						{
+							var roomNumber = dataReader.ReadByte();
+							var offset = dataReader.ReadUInt32();
+							offsetByRoomNumber[roomNumber] = offset;
+						}
+					}
+				}
+			}
+
+			foreach( var entry in directory )
+			{
+				long roomOffset;
+				if( !offsetByRoomNumber.TryGetValue( entry.RoomNumber, out roomOffset ) )
+				{
+					continue;
+				}
+
+				try
+				{
+					var costume = ReadCostume( dataReader, roomOffset + entry.Offset, entry.CostumeId, entry.RoomNumber );
+					if( costume != null )
+					{
+						costumeList.Add( costume );
+					}
+				}
+				catch( System.Exception )
+				{
+					// a single malformed costume should not lose the rest
+				}
+			}
+
+			return costumeList;
+		}
+
+		private struct CostumeDirectoryEntry
+		{
+			public int CostumeId;
+			public int RoomNumber;
+			public long Offset;
+		}
+
+		private static List<CostumeDirectoryEntry> ReadCostumeDirectory( BinaryReader indexReader )
+		{
+			var directory = new List<CostumeDirectoryEntry>();
+
+			foreach( var block in ReadBlocks( indexReader, 0, indexReader.BaseStream.Length ) )
+			{
+				if( block.Tag != "DCOS" )
+				{
+					continue;
+				}
+
+				indexReader.BaseStream.Position = block.PayloadPosition;
+				var count = indexReader.ReadUInt16();
+				var roomNumbers = indexReader.ReadBytes( count );
+				for( var costumeId = 0; costumeId < count; costumeId++ )
+				{
+					var offset = indexReader.ReadUInt32();
+					if( roomNumbers[costumeId] == 0 && offset == 0 )
+					{
+						continue;
+					}
+					directory.Add( new CostumeDirectoryEntry
+					{
+						CostumeId = costumeId,
+						RoomNumber = roomNumbers[costumeId],
+						Offset = offset,
+					} );
+				}
+			}
+
+			return directory;
+		}
+
+		/// <summary>
+		/// Reads a single COST resource. All offsets inside the costume are relative to the
+		/// block position plus two (matching the classic engine's base pointer).
+		/// </summary>
+		private static ClassicCostume? ReadCostume( BinaryReader reader, long position, int costumeId, int roomNumber )
+		{
+			if( position + 8 > reader.BaseStream.Length )
+			{
+				return null;
+			}
+
+			reader.BaseStream.Position = position;
+			var tag = Encoding.ASCII.GetString( reader.ReadBytes( 4 ) );
+			var blockSize = ReadInt32BigEndian( reader );
+			if( tag != "COST" || blockSize < 8 || position + blockSize > reader.BaseStream.Length )
+			{
+				return null;
+			}
+
+			var basePosition = position + 2;
+			long blockEnd = position + blockSize;
+
+			int ReadByteAt( long offset )
+			{
+				reader.BaseStream.Position = basePosition + offset;
+				return reader.ReadByte();
+			}
+
+			int ReadUInt16At( long offset )
+			{
+				reader.BaseStream.Position = basePosition + offset;
+				return reader.ReadUInt16();
+			}
+
+			var maximumAnimationNumber = ReadByteAt( 6 );
+			var formatByte = ReadByteAt( 7 );
+			var format = formatByte & 0x7F;
+			var mirror = ( formatByte & 0x80 ) != 0;
+			var numberOfColors = format == 0x59 ? 32 : 16;
+
+			var animationCommandsOffset = ReadUInt16At( numberOfColors + 8 );
+			var limbTableOffsets = new int[16];
+			for( var limb = 0; limb < 16; limb++ )
+			{
+				limbTableOffsets[limb] = ReadUInt16At( numberOfColors + 10 + limb * 2 );
+			}
+
+			// walk the animation definitions to find the highest cel index each limb shows;
+			// a limb's cel table can extend past the next limb's table offset otherwise
+			var maximumCelIndexes = new int[16];
+			for( var limb = 0; limb < 16; limb++ )
+			{
+				maximumCelIndexes[limb] = -1;
+			}
+			for( var animation = 0; animation <= maximumAnimationNumber; animation++ )
+			{
+				var animationOffset = ReadUInt16At( numberOfColors + 42 + animation * 2 );
+				if( animationOffset == 0 || basePosition + animationOffset >= blockEnd )
+				{
+					continue;
+				}
+
+				reader.BaseStream.Position = basePosition + animationOffset;
+				var mask = reader.ReadUInt16();
+				for( var limb = 0; limb < 16 && reader.BaseStream.Position < blockEnd; limb++, mask <<= 1 )
+				{
+					if( ( mask & 0x8000 ) == 0 )
+					{
+						continue;
+					}
+					var start = reader.ReadUInt16();
+					if( start == 0xFFFF )
+					{
+						continue;
+					}
+					var lengthByte = reader.ReadByte();
+					var length = lengthByte & 0x7F;
+
+					var commandsPosition = reader.BaseStream.Position;
+					for( var step = 0; step <= length; step++ )
+					{
+						var commandOffset = basePosition + animationCommandsOffset + start + step;
+						if( commandOffset >= blockEnd )
+						{
+							break;
+						}
+						reader.BaseStream.Position = commandOffset;
+						var command = reader.ReadByte();
+						if( command < 0x71 && command > maximumCelIndexes[limb] )
+						{
+							maximumCelIndexes[limb] = command;
+						}
+					}
+					reader.BaseStream.Position = commandsPosition;
+				}
+			}
+
+			// each limb's cel table runs up to the next distinct table offset; the last
+			// table is bounded by its own first cel's picture data
+			var limbList = new List<ClassicLimb>();
+			for( var limb = 0; limb < 16; limb++ )
+			{
+				var tableOffset = limbTableOffsets[limb];
+				var boundOffset = int.MaxValue;
+				for( var other = 0; other < 16; other++ )
+				{
+					if( limbTableOffsets[other] > tableOffset && limbTableOffsets[other] < boundOffset )
+					{
+						boundOffset = limbTableOffsets[other];
+					}
+				}
+				if( boundOffset == int.MaxValue )
+				{
+					var firstCelOffset = ReadUInt16At( tableOffset );
+					boundOffset = firstCelOffset > tableOffset ? firstCelOffset : tableOffset;
+				}
+
+				var celCount = ( boundOffset - tableOffset ) / 2;
+				if( maximumCelIndexes[limb] + 1 > celCount )
+				{
+					celCount = maximumCelIndexes[limb] + 1;
+				}
+				celCount = (int)System.Math.Min( celCount, ( blockEnd - ( basePosition + tableOffset ) ) / 2 );
+				if( celCount <= 0 )
+				{
+					continue;
+				}
+
+				var celList = new List<ClassicCel?>();
+				for( var celIndex = 0; celIndex < celCount; celIndex++ )
+				{
+					var celOffset = ReadUInt16At( tableOffset + celIndex * 2 );
+					if( celOffset == 0 || basePosition + celOffset + 12 > blockEnd )
+					{
+						celList.Add( null );
+						continue;
+					}
+					reader.BaseStream.Position = basePosition + celOffset;
+					var width = reader.ReadUInt16();
+					var height = reader.ReadUInt16();
+					var relX = reader.ReadInt16();
+					var relY = reader.ReadInt16();
+					var moveX = reader.ReadInt16();
+					var moveY = reader.ReadInt16();
+					celList.Add( new ClassicCel(
+						index: celIndex,
+						width: width,
+						height: height,
+						relX: relX,
+						relY: relY,
+						moveX: moveX,
+						moveY: moveY
+					) );
+				}
+				limbList.Add( new ClassicLimb( limbNumber: limb, celList: celList ) );
+			}
+
+			return new ClassicCostume(
+				costumeId: costumeId,
+				roomNumber: roomNumber,
+				maximumAnimationNumber: maximumAnimationNumber,
+				format: format,
+				mirror: mirror,
+				limbList: limbList
+			);
+		}
+
+		/// <summary>
 		/// Decodes (or encodes; the operation is symmetric) a buffer in place by XORing every byte with the key.
 		/// </summary>
 		public static void XorDecode( byte[] bytes, byte key )

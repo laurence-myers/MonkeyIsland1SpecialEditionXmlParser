@@ -39,6 +39,26 @@ HOW DO I FIX MISALIGNED ROOM SPRITES?
   loads, plus the overrides XML for hand-editing
 
 ================================
+HOW DO I FIX MISALIGNED COSTUME SPRITES?
+================================
+
+- Right-click a costume in the explorer and choose "Open in Spritesheet
+  Editor" (or use File > Open in Spritesheet Editor from the costume viewer)
+- Pick an animation; the preview composites its sprites relative to the actor
+  origin (the crosshair), exactly as positioned by each sprite's Screen X/Y.
+  Use the frame stepper or "Play" to watch the animation
+- Enable "Classic overlay" to draw each sprite's classic SCUMM cel rectangle
+  (dashed cyan) scaled to HD (x6.0012 / x7.2014); the "Classic:" readout
+  shows the delta between the sprite and its classic position
+- Click a sprite in the atlas view, the preview or the tree to select it
+  - Arrow keys in the atlas move the sprite's texture rectangle
+  - Arrow keys in the preview nudge the sprite's screen position
+  - Hold Shift for steps of 10; the numeric fields allow exact values
+  - "Align to classic position" snaps the sprite to its classic cel position
+- Use File > "Save override" to write the loose override binary the game
+  loads, plus the overrides XML for hand-editing
+
+================================
 HOW DO I REPLACE A SPRITESHEET IMAGE?
 ================================
 

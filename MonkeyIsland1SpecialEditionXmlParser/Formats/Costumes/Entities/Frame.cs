@@ -1,42 +1,63 @@
-﻿
+
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
 	public class Frame(
 		int spriteIdentifier,
-		int unknownInteger2,
-		int unknownInteger3
+		int command,
+		string? soundName
 	)
 	{
+		/// <summary>
+		/// The <see cref="Command"/> value that plays <see cref="SoundName"/>.
+		/// </summary>
+		public const int PlaySoundCommand = 6;
+
 		private Frame() : this(
 			spriteIdentifier: 0,
-			unknownInteger2: 0,
-			unknownInteger3: 0
+			command: 0,
+			soundName: null
 		) {}
 
+		/// <summary>
+		/// Gets or sets the sprite shown by this frame, or -1 when the frame is a command
+		/// instead of a sprite. The value is resolved against the sprite group's
+		/// <see cref="SpriteGroup.FirstSpriteIdentifier"/>: the sprite drawn is
+		/// SpriteList[SpriteIdentifier - FirstSpriteIdentifier].
+		/// </summary>
 		public int SpriteIdentifier
 		{
 			get;
 			set;
 		} = spriteIdentifier;
 
-		public int UnknownInteger2
+		/// <summary>
+		/// Gets or sets the command executed when <see cref="SpriteIdentifier"/> is -1; 0 for
+		/// ordinary sprite frames. Observed values: 1 (common; used by many animations),
+		/// 2 (mostly Stand* animations), 3 (mostly Walk* animations), 4 (rare) and
+		/// 6 (play the sound named by <see cref="SoundName"/>).
+		/// </summary>
+		public int Command
 		{
 			get;
 			set;
-		} = unknownInteger2;
+		} = command;
 
-		public int UnknownInteger3
+		/// <summary>
+		/// Gets or sets the name of the sound played by this frame (command 6), or null.
+		/// Stored in the file as a relative pointer to a shared string at the end of the file.
+		/// </summary>
+		public string? SoundName
 		{
 			get;
 			set;
-		} = unknownInteger3;
+		} = soundName;
 
 		public override string ToString()
 		{
 			return string.Concat(
 				this.SpriteIdentifier, "; ",
-				this.UnknownInteger2, "; ",
-				this.UnknownInteger3
+				this.Command, "; ",
+				this.SoundName
 				);
 		}
 	}

@@ -1,30 +1,36 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Commands;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
-using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
-using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
-	public partial class SpriteSheetEditorForm : Form
+	/// <summary>
+	/// Edits the sprites of a costume: texture rectangles on the spritesheet, and each
+	/// sprite's position relative to the actor origin (ScreenX/ScreenY - the values whose
+	/// mis-calibration makes costume sprites appear a few pixels off in game). The classic
+	/// SCUMM costume provides a per-cel reference rectangle for calibration.
+	/// </summary>
+	public partial class CostumeSpriteSheetEditorForm : Form
 	{
-		private static readonly List<SpriteSheetEditorForm> instances = new List<SpriteSheetEditorForm>();
+		private static readonly List<CostumeSpriteSheetEditorForm> instances = new List<CostumeSpriteSheetEditorForm>();
 		private readonly Dictionary<string, Image?> textureCache = new Dictionary<string, Image?>();
 		private ClassicData? classicData;
-		private ClassicRoom? classicRoom;
-		private Dictionary<int, ClassicObject>? classicObjects;
+		private ClassicCostume? classicCostume;
+		private readonly HashSet<SpriteGroup> hiddenGroups = new HashSet<SpriteGroup>();
 		private readonly HashSet<Sprite> hiddenSprites = new HashSet<Sprite>();
 		private Sprite? selectedSprite;
 		private bool suppressUiEvents;
 		private bool dirty;
 
-		public Room? Room
+		public Costume? Costume
 		{
 			get;
 			set;
@@ -42,39 +48,40 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			set;
 		}
 
-		public static SpriteSheetEditorForm[] Instances
+		public static CostumeSpriteSheetEditorForm[] Instances
 		{
 			get
 			{
-				return SpriteSheetEditorForm.instances.ToArray();
+				return CostumeSpriteSheetEditorForm.instances.ToArray();
 			}
 		}
 
-		public SpriteSheetEditorForm( int fileIndex, LPAKFile lpakFile, Form mdiParent, FormWindowState windowState )
+		public CostumeSpriteSheetEditorForm( int fileIndex, LPAKFile lpakFile, Form mdiParent, FormWindowState windowState )
 		{
 			this.FileIndex = fileIndex;
 			this.LPAKFile = lpakFile;
 			this.MdiParent = mdiParent;
 			this.WindowState = windowState;
 
-			SpriteSheetEditorForm.instances.Add( this );
-			this.FormClosed += delegate { SpriteSheetEditorForm.instances.Remove( this ); };
+			CostumeSpriteSheetEditorForm.instances.Add( this );
+			this.FormClosed += delegate { CostumeSpriteSheetEditorForm.instances.Remove( this ); };
 
 			this.InitializeComponent();
 
-			this.Load += delegate { this.LoadRoom(); };
+			this.Load += delegate { this.LoadCostume(); };
 			this.FormClosing += this.ConfirmCloseWithUnsavedChanges;
 
 			this.atlasViewControl.SelectedSpriteChanged += this.HandleAtlasSelectionChanged;
 			this.atlasViewControl.SpriteRectChanged += this.HandleAtlasSpriteRectChanged;
-			this.roomPreviewControl.SelectedSpriteChanged += this.HandlePreviewSelectionChanged;
-			this.roomPreviewControl.KeyDown += this.HandlePreviewKeyDown;
+			this.costumePreviewControl.SelectedSpriteChanged += this.HandlePreviewSelectionChanged;
+			this.costumePreviewControl.KeyDown += this.HandlePreviewKeyDown;
+			this.timerPlayback.Tick += this.HandlePlaybackTick;
 		}
 
-		private void LoadRoom()
+		private void LoadCostume()
 		{
-			this.Room = this.LPAKFile.LoadRoom( this.FileIndex );
-			if( this.Room == null )
+			this.Costume = this.LPAKFile.LoadCostume( this.FileIndex );
+			if( this.Costume == null )
 			{
 				return;
 			}
@@ -83,17 +90,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.UpdateTitle();
 
 			this.classicData = ClassicDataLocator.GetOrLoad( this.LPAKFile, this.PromptForClassicDataFolder );
-			this.classicRoom = this.classicData?.FindRoom( this.Room.Header.Identifier );
-			this.classicObjects = this.classicRoom?.GetObjectsById();
+			this.classicCostume = this.classicData?.FindCostume( this.Costume.Header.Identifier );
 
 			if( this.classicData == null )
 			{
-				this.warningLabel.Text = "Classic SCUMM data (monkey1.000/001) not found - object sprites are placed by their offset only.";
+				this.warningLabel.Text = "Classic SCUMM data (monkey1.000/001) not found - no classic reference rectangles available.";
 				this.warningLabel.Visible = true;
 			}
-			else if( this.classicRoom == null )
+			else if( this.classicCostume == null )
 			{
-				this.warningLabel.Text = string.Concat( "No classic room ", this.Room.Header.Identifier, " in ", this.classicData.Source, " - object sprites are placed by their offset only." );
+				this.warningLabel.Text = string.Concat( "No classic costume ", this.Costume.Header.Identifier, " in ", this.classicData.Source, " - no classic reference rectangles available." );
 				this.warningLabel.Visible = true;
 			}
 			else
@@ -101,8 +107,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				this.warningLabel.Visible = false;
 			}
 
-			this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room, this.LoadTexture );
-
+			this.PopulateAnimationCombo();
 			this.PopulateTextureCombo();
 			this.PopulateSpriteTree();
 			this.PopulateDiagnostics();
@@ -113,22 +118,37 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		//-------------------------------------------
 		// population
 
+		private void PopulateAnimationCombo()
+		{
+			this.suppressUiEvents = true;
+			try
+			{
+				this.comboBoxAnimations.Items.Clear();
+				foreach( var animation in this.Costume!.AnimationList )
+				{
+					this.comboBoxAnimations.Items.Add( animation.Name );
+				}
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			if( this.comboBoxAnimations.Items.Count > 0 )
+			{
+				this.comboBoxAnimations.SelectedIndex = 0;
+			}
+		}
+
 		private void PopulateTextureCombo()
 		{
 			this.suppressUiEvents = true;
 			try
 			{
 				this.comboBoxTextures.Items.Clear();
-				var textureNames = this.Room!.SpriteGroupList
-					.SelectMany( g => g.SpriteList )
-					.Select( s => s.TextureFileName )
-					.Where( n => !string.IsNullOrEmpty( n ) )
-					.Distinct()
-					.OrderBy( n => n )
-					.ToArray();
-				foreach( var textureName in textureNames )
+				foreach( var textureFileName in this.Costume!.TextureFileNameList )
 				{
-					this.comboBoxTextures.Items.Add( textureName! );
+					this.comboBoxTextures.Items.Add( textureFileName.Path );
 				}
 			}
 			finally
@@ -150,29 +170,23 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				this.treeViewSprites.BeginUpdate();
 				this.treeViewSprites.Nodes.Clear();
 
-				for( var groupIndex = 0; groupIndex < this.Room!.SpriteHeaderList.Count && groupIndex < this.Room.SpriteGroupList.Count; groupIndex++ )
+				foreach( var spriteGroup in this.Costume!.SpriteGroupList )
 				{
-					var spriteHeader = this.Room.SpriteHeaderList[groupIndex];
-					var spriteGroup = this.Room.SpriteGroupList[groupIndex];
-
-					ClassicObject? classicObject = null;
-					if( this.classicObjects != null )
+					if( spriteGroup.SpriteList.Count == 0 )
 					{
-						ClassicObject found;
-						if( this.classicObjects.TryGetValue( spriteHeader.Identifier, out found ) )
-						{
-							classicObject = found;
-						}
+						continue;
 					}
 
+					var classicLimb = this.classicCostume?.FindLimb( spriteGroup.Identifier );
 					var groupNode = new TreeNode
 					{
 						Text = string.Concat(
-							"Group ", groupIndex, " - id=", spriteHeader.Identifier,
-							classicObject?.Name is { Length: > 0 } ? " " + classicObject.Name : "",
-							classicObject == null ? " [unplaced]" : ""
+							"Group ", spriteGroup.Index, " - limb ", spriteGroup.Identifier,
+							" (", spriteGroup.SpriteList.Count, " sprites",
+							classicLimb != null ? ", " + classicLimb.CelList.Count + " classic cels" : "",
+							")"
 						),
-						Tag = groupIndex,
+						Tag = spriteGroup,
 						Checked = true,
 					};
 
@@ -201,7 +215,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private static string DescribeSprite( int spriteIndex, Sprite sprite )
 		{
-			return string.Concat( "Frame ", spriteIndex, ": ", sprite.TextureWidth, "x", sprite.TextureHeight, " L", sprite.Layer );
+			return string.Concat(
+				"Sprite ", spriteIndex, ": ", sprite.TextureWidth, "x", sprite.TextureHeight,
+				" @ ", sprite.ScreenX.ToString( "0.##" ), "; ", sprite.ScreenY.ToString( "0.##" )
+			);
 		}
 
 		private void PopulateDiagnostics()
@@ -214,83 +231,125 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				: string.Concat( "Classic data: ", this.classicData.Source )
 			);
 
-			if( this.classicRoom != null )
+			if( this.classicCostume != null )
 			{
 				this.listBoxDiagnostics.Items.Add( string.Concat(
-					"Classic room ", this.classicRoom.RoomNumber,
-					this.classicRoom.Name is { Length: > 0 } ? " '" + this.classicRoom.Name + "'" : "",
-					": ", this.classicRoom.Width, "x", this.classicRoom.Height,
-					", ", this.classicRoom.ObjectList.Count, " objects"
+					"Classic costume ", this.classicCostume.CostumeId,
+					" (room ", this.classicCostume.RoomNumber, "): format 0x", this.classicCostume.Format.ToString( "X2" ),
+					this.classicCostume.Mirror ? " mirrored" : "",
+					", ", this.classicCostume.LimbList.Count, " limbs"
 				) );
-			}
 
-			var groupCount = Math.Min( this.Room!.SpriteHeaderList.Count, this.Room.SpriteGroupList.Count );
-			var unmatchedCount = 0;
-			for( var groupIndex = 0; groupIndex < groupCount; groupIndex++ )
-			{
-				var identifier = this.Room.SpriteHeaderList[groupIndex].Identifier;
-				if( this.classicObjects == null || !this.classicObjects.ContainsKey( identifier ) )
+				foreach( var spriteGroup in this.Costume!.SpriteGroupList )
 				{
-					unmatchedCount++;
-					this.listBoxDiagnostics.Items.Add( string.Concat( "Unmatched group ", groupIndex, ": id=", identifier, " (offset-only placement)" ) );
+					if( spriteGroup.SpriteList.Count == 0 )
+					{
+						continue;
+					}
+					var classicLimb = this.classicCostume.FindLimb( spriteGroup.Identifier );
+					if( classicLimb == null )
+					{
+						this.listBoxDiagnostics.Items.Add( string.Concat( "Group ", spriteGroup.Index, " (limb ", spriteGroup.Identifier, "): no classic limb" ) );
+					}
+					else if( classicLimb.CelList.Count != spriteGroup.SpriteList.Count )
+					{
+						this.listBoxDiagnostics.Items.Add( string.Concat(
+							"Group ", spriteGroup.Index, " (limb ", spriteGroup.Identifier, "): ",
+							spriteGroup.SpriteList.Count, " sprites vs ", classicLimb.CelList.Count, " classic cels"
+						) );
+					}
 				}
 			}
-			this.listBoxDiagnostics.Items.Add( string.Concat( groupCount - unmatchedCount, "/", groupCount, " sprite groups matched to classic objects" ) );
 
-			// Named room objects carry additional placement data; surface them for verification
-			for( var index = 0; index < this.Room.RoomObjectGroupList.Count; index++ )
+			if( this.Costume!.PathPointList is { Count: > 0 } )
 			{
-				var roomObjectGroup = this.Room.RoomObjectGroupList[index];
-				var roomObjectHeader = index < this.Room.RoomObjectHeaderList.Count ? this.Room.RoomObjectHeaderList[index] : null;
-				var name = roomObjectHeader?.Name ?? "?";
-				foreach( var roomObject in roomObjectGroup.RoomObjectList )
-				{
-					this.listBoxDiagnostics.Items.Add( string.Concat( "RoomObject[", name, "/", roomObject.Index, "]: ", roomObject.OffsetX, "; ", roomObject.OffsetY ) );
-				}
+				this.listBoxDiagnostics.Items.Add( string.Concat( "Path points: ", this.Costume.PathPointList.Count, " (", this.Costume.Header.PathPointTypeCount, " types)" ) );
+			}
+
+			var soundNames = this.Costume.AnimationList
+				.SelectMany( a => a.AnimationFrameList )
+				.SelectMany( t => t.FrameList ?? new List<Frame>() )
+				.Where( f => !string.IsNullOrEmpty( f.SoundName ) )
+				.Select( f => f.SoundName! )
+				.Distinct()
+				.ToArray();
+			if( soundNames.Length > 0 )
+			{
+				this.listBoxDiagnostics.Items.Add( string.Concat( "Sounds: ", string.Join( ", ", soundNames ) ) );
 			}
 		}
 
 		//-------------------------------------------
 		// placement refresh
 
+		private Animation? SelectedAnimation
+		{
+			get
+			{
+				var index = this.comboBoxAnimations.SelectedIndex;
+				return index >= 0 && index < ( this.Costume?.AnimationList.Count ?? 0 )
+					? this.Costume!.AnimationList[index]
+					: null;
+			}
+		}
+
 		private void RefreshPlacements()
 		{
-			if( this.Room == null )
+			if( this.Costume == null )
 			{
 				return;
 			}
 
-			var placements = Renderer.ResolvePlacements( this.Room, this.classicObjects, this.GetHdScale() );
+			var animation = this.SelectedAnimation;
+			var placements = animation == null
+				? new List<CostumeSpritePlacement>()
+				: Renderer.ResolveFramePlacements( this.Costume, animation, (int)this.numericStep.Value, this.classicCostume );
 
-			this.roomPreviewControl.Sprites.Clear();
+			this.costumePreviewControl.Sprites.Clear();
 			foreach( var placement in placements )
 			{
-				var previewSprite = new RoomPreviewControlSprite( placement, this.LoadTexture( placement.Sprite.TextureFileName ) )
+				var textureFileName = this.GetTextureFileName( placement.Sprite.TextureNumber );
+				var previewSprite = new CostumePreviewControlSprite( placement, this.LoadTexture( textureFileName ) )
 				{
-					Visible = !this.hiddenSprites.Contains( placement.Sprite ),
+					Visible = this.IsPlacementVisible( placement ),
 				};
-				this.roomPreviewControl.Sprites.Add( previewSprite );
+				this.costumePreviewControl.Sprites.Add( previewSprite );
 			}
 
 			// keep the current selection pointing at the same sprite entity
 			this.suppressUiEvents = true;
 			try
 			{
-				this.roomPreviewControl.SelectedSprite = this.selectedSprite == null
+				this.costumePreviewControl.SelectedSprite = this.selectedSprite == null
 					? null
-					: this.roomPreviewControl.Sprites.FirstOrDefault( s => s.Placement.Sprite == this.selectedSprite );
+					: this.costumePreviewControl.Sprites.FirstOrDefault( s => s.Placement.Sprite == this.selectedSprite );
 			}
 			finally
 			{
 				this.suppressUiEvents = false;
 			}
 
-			this.roomPreviewControl.RefreshContent();
+			this.costumePreviewControl.RefreshContent();
 		}
 
-		private SizeF GetHdScale()
+		private void UpdateStepRange()
 		{
-			return new SizeF( (float)this.numericScaleX.Value, (float)this.numericScaleY.Value );
+			var animation = this.SelectedAnimation;
+			var stepCount = animation == null ? 0 : Renderer.GetStepCount( animation );
+			this.suppressUiEvents = true;
+			try
+			{
+				this.numericStep.Maximum = Math.Max( 0, stepCount - 1 );
+				if( this.numericStep.Value > this.numericStep.Maximum )
+				{
+					this.numericStep.Value = 0;
+				}
+				this.labelStepCount.Text = string.Concat( "of ", stepCount );
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
 		}
 
 		//-------------------------------------------
@@ -308,9 +367,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			try
 			{
 				// atlas: switch to the sprite's texture and select it
-				if( sprite != null && sprite.TextureFileName != null && (string?)this.comboBoxTextures.SelectedItem != sprite.TextureFileName )
+				var textureFileName = sprite == null ? null : this.GetTextureFileName( sprite.TextureNumber );
+				if( textureFileName != null && (string?)this.comboBoxTextures.SelectedItem != textureFileName )
 				{
-					var index = this.comboBoxTextures.Items.IndexOf( sprite.TextureFileName );
+					var index = this.comboBoxTextures.Items.IndexOf( textureFileName );
 					if( index >= 0 )
 					{
 						this.comboBoxTextures.SelectedIndex = index;
@@ -325,9 +385,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					: null;
 
 				// preview
-				this.roomPreviewControl.SelectedSprite = sprite == null
+				this.costumePreviewControl.SelectedSprite = sprite == null
 					? null
-					: this.roomPreviewControl.Sprites.FirstOrDefault( s => s.Placement.Sprite == sprite );
+					: this.costumePreviewControl.Sprites.FirstOrDefault( s => s.Placement.Sprite == sprite );
 
 				// tree
 				var spriteNode = sprite == null ? null : this.FindSpriteNode( sprite );
@@ -383,8 +443,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.suppressUiEvents = true;
 			try
 			{
-				// checking a group node toggles all of its frames
-				if( args.Node.Tag is int )
+				// checking a group node toggles all of its sprites
+				if( args.Node.Tag is SpriteGroup )
 				{
 					foreach( TreeNode spriteNode in args.Node.Nodes )
 					{
@@ -402,9 +462,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void SyncVisibilityFromTree()
 		{
+			this.hiddenGroups.Clear();
 			this.hiddenSprites.Clear();
 			foreach( TreeNode groupNode in this.treeViewSprites.Nodes )
 			{
+				var spriteGroup = groupNode.Tag as SpriteGroup;
+				if( spriteGroup != null && !groupNode.Checked )
+				{
+					this.hiddenGroups.Add( spriteGroup );
+				}
 				foreach( TreeNode spriteNode in groupNode.Nodes )
 				{
 					var sprite = spriteNode.Tag as Sprite;
@@ -415,11 +481,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				}
 			}
 
-			foreach( var previewSprite in this.roomPreviewControl.Sprites )
+			foreach( var previewSprite in this.costumePreviewControl.Sprites )
 			{
-				previewSprite.Visible = !this.hiddenSprites.Contains( previewSprite.Placement.Sprite );
+				previewSprite.Visible = this.IsPlacementVisible( previewSprite.Placement );
 			}
-			this.roomPreviewControl.Invalidate();
+			this.costumePreviewControl.Invalidate();
+		}
+
+		private bool IsPlacementVisible( CostumeSpritePlacement placement )
+		{
+			return !this.hiddenGroups.Contains( placement.SpriteGroup )
+				&& !this.hiddenSprites.Contains( placement.Sprite );
 		}
 
 		private void HandleAtlasSelectionChanged( object? sender, EventArgs args )
@@ -437,7 +509,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				return;
 			}
-			this.SetSelectedSprite( this.roomPreviewControl.SelectedSprite?.Placement.Sprite );
+			this.SetSelectedSprite( this.costumePreviewControl.SelectedSprite?.Placement.Sprite );
 		}
 
 		//-------------------------------------------
@@ -479,11 +551,20 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					return;
 			}
 
+			// a left facing preview shows the sprite mirrored; flip the horizontal nudge so
+			// the sprite follows the arrow key on screen
+			var previewSprite = this.costumePreviewControl.SelectedSprite;
+			if( previewSprite != null && previewSprite.Placement.Flipped )
+			{
+				deltaX = -deltaX;
+			}
+
 			args.Handled = true;
-			this.selectedSprite.OffsetX += deltaX;
-			this.selectedSprite.OffsetY += deltaY;
+			this.selectedSprite.ScreenX += deltaX;
+			this.selectedSprite.ScreenY += deltaY;
 			this.MarkDirty();
 			this.UpdateNumericEditors();
+			this.UpdateSelectedSpriteNodeText();
 			this.RefreshPlacements();
 		}
 
@@ -498,9 +579,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				this.numericTextureY.Enabled = enabled;
 				this.numericTextureWidth.Enabled = enabled;
 				this.numericTextureHeight.Enabled = enabled;
-				this.numericOffsetX.Enabled = enabled;
-				this.numericOffsetY.Enabled = enabled;
-				this.numericLayer.Enabled = enabled;
+				this.numericScreenX.Enabled = enabled;
+				this.numericScreenY.Enabled = enabled;
+				this.numericMoveX.Enabled = enabled;
+				this.numericMoveY.Enabled = enabled;
+				this.buttonAlignToClassic.Enabled = enabled && this.FindClassicCel( sprite ) != null;
 
 				if( sprite != null )
 				{
@@ -508,10 +591,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					this.numericTextureY.Value = Clamp( sprite.TextureY, this.numericTextureY );
 					this.numericTextureWidth.Value = Clamp( sprite.TextureWidth, this.numericTextureWidth );
 					this.numericTextureHeight.Value = Clamp( sprite.TextureHeight, this.numericTextureHeight );
-					this.numericOffsetX.Value = Clamp( (decimal)sprite.OffsetX, this.numericOffsetX );
-					this.numericOffsetY.Value = Clamp( (decimal)sprite.OffsetY, this.numericOffsetY );
-					this.numericLayer.Value = Clamp( sprite.Layer, this.numericLayer );
+					this.numericScreenX.Value = Clamp( (decimal)sprite.ScreenX, this.numericScreenX );
+					this.numericScreenY.Value = Clamp( (decimal)sprite.ScreenY, this.numericScreenY );
+					this.numericMoveX.Value = Clamp( (decimal)sprite.MoveX, this.numericMoveX );
+					this.numericMoveY.Value = Clamp( (decimal)sprite.MoveY, this.numericMoveY );
 				}
+
+				this.UpdateClassicDeltaLabel();
 			}
 			finally
 			{
@@ -549,21 +635,26 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				this.selectedSprite.TextureHeight = (int)this.numericTextureHeight.Value;
 			}
-			else if( sender == this.numericOffsetX )
+			else if( sender == this.numericScreenX )
 			{
-				this.selectedSprite.OffsetX = (float)this.numericOffsetX.Value;
+				this.selectedSprite.ScreenX = (float)this.numericScreenX.Value;
 			}
-			else if( sender == this.numericOffsetY )
+			else if( sender == this.numericScreenY )
 			{
-				this.selectedSprite.OffsetY = (float)this.numericOffsetY.Value;
+				this.selectedSprite.ScreenY = (float)this.numericScreenY.Value;
 			}
-			else if( sender == this.numericLayer )
+			else if( sender == this.numericMoveX )
 			{
-				this.selectedSprite.Layer = (int)this.numericLayer.Value;
+				this.selectedSprite.MoveX = (float)this.numericMoveX.Value;
+			}
+			else if( sender == this.numericMoveY )
+			{
+				this.selectedSprite.MoveY = (float)this.numericMoveY.Value;
 			}
 
 			this.MarkDirty();
 			this.UpdateSelectedSpriteNodeText();
+			this.UpdateClassicDeltaLabel();
 			this.atlasViewControl.Invalidate();
 			this.RefreshPlacements();
 		}
@@ -581,21 +672,120 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 		}
 
-		private void HandleScaleChanged( object sender, EventArgs args )
+		//-------------------------------------------
+		// classic alignment
+
+		/// <summary>
+		/// Finds the classic cel matching a sprite by its index within its group.
+		/// </summary>
+		private ClassicCel? FindClassicCel( Sprite? sprite )
+		{
+			if( sprite == null || this.classicCostume == null )
+			{
+				return null;
+			}
+
+			foreach( var spriteGroup in this.Costume!.SpriteGroupList )
+			{
+				var spriteIndex = spriteGroup.SpriteList.IndexOf( sprite );
+				if( spriteIndex < 0 )
+				{
+					continue;
+				}
+				var classicLimb = this.classicCostume.FindLimb( spriteGroup.Identifier );
+				return classicLimb != null && spriteIndex < classicLimb.CelList.Count
+					? classicLimb.CelList[spriteIndex]
+					: null;
+			}
+			return null;
+		}
+
+		private void UpdateClassicDeltaLabel()
+		{
+			var cel = this.FindClassicCel( this.selectedSprite );
+			if( cel == null || this.selectedSprite == null )
+			{
+				this.labelClassicDelta.Text = "Classic: n/a";
+				return;
+			}
+
+			var scale = Renderer.DefaultHdScale;
+			var deltaX = this.selectedSprite.ScreenX - cel.RelX * scale.Width;
+			var deltaY = this.selectedSprite.ScreenY - cel.RelY * scale.Height;
+			this.labelClassicDelta.Text = string.Concat(
+				"Classic: ", cel.Width, "x", cel.Height, " @ ", cel.RelX, "; ", cel.RelY,
+				"  delta ", deltaX.ToString( "+0.##;-0.##;0" ), "; ", deltaY.ToString( "+0.##;-0.##;0" ), " px"
+			);
+		}
+
+		private void AlignToClassic( object sender, EventArgs args )
+		{
+			var sprite = this.selectedSprite;
+			var cel = this.FindClassicCel( sprite );
+			if( sprite == null || cel == null )
+			{
+				return;
+			}
+
+			var scale = Renderer.DefaultHdScale;
+			sprite.ScreenX = cel.RelX * scale.Width;
+			sprite.ScreenY = cel.RelY * scale.Height;
+
+			this.MarkDirty();
+			this.UpdateNumericEditors();
+			this.UpdateSelectedSpriteNodeText();
+			this.RefreshPlacements();
+		}
+
+		//-------------------------------------------
+		// animation playback
+
+		private void HandleAnimationSelected( object sender, EventArgs args )
 		{
 			if( this.suppressUiEvents )
 			{
 				return;
 			}
-			this.roomPreviewControl.HdScale = this.GetHdScale();
+			this.UpdateStepRange();
+			this.RefreshPlacements();
+		}
+
+		private void HandleStepChanged( object sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+			this.RefreshPlacements();
+		}
+
+		private void HandlePlayCheckedChanged( object sender, EventArgs args )
+		{
+			this.timerPlayback.Enabled = this.checkBoxPlay.Checked;
+		}
+
+		private void HandlePlaybackTick( object? sender, EventArgs args )
+		{
+			if( this.numericStep.Maximum <= 0 )
+			{
+				return;
+			}
+			this.suppressUiEvents = true;
+			try
+			{
+				this.numericStep.Value = ( this.numericStep.Value + 1 ) > this.numericStep.Maximum ? 0 : this.numericStep.Value + 1;
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
 			this.RefreshPlacements();
 		}
 
 		private void HandleCalibrationCheckedChanged( object sender, EventArgs args )
 		{
-			this.roomPreviewControl.HdScale = this.GetHdScale();
-			this.roomPreviewControl.ShowCalibrationOverlay = this.checkBoxCalibration.Checked;
-			this.roomPreviewControl.Invalidate();
+			this.costumePreviewControl.ShowClassicOverlay = this.checkBoxCalibration.Checked;
+			this.costumePreviewControl.Invalidate();
 		}
 
 		private void HandleTextureSelected( object sender, EventArgs args )
@@ -610,12 +800,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private void UpdateAtlas()
 		{
 			var textureName = this.comboBoxTextures.SelectedItem as string;
+			var textureNumber = this.comboBoxTextures.SelectedIndex;
 			this.atlasViewControl.Texture = this.LoadTexture( textureName );
 			this.atlasViewControl.Sprites.Clear();
 			this.atlasViewControl.Sprites.AddRange(
-				this.Room!.SpriteGroupList
+				this.Costume!.SpriteGroupList
 					.SelectMany( g => g.SpriteList )
-					.Where( s => s.TextureFileName == textureName )
+					.Where( s => s.TextureNumber == textureNumber )
 			);
 			if( this.atlasViewControl.SelectedSprite != null && !this.atlasViewControl.Sprites.Contains( this.atlasViewControl.SelectedSprite ) )
 			{
@@ -635,7 +826,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private bool TrySaveOverride()
 		{
 			var resourcePath = this.LPAKFile.PakFileNames[this.FileIndex].FileName;
-			var result = new SaveRoomOverrideCommand( this.LPAKFile, resourcePath, this.Room ).Execute();
+			var result = new SaveCostumeOverrideCommand( this.LPAKFile, resourcePath, this.Costume ).Execute();
 			if( result.IsSuccess )
 			{
 				this.dirty = false;
@@ -653,7 +844,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				var answer = MessageBox.Show(
 					this,
-					"Discard all unsaved changes and reload the room?",
+					"Discard all unsaved changes and reload the costume?",
 					"Revert changes",
 					MessageBoxButtons.YesNo,
 					MessageBoxIcon.Question
@@ -665,8 +856,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			this.selectedSprite = null;
+			this.hiddenGroups.Clear();
 			this.hiddenSprites.Clear();
-			this.LoadRoom();
+			this.LoadCostume();
 		}
 
 		private void ConfirmCloseWithUnsavedChanges( object? sender, FormClosingEventArgs args )
@@ -751,13 +943,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 			// reload everything that may show the replaced texture
 			this.textureCache.Clear();
-			this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room!, this.LoadTexture );
 			this.UpdateAtlas();
 			this.RefreshPlacements();
 		}
 
 		//-------------------------------------------
 		// helpers
+
+		private string? GetTextureFileName( int textureNumber )
+		{
+			return textureNumber >= 0 && textureNumber < ( this.Costume?.TextureFileNameList.Count ?? 0 )
+				? this.Costume!.TextureFileNameList[textureNumber].Path
+				: null;
+		}
 
 		private void MarkDirty()
 		{
@@ -770,12 +968,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void UpdateTitle()
 		{
-			if( this.Room == null )
+			if( this.Costume == null )
 			{
 				return;
 			}
 			this.label1.Text = string.Concat(
-				"Spritesheet Editor - Room ", this.Room.Header.Identifier, " - ", this.Room.Header.Name,
+				"Costume Spritesheet Editor - Costume ", this.Costume.Header.Identifier, " - ", this.Costume.Header.Name,
 				this.dirty ? " (modified)" : ""
 			);
 		}

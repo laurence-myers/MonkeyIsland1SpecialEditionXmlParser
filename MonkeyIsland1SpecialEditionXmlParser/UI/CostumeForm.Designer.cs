@@ -35,6 +35,7 @@
 			this.exportButtonColumn = new System.Windows.Forms.DataGridViewButtonColumn();
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.openSpriteSheetEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toXMLFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toPNGFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -99,11 +100,21 @@
 			// fileToolStripMenuItem
 			// 
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openSpriteSheetEditorToolStripMenuItem,
             this.exportToolStripMenuItem});
 			this.fileToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.MatchOnly;
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(31, 20);
 			this.fileToolStripMenuItem.Text = "&File";
+			//
+			// openSpriteSheetEditorToolStripMenuItem
+			//
+			this.openSpriteSheetEditorToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Insert;
+			this.openSpriteSheetEditorToolStripMenuItem.MergeIndex = 1;
+			this.openSpriteSheetEditorToolStripMenuItem.Name = "openSpriteSheetEditorToolStripMenuItem";
+			this.openSpriteSheetEditorToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+			this.openSpriteSheetEditorToolStripMenuItem.Text = "Open in Spritesheet &Editor";
+			this.openSpriteSheetEditorToolStripMenuItem.Click += new System.EventHandler(this.OpenSpriteSheetEditor);
 			// 
 			// exportToolStripMenuItem
 			// 
@@ -172,6 +183,7 @@
 		private System.Windows.Forms.DataGridViewButtonColumn exportButtonColumn;
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem openSpriteSheetEditorToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem toXMLFileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem toPNGFilesToolStripMenuItem;

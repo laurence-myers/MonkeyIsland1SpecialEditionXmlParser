@@ -1,10 +1,10 @@
-﻿
+
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 {
 	public class SpriteGroupHeader
 	{
 		/// <summary>
-		/// Gets or sets the sprite group identifier.
+		/// Gets or sets the sprite group identifier (the classic SCUMM limb number).
 		/// </summary>
 		public int Identifier
 		{
@@ -12,7 +12,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 			set;
 		}
 
-		public int UnkownInteger1
+		/// <summary>
+		/// Gets or sets the identifier of the first sprite in the group.
+		/// <see cref="Frame.SpriteIdentifier"/> values are resolved against this base:
+		/// the sprite drawn is SpriteList[Frame.SpriteIdentifier - FirstSpriteIdentifier].
+		/// </summary>
+		public int FirstSpriteIdentifier
 		{
 			get;
 			set;
@@ -40,7 +45,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities
 		{
 			return string.Concat(
 				this.Identifier, "; ",
-				this.UnkownInteger1, "; ",
+				this.FirstSpriteIdentifier, "; ",
 				this.SpriteCount, "; ",
 				this.SpriteAddress
 				);

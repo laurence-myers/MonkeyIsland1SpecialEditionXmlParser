@@ -11,7 +11,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		float offsetX,
 		float offsetY,
 		int layer
-	)
+	) : IAtlasSprite
 	{
 		private Sprite() : this(
 			index: 0,

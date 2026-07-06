@@ -365,7 +365,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.saveAsToolStripMenuItem.Enabled = node.Level == 2;
 			this.saveOverrideToolStripMenuItem.Enabled = node.Level == 2;
 			this.applyOverrideToolStripMenuItem.Enabled = node.Level == 2;
-			this.openSpriteSheetEditorToolStripMenuItem.Enabled = node.Level == 2 && node.Parent.Text == "Rooms";
+			this.openSpriteSheetEditorToolStripMenuItem.Enabled = node.Level == 2 && ( node.Parent.Text == "Rooms" || node.Parent.Text == "Costumes" );
 			this.importTexturePngToolStripMenuItem.Enabled = node.Level == 2 && node.Parent.Text == "Textures";
 
 			this.contextMenuStrip.Tag = node;
@@ -425,7 +425,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			new OpenSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+			if( fileName!.EndsWith( ".costume.xml" ) )
+			{
+				new OpenCostumeSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+			}
+			else
+			{
+				new OpenSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+			}
 		}
 
 		private void SaveAs( object sender, EventArgs args )

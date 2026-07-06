@@ -148,8 +148,137 @@ namespace Tests
 			}
 		}
 
+		[Test]
+		public void ReadCostumes_ParsesLimbsAndCels()
+		{
+			byte[] dataBytes;
+			byte[] indexBytes;
+			BuildEncodedCostumeFiles( out dataBytes, out indexBytes );
+
+			var costumes = ScummParser.ReadCostumesFromEncodedBytes( dataBytes, indexBytes );
+
+			Assert.That( costumes.Count, Is.EqualTo( 1 ) );
+			var costume = costumes[0];
+			Assert.That( costume.CostumeId, Is.EqualTo( 21 ) );
+			Assert.That( costume.RoomNumber, Is.EqualTo( 59 ) );
+			Assert.That( costume.MaximumAnimationNumber, Is.EqualTo( 4 ) );
+			Assert.That( costume.Format, Is.EqualTo( 0x58 ) );
+			Assert.That( costume.Mirror, Is.True );
+
+			Assert.That( costume.LimbList.Count, Is.EqualTo( 2 ), "only the two limbs with cels are kept" );
+
+			var limb0 = costume.FindLimb( 0 );
+			Assert.That( limb0, Is.Not.Null );
+			Assert.That( limb0!.CelList.Count, Is.EqualTo( 2 ) );
+			Assert.That( limb0.CelList[0]!.Width, Is.EqualTo( 23 ) );
+			Assert.That( limb0.CelList[0]!.Height, Is.EqualTo( 57 ) );
+			Assert.That( limb0.CelList[0]!.RelX, Is.EqualTo( -11 ) );
+			Assert.That( limb0.CelList[0]!.RelY, Is.EqualTo( -57 ) );
+			Assert.That( limb0.CelList[0]!.MoveX, Is.EqualTo( 1 ) );
+			Assert.That( limb0.CelList[0]!.MoveY, Is.EqualTo( -2 ) );
+			Assert.That( limb0.CelList[1]!.Width, Is.EqualTo( 10 ) );
+
+			var limb1 = costume.FindLimb( 1 );
+			Assert.That( limb1, Is.Not.Null );
+			Assert.That( limb1!.CelList.Count, Is.EqualTo( 1 ) );
+			Assert.That( limb1.CelList[0]!.Width, Is.EqualTo( 5 ) );
+			Assert.That( limb1.CelList[0]!.RelY, Is.EqualTo( -6 ) );
+		}
+
 		//-------------------------------------------
 		// synthetic block builders
+
+		/// <summary>
+		/// Builds a resource file with one room (number 59) whose LFLF contains a COST
+		/// resource, plus an index file whose DCOS directory maps costume 21 to it.
+		/// All costume-internal offsets are relative to the block position plus two.
+		/// </summary>
+		private static void BuildEncodedCostumeFiles( out byte[] dataBytes, out byte[] indexBytes )
+		{
+			// the payload starts at base offset 6 (base = block position + 2), so a base
+			// offset b lives at payload index b - 6
+			const int numAnim = 4;
+			var payload = new List<byte>();
+			payload.Add( numAnim );                                // [0] highest animation number
+			payload.Add( 0x58 | 0x80 );                            // [1] format 0x58, mirrored
+			payload.AddRange( new byte[16] );                      // [2..17] palette
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)76 ) ); // [18] anim commands offset
+			// [20..51] 16 limb table offsets; unused limbs point at the picture data
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)79 ) );
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)83 ) );
+			for( var limb = 2; limb < 16; limb++ )
+			{
+				payload.AddRange( System.BitConverter.GetBytes( (ushort)85 ) );
+			}
+			// [52..61] anim offsets for anims 0..4; only anim 4 is defined
+			for( var animation = 0; animation < numAnim; animation++ )
+			{
+				payload.AddRange( System.BitConverter.GetBytes( (ushort)0 ) );
+			}
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)68 ) );
+			// base offset 68: anim 4 definition - limbs 0 and 1
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)0xC000 ) );
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)0 ) );  // limb 0: commands 0..1
+			payload.Add( 1 );
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)2 ) );  // limb 1: command 2
+			payload.Add( 0 );
+			// base offset 76: anim commands (cel indexes)
+			payload.Add( 0 );
+			payload.Add( 1 );
+			payload.Add( 0 );
+			// base offset 79: limb 0 cel table; 83: limb 1 cel table; 85: picture data
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)85 ) );
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)97 ) );
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)109 ) );
+			payload.AddRange( CelPayload( width: 23, height: 57, relX: -11, relY: -57, moveX: 1, moveY: -2 ) );
+			payload.AddRange( CelPayload( width: 10, height: 20, relX: 3, relY: -20, moveX: 0, moveY: 0 ) );
+			payload.AddRange( CelPayload( width: 5, height: 6, relX: -1, relY: -6, moveX: 0, moveY: 0 ) );
+			var cost = Block( "COST", payload.ToArray() );
+
+			var room = Block( "ROOM", Block( "RMHD", RmhdPayload( 320, 200, 0 ) ) );
+			var lflf = Block( "LFLF", room.Concat( cost ).ToArray() );
+
+			// LECF header (8) + LOFF block + LFLF header (8) = the ROOM block position
+			var loffLength = 8 + 1 + 5;
+			var roomPosition = 8 + loffLength + 8;
+			var costOffsetInRoom = room.Length; // COST follows ROOM inside the LFLF
+
+			var loffPayload = new List<byte>();
+			loffPayload.Add( 1 );
+			loffPayload.Add( 59 );
+			loffPayload.AddRange( System.BitConverter.GetBytes( (uint)roomPosition ) );
+			var loff = Block( "LOFF", loffPayload.ToArray() );
+
+			dataBytes = Block( "LECF", loff, lflf );
+			ScummParser.XorDecode( dataBytes, ScummParser.XorKey ); // encode
+
+			// index: DCOS with costume 21 pointing at room 59; every other slot is empty
+			const int costumeCount = 22;
+			var dcosPayload = new List<byte>();
+			dcosPayload.AddRange( System.BitConverter.GetBytes( (ushort)costumeCount ) );
+			for( var costumeId = 0; costumeId < costumeCount; costumeId++ )
+			{
+				dcosPayload.Add( costumeId == 21 ? (byte)59 : (byte)0 );
+			}
+			for( var costumeId = 0; costumeId < costumeCount; costumeId++ )
+			{
+				dcosPayload.AddRange( System.BitConverter.GetBytes( costumeId == 21 ? (uint)costOffsetInRoom : 0u ) );
+			}
+			indexBytes = Block( "DCOS", dcosPayload.ToArray() );
+			ScummParser.XorDecode( indexBytes, ScummParser.XorKey ); // encode
+		}
+
+		private static byte[] CelPayload( int width, int height, int relX, int relY, int moveX, int moveY )
+		{
+			var bytes = new List<byte>();
+			bytes.AddRange( System.BitConverter.GetBytes( (ushort)width ) );
+			bytes.AddRange( System.BitConverter.GetBytes( (ushort)height ) );
+			bytes.AddRange( System.BitConverter.GetBytes( (short)relX ) );
+			bytes.AddRange( System.BitConverter.GetBytes( (short)relY ) );
+			bytes.AddRange( System.BitConverter.GetBytes( (short)moveX ) );
+			bytes.AddRange( System.BitConverter.GetBytes( (short)moveY ) );
+			return bytes.ToArray();
+		}
 
 		private static byte[] BuildEncodedResourceFile()
 		{

@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
-using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
+using MonkeyIsland1SpecialEditionXmlParser.Formats;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
@@ -16,7 +16,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 	public class AtlasViewControl : Control
 	{
 		private Image? texture;
-		private Sprite? selectedSprite;
+		private IAtlasSprite? selectedSprite;
 		private float zoom = 0.5f;
 		private bool dragging;
 		private Point dragStart;
@@ -39,7 +39,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.SetStyle( ControlStyles.OptimizedDoubleBuffer, true );
 			this.SetStyle( ControlStyles.Selectable, true );
 
-			this.Sprites = new List<Sprite>();
+			this.Sprites = new List<IAtlasSprite>();
 		}
 
 		/// <summary>
@@ -62,7 +62,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		/// <summary>
 		/// Gets the sprites whose source rectangles are drawn over the texture.
 		/// </summary>
-		public List<Sprite> Sprites
+		public List<IAtlasSprite> Sprites
 		{
 			get;
 			private set;
@@ -71,7 +71,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		/// <summary>
 		/// Gets or sets the selected sprite; its rectangle is highlighted and can be moved.
 		/// </summary>
-		public Sprite? SelectedSprite
+		public IAtlasSprite? SelectedSprite
 		{
 			get
 			{
@@ -271,12 +271,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			// everything is painted in OnPaint over a transparency grid
 		}
 
-		private static Rectangle GetRect( Sprite sprite )
+		private static Rectangle GetRect( IAtlasSprite sprite )
 		{
 			return new Rectangle( sprite.TextureX, sprite.TextureY, sprite.TextureWidth, sprite.TextureHeight );
 		}
 
-		private Sprite? HitTest( Point atlasPoint )
+		private IAtlasSprite? HitTest( Point atlasPoint )
 		{
 			// prefer the smallest rectangle under the cursor so overlapped sprites stay reachable
 			return this.Sprites
