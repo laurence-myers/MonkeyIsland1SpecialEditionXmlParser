@@ -1,9 +1,25 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 {
+	/// <summary>
+	/// Writes a <see cref="Room"/> back to the game's binary format.
+	///
+	/// The layout rules were derived by round-tripping every room in Monkey1.pak
+	/// byte-for-byte:
+	///  * every item (table, array, blob, string) starts on a 16-byte boundary;
+	///  * strings are written NUL-terminated with no trailing padding - the following
+	///    item's alignment supplies the pad, so the very last item ends the file
+	///    (no padding after EOF);
+	///  * texture file names are pooled and shared: a name is written once and every
+	///    reference points at that single copy (references may point backwards, so the
+	///    stored offsets are signed);
+	///  * every relative address is stored as an offset from the field's own position;
+	///    0 means "absent".
+	/// </summary>
 	public static class Packer
 	{
 		/// <summary>
@@ -22,116 +38,141 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 
 		public static void WriteRoom( BinaryWriter writer, Room room )
 		{
-			long startPosition = writer.BaseStream.Position;
+			long start = writer.BaseStream.Position;
 
-			// 1. Write Header (80 bytes placeholder)
-			long headerOffset = writer.BaseStream.Position;
+			// a single, shared texture-name pool: name -> absolute byte position
+			var stringPool = new Dictionary<string, long>();
+
+			// remembered field / target positions, keyed by the entity they belong to
+			var staticSpriteHeaderAddressFields = new List<long>();
+			var staticSpriteArrayPositions = new List<long>();
+			var staticSpritePositions = new Dictionary<StaticSprite, long>();
+			var staticSpriteTextureTargets = new Dictionary<StaticSprite, long>();
+
+			var spriteHeaderAddressFields = new List<long>();
+			var spriteArrayPositions = new List<long>();
+			var spritePositions = new Dictionary<Sprite, long>();
+			var spriteTextureTargets = new Dictionary<Sprite, long>();
+
+			var unknown6HeaderAddressFields = new List<long>();
+			var unknown6ArrayPositions = new List<long>();
+
+			var roomObjectHeaderNameFields = new List<long>();
+			var roomObjectHeaderAddressFields = new List<long>();
+			var roomObjectHeaderNamePositions = new List<long>();
+			var roomObjectArrayPositions = new List<long>();
+			var roomObjectPositions = new Dictionary<RoomObject, long>();
+			var roomObjectSubPositions = new Dictionary<RoomObject, long>();
+			var roomObjectSpriteTextureTargets = new Dictionary<RoomObject, long>();
+			var roomObjectImageChunkArrayPositions = new Dictionary<RoomObjectImage, long>();
+			var roomObjectImageChunkPositions = new Dictionary<RoomObjectImageChunk, long>();
+			var roomObjectImageChunkTextureTargets = new Dictionary<RoomObjectImageChunk, long>();
+
+			var unknown5HeaderAddressFields = new List<long>();
+			var unknown5ArrayPositions = new List<long>();
+
+			// 1. Header placeholder (80 bytes)
 			writer.Write( new byte[80] );
 
-			// 2. Write Header Name (padded to 16 bytes)
+			// 2. Room name
 			long nameAddress = writer.BaseStream.Position;
-			WriteStringMonkey( writer, room.Header.Name );
+			WriteCString( writer, room.Header.Name ?? "" );
 
-			// 3. Write Static Sprite Header List (fixed size per item)
+			// 3. Static sprite header table. Section element counts are derived from the
+			//    data lists rather than the header's own count field, so a stale or
+			//    non-serialized count can never desync the written file.
+			Align16( writer, start );
 			long staticSpriteHeaderAddress = writer.BaseStream.Position;
-			foreach( var staticSpriteHeader in room.StaticSpriteHeaderList )
+			for( int i = 0; i < room.StaticSpriteHeaderList.Count; i++ )
 			{
-				writer.Write( 0 ); // Identifier placeholder
-				writer.Write( 0 ); // Unkn1 placeholder
-				writer.Write( 0 ); // Unkn2 placeholder
-				writer.Write( 0 ); // StaticSpriteCount placeholder
+				var staticSpriteHeader = room.StaticSpriteHeaderList[i];
+				long position = writer.BaseStream.Position;
+				writer.Write( staticSpriteHeader.Identifier );
+				writer.Write( staticSpriteHeader.SourceWidth );
+				writer.Write( staticSpriteHeader.SourceHeight );
+				writer.Write( room.StaticSpriteList[i].Count );
 				writer.Write( 0 ); // StaticSpriteAddress placeholder
+				staticSpriteHeaderAddressFields.Add( position + 16 );
 			}
 
-			// 4. Write Sprite Header List
+			// 4. Sprite header table
+			Align16( writer, start );
 			long spriteHeaderAddress = writer.BaseStream.Position;
-			foreach( var spriteHeader in room.SpriteHeaderList )
+			for( int i = 0; i < room.SpriteHeaderList.Count; i++ )
 			{
-				writer.Write( 0 ); // Identifier placeholder
-				writer.Write( 0 ); // SpriteCount placeholder
+				var spriteHeader = room.SpriteHeaderList[i];
+				long position = writer.BaseStream.Position;
+				writer.Write( spriteHeader.Identifier );
+				writer.Write( room.SpriteGroupList[i].SpriteList.Count );
 				writer.Write( 0 ); // SpriteAddress placeholder
+				spriteHeaderAddressFields.Add( position + 8 );
 			}
 
-			// 5. Write Unknown6 Header List
+			// 5. Unknown6 header table
+			Align16( writer, start );
 			long unknown6HeaderAddress = writer.BaseStream.Position;
-			foreach( var unknown6Header in room.Unknown6HeaderList )
+			for( int i = 0; i < room.Unknown6HeaderList.Count; i++ )
 			{
-				writer.Write( (byte)unknown6Header.Unkn1 );
-				writer.Write( (byte)unknown6Header.Unkn2 );
-				writer.Write( (byte)unknown6Header.Unkn3 );
-				writer.Write( (byte)unknown6Header.Unkn4 );
+				var unknown6Header = room.Unknown6HeaderList[i];
+				long position = writer.BaseStream.Position;
+				writer.Write( unknown6Header.Unkn1 );
+				writer.Write( unknown6Header.Unkn2 );
+				writer.Write( unknown6Header.Unkn3 );
+				writer.Write( unknown6Header.Unkn4 );
 				writer.Write( unknown6Header.Unkn5 );
-				writer.Write( 0 ); // Unknown6Count placeholder
+				writer.Write( room.Unknown6List[i].ByteList.Count );
 				writer.Write( 0 ); // Unknown6Address placeholder
+				unknown6HeaderAddressFields.Add( position + 12 );
 			}
 
-			// 6. Write Unknown4 Header List
-			long unknown4HeaderAddress = writer.BaseStream.Position;
-			foreach( var unknown4Header in room.Unknown4HeaderList )
+			// 6. Room object header table
+			Align16( writer, start );
+			long roomObjectHeaderAddress = writer.BaseStream.Position;
+			for( int i = 0; i < room.RoomObjectHeaderList.Count; i++ )
 			{
-				writer.Write( 0 ); // Unknown4NameAddress placeholder
-				writer.Write( 0 ); // Unknown4Count placeholder
-				writer.Write( 0 ); // Unknown4Address placeholder
+				long position = writer.BaseStream.Position;
+				writer.Write( 0 ); // NameAddress placeholder
+				writer.Write( room.RoomObjectGroupList[i].RoomObjectList.Count );
+				writer.Write( 0 ); // RoomObjectAddress placeholder
+				roomObjectHeaderNameFields.Add( position );
+				roomObjectHeaderAddressFields.Add( position + 8 );
 			}
 
-			// 7. Write Unknown5 Header List
+			// 7. Unknown5 header table
+			Align16( writer, start );
 			long unknown5HeaderAddress = writer.BaseStream.Position;
-			foreach( var unknown5Header in room.Unknown5HeaderList )
+			for( int i = 0; i < room.Unknown5HeaderList.Count; i++ )
 			{
-				writer.Write( 0 ); // Unknown5Count placeholder
+				long position = writer.BaseStream.Position;
+				writer.Write( room.Unknown5List[i].Int32List.Count );
 				writer.Write( 0 ); // Unknown5Address placeholder
+				unknown5HeaderAddressFields.Add( position + 4 );
 			}
 
-			// 8. Write Static Sprite Lists
-			List<List<long>> staticSpriteAddressList = new List<List<long>>();
-			for( int i = 0; i < room.StaticSpriteList.Count; i++ )
+			// 8. Static sprite arrays (one aligned array per group)
+			foreach( var staticSpriteList in room.StaticSpriteList )
 			{
-				var staticSpriteList = room.StaticSpriteList[i];
-				List<long> innerAddressList = new List<long>();
-
+				Align16( writer, start );
+				staticSpriteArrayPositions.Add( writer.BaseStream.Position );
 				foreach( var staticSprite in staticSpriteList )
 				{
-					innerAddressList.Add( writer.BaseStream.Position );
+					staticSpritePositions[staticSprite] = writer.BaseStream.Position;
 					writer.Write( staticSprite.X );
 					writer.Write( staticSprite.Y );
 					writer.Write( staticSprite.Width );
 					writer.Write( staticSprite.Height );
 					writer.Write( 0 ); // TextureFileNameAddress placeholder
 				}
-
-				staticSpriteAddressList.Add( innerAddressList );
 			}
 
-			// 9. Write Static Sprite Texture File Names
-			for( int i = 0; i < room.StaticSpriteList.Count; i++ )
+			// 9. Sprite arrays
+			foreach( var spriteGroup in room.SpriteGroupList )
 			{
-				var staticSpriteList = room.StaticSpriteList[i];
-				var innerAddressList = staticSpriteAddressList[i];
-
-				for( int j = 0; j < staticSpriteList.Count; j++ )
-				{
-					var staticSprite = staticSpriteList[j];
-					long textureFileNameAddress = writer.BaseStream.Position;
-					WriteStringMonkey( writer, staticSprite.TextureFileName ?? "" );
-
-					// Backpatch TextureFileNameAddress
-					long currentPos = writer.BaseStream.Position;
-					writer.BaseStream.Position = innerAddressList[j] + 16; // X, Y, Width, Height = 4*4 = 16 bytes
-					writer.Write( (int)( textureFileNameAddress - writer.BaseStream.Position ) );
-					writer.BaseStream.Position = currentPos;
-				}
-			}
-
-			// 10. Write Sprite Groups
-			List<List<long>> spriteAddressList = new List<List<long>>();
-			for( int i = 0; i < room.SpriteGroupList.Count; i++ )
-			{
-				var spriteGroup = room.SpriteGroupList[i];
-				List<long> innerAddressList = new List<long>();
-
+				Align16( writer, start );
+				spriteArrayPositions.Add( writer.BaseStream.Position );
 				foreach( var sprite in spriteGroup.SpriteList )
 				{
-					innerAddressList.Add( writer.BaseStream.Position );
+					spritePositions[sprite] = writer.BaseStream.Position;
 					writer.Write( 0 ); // TextureFileNameAddress placeholder
 					writer.Write( sprite.TextureX );
 					writer.Write( sprite.TextureY );
@@ -141,237 +182,292 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 					writer.Write( sprite.OffsetY );
 					writer.Write( sprite.Layer );
 				}
-
-				spriteAddressList.Add( innerAddressList );
 			}
 
-			// 11. Write Sprite Texture File Names
-			for( int i = 0; i < room.SpriteGroupList.Count; i++ )
+			// 10. Unknown6 byte blobs
+			foreach( var unknown6 in room.Unknown6List )
 			{
-				var spriteGroup = room.SpriteGroupList[i];
-				var innerAddressList = spriteAddressList[i];
-
-				for( int j = 0; j < spriteGroup.SpriteList.Count; j++ )
-				{
-					var sprite = spriteGroup.SpriteList[j];
-					long textureFileNameAddress = writer.BaseStream.Position;
-					WriteStringMonkey( writer, sprite.TextureFileName ?? "" );
-
-					// Backpatch TextureFileNameAddress
-					long currentPos = writer.BaseStream.Position;
-					writer.BaseStream.Position = innerAddressList[j];
-					writer.Write( (int)( textureFileNameAddress - writer.BaseStream.Position ) );
-					writer.BaseStream.Position = currentPos;
-				}
-			}
-
-			// 12. Write Unknown6 Lists
-			List<long> unknown6AddressList = new List<long>();
-			for( int i = 0; i < room.Unknown6List.Count; i++ )
-			{
-				var unknown6 = room.Unknown6List[i];
-				unknown6AddressList.Add( writer.BaseStream.Position );
+				Align16( writer, start );
+				unknown6ArrayPositions.Add( writer.BaseStream.Position );
 				writer.Write( unknown6.ByteList.ToArray() );
 			}
 
-			// 13. Write Unknown4 Groups
-			List<List<long>> unknown4AddressList = new List<List<long>>();
-			for( int i = 0; i < room.Unknown4GroupList.Count; i++ )
+			// 11. Room object names and instance arrays (interleaved per header)
+			for( int i = 0; i < room.RoomObjectHeaderList.Count; i++ )
 			{
-				var unknown4Group = room.Unknown4GroupList[i];
-				List<long> innerAddressList = new List<long>();
-
-				foreach( var unknown4 in unknown4Group.Unknown4List )
+				var roomObjectHeader = room.RoomObjectHeaderList[i];
+				if( roomObjectHeader.Name != null )
 				{
-					innerAddressList.Add( writer.BaseStream.Position );
-					writer.Write( 0 ); // Unknown4_1Address placeholder
-					writer.Write( 0 ); // Unknown4_2Address placeholder
-					writer.Write( unknown4.Unkn3 );
-					writer.Write( unknown4.Unkn4 );
+					Align16( writer, start );
+					roomObjectHeaderNamePositions.Add( writer.BaseStream.Position );
+					WriteCString( writer, roomObjectHeader.Name );
+				}
+				else
+				{
+					roomObjectHeaderNamePositions.Add( 0 );
 				}
 
-				unknown4AddressList.Add( innerAddressList );
+				Align16( writer, start );
+				roomObjectArrayPositions.Add( writer.BaseStream.Position );
+				var roomObjectList = room.RoomObjectGroupList[i].RoomObjectList;
+				foreach( var roomObject in roomObjectList )
+				{
+					roomObjectPositions[roomObject] = writer.BaseStream.Position;
+					writer.Write( 0 ); // SpriteAddress placeholder
+					writer.Write( 0 ); // ImageAddress placeholder
+					writer.Write( roomObject.OffsetX );
+					writer.Write( roomObject.OffsetY );
+				}
 			}
 
-			// 14. Write Unknown4_x entities and backpatch
-			for( int i = 0; i < room.Unknown4GroupList.Count; i++ )
+			// 12. Unknown5 int32 arrays
+			foreach( var unknown5 in room.Unknown5List )
 			{
-				var unknown4Group = room.Unknown4GroupList[i];
-				var innerAddressList = unknown4AddressList[i];
-
-				for( int j = 0; j < unknown4Group.Unknown4List.Count; j++ )
+				Align16( writer, start );
+				unknown5ArrayPositions.Add( writer.BaseStream.Position );
+				foreach( var value in unknown5.Int32List )
 				{
-					var unknown4 = unknown4Group.Unknown4List[j];
+					writer.Write( value );
+				}
+			}
 
-					if( unknown4.Unknown4_1 != null )
+			// 13. Static sprite texture name pool
+			foreach( var staticSpriteList in room.StaticSpriteList )
+			{
+				foreach( var staticSprite in staticSpriteList )
+				{
+					staticSpriteTextureTargets[staticSprite] =
+						PoolString( writer, start, stringPool, staticSprite.TextureFileName ?? "" );
+				}
+			}
+
+			// 14. Sprite texture name pool
+			foreach( var spriteGroup in room.SpriteGroupList )
+			{
+				foreach( var sprite in spriteGroup.SpriteList )
+				{
+					spriteTextureTargets[sprite] =
+						PoolString( writer, start, stringPool, sprite.TextureFileName ?? "" );
+				}
+			}
+
+			// 15. Room object sprite / image records (the 20 / 16 byte sub-records)
+			foreach( var roomObject in EnumerateRoomObjects( room ) )
+			{
+				if( roomObject.Sprite != null )
+				{
+					Align16( writer, start );
+					roomObjectSubPositions[roomObject] = writer.BaseStream.Position;
+					writer.Write( 0 ); // TextureFileNameAddress placeholder (signed)
+					writer.Write( roomObject.Sprite.X );
+					writer.Write( roomObject.Sprite.Y );
+					writer.Write( roomObject.Sprite.Width );
+					writer.Write( roomObject.Sprite.Height );
+				}
+				else if( roomObject.Image != null )
+				{
+					Align16( writer, start );
+					roomObjectSubPositions[roomObject] = writer.BaseStream.Position;
+					writer.Write( roomObject.Image.SourceWidth );
+					writer.Write( roomObject.Image.SourceHeight );
+					writer.Write( roomObject.Image.ChunkList.Count );
+					writer.Write( 0 ); // ChunkAddress placeholder
+				}
+			}
+
+			// 16. Per room object, in order: sprite -> pool its texture name;
+			//     image -> write its chunk array
+			foreach( var roomObject in EnumerateRoomObjects( room ) )
+			{
+				if( roomObject.Sprite != null )
+				{
+					if( roomObject.Sprite.TextureFileName != null )
 					{
-						long unknown4_1Address = writer.BaseStream.Position;
-						writer.Write( unknown4.Unknown4_1.Unkn1 );
-						writer.Write( unknown4.Unknown4_1.Unkn2 );
-						writer.Write( unknown4.Unknown4_1.Unkn3 );
-						writer.Write( unknown4.Unknown4_1.Unkn4 );
-						writer.Write( unknown4.Unknown4_1.Unkn5 );
-
-						// Backpatch Unknown4_1Address
-						long currentPos = writer.BaseStream.Position;
-						writer.BaseStream.Position = innerAddressList[j];
-						writer.Write( (int)( unknown4_1Address - writer.BaseStream.Position ) );
-						writer.BaseStream.Position = currentPos;
-					}
-
-					if( unknown4.Unknown4_2 != null )
-					{
-						long unknown4_2Address = writer.BaseStream.Position;
-						writer.Write( unknown4.Unknown4_2.Unkn1 );
-						writer.Write( unknown4.Unknown4_2.Unkn2 );
-						writer.Write( unknown4.Unknown4_2.Unkn3 );
-						writer.Write( unknown4.Unknown4_2.Unkn4 );
-
-						// Backpatch Unknown4_2Address
-						long currentPos = writer.BaseStream.Position;
-						writer.BaseStream.Position = innerAddressList[j] + 4; // After Unknown4_1Address
-						writer.Write( (int)( unknown4_2Address - writer.BaseStream.Position ) );
-						writer.BaseStream.Position = currentPos;
+						roomObjectSpriteTextureTargets[roomObject] =
+							PoolString( writer, start, stringPool, roomObject.Sprite.TextureFileName );
 					}
 				}
-			}
-
-			// 15. Write Unknown5 Lists
-			List<long> unknown5AddressList = new List<long>();
-			for( int i = 0; i < room.Unknown5List.Count; i++ )
-			{
-				var unknown5 = room.Unknown5List[i];
-				unknown5AddressList.Add( writer.BaseStream.Position );
-				foreach( var int32Value in unknown5.Int32List )
+				else if( roomObject.Image != null )
 				{
-					writer.Write( int32Value );
+					Align16( writer, start );
+					roomObjectImageChunkArrayPositions[roomObject.Image] = writer.BaseStream.Position;
+					foreach( var chunk in roomObject.Image.ChunkList )
+					{
+						roomObjectImageChunkPositions[chunk] = writer.BaseStream.Position;
+						writer.Write( chunk.X );
+						writer.Write( chunk.Y );
+						writer.Write( chunk.Width );
+						writer.Write( chunk.Height );
+						writer.Write( 0 ); // TextureFileNameAddress placeholder (signed)
+					}
 				}
 			}
 
-			// 16. Write Unknown4 Names (before endOfFile!)
-			List<long> unknown4NameAddressList = new List<long>();
-			for( int i = 0; i < room.Unknown4HeaderList.Count; i++ )
+			// 17. Chunk texture name pool
+			foreach( var roomObject in EnumerateRoomObjects( room ) )
 			{
-				long position = writer.BaseStream.Position;
-				unknown4NameAddressList.Add( position );
-				WriteStringMonkey( writer, "" ); // Unknown4 names appear to be empty strings
+				if( roomObject.Image != null )
+				{
+					foreach( var chunk in roomObject.Image.ChunkList )
+					{
+						if( chunk.TextureFileName != null )
+						{
+							roomObjectImageChunkTextureTargets[chunk] =
+								PoolString( writer, start, stringPool, chunk.TextureFileName );
+						}
+					}
+				}
 			}
-
-			long endOfFile = writer.BaseStream.Position;
 
 			// --- BACKPATCHING ---
 
-			// Patch Static Sprite Headers
-			writer.BaseStream.Position = staticSpriteHeaderAddress;
 			for( int i = 0; i < room.StaticSpriteHeaderList.Count; i++ )
 			{
-				var ssh = room.StaticSpriteHeaderList[i];
-				writer.Write( ssh.Identifier );
-				writer.Write( ssh.Unkn1 );
-				writer.Write( ssh.Unkn2 );
-				
-				int count = ( i < room.StaticSpriteList.Count ) ? room.StaticSpriteList[i].Count : 0;
-				writer.Write( count );
-
-				long addr = ( i < staticSpriteAddressList.Count && staticSpriteAddressList[i].Count > 0 )
-					? staticSpriteAddressList[i][0] : 0;
-				writer.Write( addr > 0 ? (int)( addr - writer.BaseStream.Position ) : 0 );
+				PatchRel( writer, staticSpriteHeaderAddressFields[i], staticSpriteArrayPositions[i] );
+			}
+			foreach( var kvp in staticSpritePositions )
+			{
+				PatchRel( writer, kvp.Value + 16, staticSpriteTextureTargets[kvp.Key] );
 			}
 
-			// Patch Sprite Headers
-			writer.BaseStream.Position = spriteHeaderAddress;
 			for( int i = 0; i < room.SpriteHeaderList.Count; i++ )
 			{
-				var sh = room.SpriteHeaderList[i];
-				writer.Write( sh.Identifier );
-				
-				int count = ( i < room.SpriteGroupList.Count ) ? room.SpriteGroupList[i].SpriteList.Count : 0;
-				writer.Write( count );
-
-				long addr = ( i < spriteAddressList.Count && spriteAddressList[i].Count > 0 )
-					? spriteAddressList[i][0] : 0;
-				writer.Write( addr > 0 ? (int)( addr - writer.BaseStream.Position ) : 0 );
+				PatchRel( writer, spriteHeaderAddressFields[i], spriteArrayPositions[i] );
+			}
+			foreach( var kvp in spritePositions )
+			{
+				PatchRel( writer, kvp.Value, spriteTextureTargets[kvp.Key] );
 			}
 
-			// Patch Unknown6 Headers
-			writer.BaseStream.Position = unknown6HeaderAddress;
 			for( int i = 0; i < room.Unknown6HeaderList.Count; i++ )
 			{
-				var u6h = room.Unknown6HeaderList[i];
-				writer.BaseStream.Position += 8; // Skip unkn1-4 (4 bytes) and unkn5 (4 bytes)
-				writer.Write( room.Unknown6List[i].ByteList.Count );
-				writer.Write( (int)( unknown6AddressList[i] - writer.BaseStream.Position ) );
+				PatchRel( writer, unknown6HeaderAddressFields[i], unknown6ArrayPositions[i] );
 			}
 
-			// Patch Unknown4 Headers
-			writer.BaseStream.Position = unknown4HeaderAddress;
-			for( int i = 0; i < room.Unknown4HeaderList.Count; i++ )
+			for( int i = 0; i < room.RoomObjectHeaderList.Count; i++ )
 			{
-				var u4h = room.Unknown4HeaderList[i];
-				writer.Write( (int)( unknown4NameAddressList[i] - writer.BaseStream.Position ) );
-				writer.Write( u4h.Unknown4Count );
-
-				long addr = ( i < unknown4AddressList.Count && unknown4AddressList[i].Count > 0 )
-					? unknown4AddressList[i][0] : 0;
-				writer.Write( addr > 0 ? (int)( addr - writer.BaseStream.Position ) : 0 );
+				PatchRel( writer, roomObjectHeaderNameFields[i], roomObjectHeaderNamePositions[i] );
+				PatchRel( writer, roomObjectHeaderAddressFields[i], roomObjectArrayPositions[i] );
+			}
+			foreach( var roomObject in EnumerateRoomObjects( room ) )
+			{
+				long entryPosition = roomObjectPositions[roomObject];
+				if( roomObject.Sprite != null )
+				{
+					long subPosition = roomObjectSubPositions[roomObject];
+					PatchRel( writer, entryPosition, subPosition );
+					roomObjectSpriteTextureTargets.TryGetValue( roomObject, out var textureTarget );
+					PatchRel( writer, subPosition, textureTarget );
+				}
+				else if( roomObject.Image != null )
+				{
+					long subPosition = roomObjectSubPositions[roomObject];
+					PatchRel( writer, entryPosition + 4, subPosition );
+					if( roomObject.Image.ChunkList.Count > 0 )
+					{
+						PatchRel( writer, subPosition + 12, roomObjectImageChunkArrayPositions[roomObject.Image] );
+					}
+					foreach( var chunk in roomObject.Image.ChunkList )
+					{
+						roomObjectImageChunkTextureTargets.TryGetValue( chunk, out var chunkTextureTarget );
+						PatchRel( writer, roomObjectImageChunkPositions[chunk] + 16, chunkTextureTarget );
+					}
+				}
 			}
 
-			// Patch Unknown5 Headers
-			writer.BaseStream.Position = unknown5HeaderAddress;
 			for( int i = 0; i < room.Unknown5HeaderList.Count; i++ )
 			{
-				var u5h = room.Unknown5HeaderList[i];
-				writer.Write( u5h.Unknown5Count );
-				writer.Write( (int)( unknown5AddressList[i] - writer.BaseStream.Position ) );
+				PatchRel( writer, unknown5HeaderAddressFields[i], unknown5ArrayPositions[i] );
 			}
 
-			// Patch Main Header
-			writer.BaseStream.Position = headerOffset;
+			// Main header
+			writer.BaseStream.Position = start;
 			writer.Write( room.Header.Identifier );
-			writer.Write( (int)( nameAddress - writer.BaseStream.Position ) );
-			writer.Write( room.Header.Unkn03 );
-			writer.Write( room.Header.Unkn04 );
+			WriteRel( writer, nameAddress );
+			writer.Write( room.Header.Width );
+			writer.Write( room.Header.Height );
 			writer.Write( room.StaticSpriteHeaderList.Count );
-			writer.Write( (int)( staticSpriteHeaderAddress - writer.BaseStream.Position ) );
+			WriteRel( writer, staticSpriteHeaderAddress );
 			writer.Write( room.SpriteHeaderList.Count );
-			writer.Write( (int)( spriteHeaderAddress - writer.BaseStream.Position ) );
-			writer.Write( room.Header.Unkn09 );
-			writer.Write( room.Header.Unkn10 );
-			writer.Write( unknown6HeaderAddress > 0 ? (int)( unknown6HeaderAddress - writer.BaseStream.Position ) : 0 );
+			WriteRel( writer, spriteHeaderAddress );
+			writer.Write( room.Header.Unknown9 );
+			writer.Write( room.Header.Unknown6HeaderCountA );
+			WriteRel( writer, unknown6HeaderAddress ); // empty "A" section shares the table
 			writer.Write( room.Unknown6HeaderList.Count );
-			writer.Write( unknown6HeaderAddress > 0 ? (int)( unknown6HeaderAddress - writer.BaseStream.Position ) : 0 );
-			writer.Write( room.Unknown4HeaderList.Count );
-			writer.Write( unknown4HeaderAddress > 0 ? (int)( unknown4HeaderAddress - writer.BaseStream.Position ) : 0 );
+			WriteRel( writer, unknown6HeaderAddress );
+			writer.Write( room.RoomObjectHeaderList.Count );
+			WriteRel( writer, roomObjectHeaderAddress );
 			writer.Write( room.Unknown5HeaderList.Count );
-			writer.Write( unknown5HeaderAddress > 0 ? (int)( unknown5HeaderAddress - writer.BaseStream.Position ) : 0 );
+			WriteRel( writer, unknown5HeaderAddress );
 			writer.Write( room.Header.AlwaysZero1 );
 			writer.Write( room.Header.AlwaysZero2 );
 			writer.Write( room.Header.AlwaysZero3 );
 
-			writer.BaseStream.Position = endOfFile;
+			writer.BaseStream.Position = writer.BaseStream.Length;
 		}
 
-		private static void WriteStringMonkey( this BinaryWriter writer, string text )
+		private static IEnumerable<RoomObject> EnumerateRoomObjects( Room room )
 		{
-			var startPosition = writer.BaseStream.Position;
-			var bytes = System.Text.Encoding.ASCII.GetBytes( text );
-			writer.Write( bytes );
+			foreach( var roomObjectGroup in room.RoomObjectGroupList )
+			{
+				foreach( var roomObject in roomObjectGroup.RoomObjectList )
+				{
+					yield return roomObject;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Writes a relative address for the current field position, or 0 when the target is
+		/// absent. Advances the stream by 4 bytes, so it may be used for sequential header writes.
+		/// </summary>
+		private static void WriteRel( this BinaryWriter writer, long target )
+		{
+			long fieldPosition = writer.BaseStream.Position;
+			writer.Write( target != 0 ? (int)( target - fieldPosition ) : 0 );
+		}
+
+		/// <summary>
+		/// Seeks to <paramref name="fieldPosition"/>, writes the relative address of
+		/// <paramref name="target"/> (0 when absent), then restores the stream position.
+		/// The offset is signed - texture references frequently point backwards.
+		/// </summary>
+		private static void PatchRel( BinaryWriter writer, long fieldPosition, long target )
+		{
+			long current = writer.BaseStream.Position;
+			writer.BaseStream.Position = fieldPosition;
+			writer.Write( target != 0 ? (int)( target - fieldPosition ) : 0 );
+			writer.BaseStream.Position = current;
+		}
+
+		/// <summary>
+		/// Returns the pooled position of <paramref name="text"/>, writing it once (16-byte
+		/// aligned, NUL-terminated, no trailing padding) on first use.
+		/// </summary>
+		private static long PoolString( BinaryWriter writer, long start, Dictionary<string, long> pool, string text )
+		{
+			if( !pool.TryGetValue( text, out var position ) )
+			{
+				Align16( writer, start );
+				position = writer.BaseStream.Position;
+				WriteCString( writer, text );
+				pool[text] = position;
+			}
+			return position;
+		}
+
+		private static void WriteCString( BinaryWriter writer, string text )
+		{
+			writer.Write( Encoding.ASCII.GetBytes( text ) );
 			writer.Write( (byte)0 );
-
-			// skip the padding
-			writer.PadTheMonkey( startPosition );
 		}
 
-		private static void PadTheMonkey( this BinaryWriter writer, long startPosition )
+		private static void Align16( BinaryWriter writer, long start )
 		{
-			var mod = ( writer.BaseStream.Position - startPosition ) % 16;
+			var mod = ( writer.BaseStream.Position - start ) % 16;
 			if( mod != 0 )
 			{
-				var paddingCount = 16 - mod;
-				for( var i = 0; i < paddingCount; i++ )
-				{
-					writer.Write( (byte)0 );
-				}
+				writer.Write( new byte[16 - mod] );
 			}
 		}
 	}

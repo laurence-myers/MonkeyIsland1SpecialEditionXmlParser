@@ -14,9 +14,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			room.Header.AlwaysZero1.Is( 0 );
 			room.Header.AlwaysZero2.Is( 0 );
 			room.Header.AlwaysZero3.Is( 0 );
-			room.Header.Unknown6HeaderAddress1.Is( room.Header.Unknown6HeaderAddress2 );
+			// the empty "A" variant of the unknown6 section shares the real section's table
+			room.Header.Unknown6HeaderAddressA.Is( room.Header.Unknown6HeaderAddress );
 			room.StaticSpriteHeaderList.Count.Is( room.StaticSpriteList.Count );
-			room.Unknown4GroupList.All( u4g => !u4g.Unknown4List.Any( u4 => u4.Unknown4_1Address != 0 && u4.Unknown4_2Address != 0 ) ).Is( true );
+			room.SpriteHeaderList.Count.Is( room.SpriteGroupList.Count );
+			room.RoomObjectHeaderList.Count.Is( room.RoomObjectGroupList.Count );
+			// a room object is drawn either as a sprite or as a chunked image, never both
+			room.RoomObjectGroupList
+				.All( group => group.RoomObjectList.All( roomObject => roomObject.Sprite == null || roomObject.Image == null ) )
+				.Is( true );
 		}
 
 		private static void IsNotNull( this object value )

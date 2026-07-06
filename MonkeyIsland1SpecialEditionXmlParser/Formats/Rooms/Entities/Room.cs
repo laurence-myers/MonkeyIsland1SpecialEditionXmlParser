@@ -7,12 +7,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		List<StaticSpriteHeader> staticSpriteHeaderList,
 		List<SpriteHeader> spriteHeaderList,
 		List<Unknown6Header> unknown6HeaderList,
-		List<Unknown4Header> unknown4HeaderList,
+		List<RoomObjectHeader> roomObjectHeaderList,
 		List<Unknown5Header> unknown5HeaderList,
 		List<List<StaticSprite>> staticSpriteList,
 		List<SpriteGroup> spriteGroupList,
 		List<Unknown6> unknown6List,
-		List<Unknown4Group> unknown4GroupList,
+		List<RoomObjectGroup> roomObjectGroupList,
 		List<Unknown5> unknown5List
 	)
 	{
@@ -21,12 +21,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			staticSpriteHeaderList: null!,
 			spriteHeaderList: null!,
 			unknown6HeaderList: null!,
-			unknown4HeaderList: null!,
+			roomObjectHeaderList: null!,
 			unknown5HeaderList: null!,
 			staticSpriteList: null!,
 			spriteGroupList: null!,
 			unknown6List: null!,
-			unknown4GroupList: null!,
+			roomObjectGroupList: null!,
 			unknown5List: null!
 		) {}
 
@@ -54,11 +54,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		} = unknown6HeaderList;
 
-		public List<Unknown4Header> Unknown4HeaderList
+		public List<RoomObjectHeader> RoomObjectHeaderList
 		{
 			get;
 			set;
-		} = unknown4HeaderList;
+		} = roomObjectHeaderList;
 
 		public List<Unknown5Header> Unknown5HeaderList
 		{
@@ -84,11 +84,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		} = unknown6List;
 
-		public List<Unknown4Group> Unknown4GroupList
+		public List<RoomObjectGroup> RoomObjectGroupList
 		{
 			get;
 			set;
-		} = unknown4GroupList;
+		} = roomObjectGroupList;
 
 		public List<Unknown5> Unknown5List
 		{

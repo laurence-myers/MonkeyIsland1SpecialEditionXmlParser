@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -237,13 +237,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 			this.listBoxDiagnostics.Items.Add( string.Concat( groupCount - unmatchedCount, "/", groupCount, " sprite groups matched to classic objects" ) );
 
-			// Unknown4 entities may hold additional placement data; surface them for verification
-			for( var index = 0; index < this.Room.Unknown4GroupList.Count; index++ )
+			// Named room objects carry additional placement data; surface them for verification
+			for( var index = 0; index < this.Room.RoomObjectGroupList.Count; index++ )
 			{
-				var unknown4Group = this.Room.Unknown4GroupList[index];
-				foreach( var unknown4 in unknown4Group.Unknown4List )
+				var roomObjectGroup = this.Room.RoomObjectGroupList[index];
+				var roomObjectHeader = index < this.Room.RoomObjectHeaderList.Count ? this.Room.RoomObjectHeaderList[index] : null;
+				var name = roomObjectHeader?.Name ?? "?";
+				foreach( var roomObject in roomObjectGroup.RoomObjectList )
 				{
-					this.listBoxDiagnostics.Items.Add( string.Concat( "Unknown4[", index, "/", unknown4.Index, "]: ", unknown4.Unkn3, "; ", unknown4.Unkn4 ) );
+					this.listBoxDiagnostics.Items.Add( string.Concat( "RoomObject[", name, "/", roomObject.Index, "]: ", roomObject.OffsetX, "; ", roomObject.OffsetY ) );
 				}
 			}
 		}

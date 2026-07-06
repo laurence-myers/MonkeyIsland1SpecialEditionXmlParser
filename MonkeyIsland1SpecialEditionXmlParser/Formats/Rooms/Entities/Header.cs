@@ -2,22 +2,28 @@
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 {
+	/// <summary>
+	/// The 80-byte room header: twenty <see cref="Int32"/> fields followed by the room name.
+	/// Every section is described by a (count, relative-address) pair, in that order. All
+	/// addresses are stored on disk as offsets relative to the field's own position; the
+	/// parser resolves them to absolute byte positions.
+	/// </summary>
 	public struct Header(
 		int identifier,
 		int nameAddress,
-		int unkn03,
-		int unkn04,
+		int width,
+		int height,
 		int staticSpriteHeaderCount,
 		int staticSpriteHeaderAddress,
 		int spriteHeaderCount,
 		int spriteHeaderAddress,
-		int unkn09,
-		int unkn10,
-		int unknown6HeaderAddress1,
+		int unknown9,
+		int unknown6HeaderCountA,
+		int unknown6HeaderAddressA,
 		int unknown6HeaderCount,
-		int unknown6HeaderAddress2,
-		int unknown4HeaderCount,
-		int unknown4HeaderAddress,
+		int unknown6HeaderAddress,
+		int roomObjectHeaderCount,
+		int roomObjectHeaderAddress,
 		int unknown5HeaderCount,
 		int unknown5HeaderAddress,
 		int alwaysZero1,
@@ -30,19 +36,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		public Header() : this(
 			identifier: 0,
 			nameAddress: 0,
-			unkn03: 0,
-			unkn04: 0,
+			width: 0,
+			height: 0,
 			staticSpriteHeaderCount: 0,
 			staticSpriteHeaderAddress: 0,
 			spriteHeaderCount: 0,
 			spriteHeaderAddress: 0,
-			unkn09: 0,
-			unkn10: 0,
-			unknown6HeaderAddress1: 0,
+			unknown9: 0,
+			unknown6HeaderCountA: 0,
+			unknown6HeaderAddressA: 0,
 			unknown6HeaderCount: 0,
-			unknown6HeaderAddress2: 0,
-			unknown4HeaderCount: 0,
-			unknown4HeaderAddress: 0,
+			unknown6HeaderAddress: 0,
+			roomObjectHeaderCount: 0,
+			roomObjectHeaderAddress: 0,
 			unknown5HeaderCount: 0,
 			unknown5HeaderAddress: 0,
 			alwaysZero1: 0,
@@ -50,7 +56,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			alwaysZero3: 0,
 			name: null!
 		) {}
-		
+
 		/// <summary>
 		/// Gets or sets the identifier.
 		/// </summary>
@@ -69,17 +75,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		} = nameAddress;
 
-		public Int32 Unkn03
+		/// <summary>
+		/// Gets or sets the room's width in screen pixels (matches the extent covered by the
+		/// static sprite layer chunks).
+		/// </summary>
+		public Int32 Width
 		{
 			get;
 			set;
-		} = unkn03;
+		} = width;
 
-		public Int32 Unkn04
+		/// <summary>
+		/// Gets or sets the room's height in screen pixels (1037 for every room in the game).
+		/// </summary>
+		public Int32 Height
 		{
 			get;
 			set;
-		} = unkn04;
+		} = height;
 
 		public Int32 StaticSpriteHeaderCount
 		{
@@ -105,23 +118,36 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		} = spriteHeaderAddress;
 
-		public Int32 Unkn09
+		/// <summary>
+		/// Gets or sets a per-room value read and stored by the engine; purpose unknown.
+		/// Always 1 or 2 in the game data.
+		/// </summary>
+		public Int32 Unknown9
 		{
 			get;
 			set;
-		} = unkn09;
+		} = unknown9;
 
-		public Int32 Unkn10
+		/// <summary>
+		/// Gets or sets the count for the "A" variant of the <see cref="Unknown6Header"/>
+		/// section. This section is empty (count 0) in every room in the game; its address
+		/// still points at the same table as <see cref="Unknown6HeaderAddress"/>.
+		/// </summary>
+		public Int32 Unknown6HeaderCountA
 		{
 			get;
 			set;
-		} = unkn10;
+		} = unknown6HeaderCountA;
 
-		public Int32 Unknown6HeaderAddress1
+		/// <summary>
+		/// Gets or sets the address for the empty "A" variant of the
+		/// <see cref="Unknown6Header"/> section (see <see cref="Unknown6HeaderCountA"/>).
+		/// </summary>
+		public Int32 Unknown6HeaderAddressA
 		{
 			get;
 			set;
-		} = unknown6HeaderAddress1;
+		} = unknown6HeaderAddressA;
 
 		public Int32 Unknown6HeaderCount
 		{
@@ -129,23 +155,23 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 			set;
 		} = unknown6HeaderCount;
 
-		public Int32 Unknown6HeaderAddress2
+		public Int32 Unknown6HeaderAddress
 		{
 			get;
 			set;
-		} = unknown6HeaderAddress2;
+		} = unknown6HeaderAddress;
 
-		public Int32 Unknown4HeaderCount
+		public Int32 RoomObjectHeaderCount
 		{
 			get;
 			set;
-		} = unknown4HeaderCount;
+		} = roomObjectHeaderCount;
 
-		public Int32 Unknown4HeaderAddress
+		public Int32 RoomObjectHeaderAddress
 		{
 			get;
 			set;
-		} = unknown4HeaderAddress;
+		} = roomObjectHeaderAddress;
 
 		public Int32 Unknown5HeaderCount
 		{

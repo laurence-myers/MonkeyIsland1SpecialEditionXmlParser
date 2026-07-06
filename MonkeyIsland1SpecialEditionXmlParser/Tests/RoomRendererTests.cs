@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
@@ -105,7 +105,7 @@ namespace Tests
 				TextureFileName = "blue.dxt",
 			};
 			var room = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
-			room.StaticSpriteHeaderList.Add( new StaticSpriteHeader( index: 0, identifier: 0, unkn1: 0, unkn2: 0, staticSpriteCount: 2, staticSpriteAddress: 0 ) );
+			room.StaticSpriteHeaderList.Add( new StaticSpriteHeader( index: 0, identifier: 0, sourceWidth: 0, sourceHeight: 0, staticSpriteCount: 2, staticSpriteAddress: 0 ) );
 			room.StaticSpriteList.Add( new List<StaticSprite> { staticSprite1, staticSprite2 } );
 
 			var textures = new Dictionary<string, Image>
@@ -148,12 +148,12 @@ namespace Tests
 				staticSpriteHeaderList: new List<StaticSpriteHeader>(),
 				spriteHeaderList: spriteHeaders.ToList(),
 				unknown6HeaderList: new List<Unknown6Header>(),
-				unknown4HeaderList: new List<Unknown4Header>(),
+				roomObjectHeaderList: new List<RoomObjectHeader>(),
 				unknown5HeaderList: new List<Unknown5Header>(),
 				staticSpriteList: new List<List<StaticSprite>>(),
 				spriteGroupList: spriteGroups.ToList(),
 				unknown6List: new List<Unknown6>(),
-				unknown4GroupList: new List<Unknown4Group>(),
+				roomObjectGroupList: new List<RoomObjectGroup>(),
 				unknown5List: new List<Unknown5>()
 			);
 		}

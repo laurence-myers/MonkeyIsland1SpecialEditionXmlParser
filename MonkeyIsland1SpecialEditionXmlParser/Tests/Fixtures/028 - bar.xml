@@ -2,22 +2,22 @@
 <Room xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Header>
     <Identifier>28</Identifier>
-    <NameAddress>1151217647</NameAddress>
-    <Unkn03>3841</Unkn03>
-    <Unkn04>1037</Unkn04>
+    <NameAddress>80</NameAddress>
+    <Width>3841</Width>
+    <Height>1037</Height>
     <StaticSpriteHeaderCount>2</StaticSpriteHeaderCount>
-    <StaticSpriteHeaderAddress>1151217663</StaticSpriteHeaderAddress>
+    <StaticSpriteHeaderAddress>96</StaticSpriteHeaderAddress>
     <SpriteHeaderCount>45</SpriteHeaderCount>
-    <SpriteHeaderAddress>1151217711</SpriteHeaderAddress>
-    <Unkn09>1</Unkn09>
-    <Unkn10>0</Unkn10>
-    <Unknown6HeaderAddress1>1151218255</Unknown6HeaderAddress1>
+    <SpriteHeaderAddress>144</SpriteHeaderAddress>
+    <Unknown9>1</Unknown9>
+    <Unknown6HeaderCountA>0</Unknown6HeaderCountA>
+    <Unknown6HeaderAddressA>688</Unknown6HeaderAddressA>
     <Unknown6HeaderCount>11</Unknown6HeaderCount>
-    <Unknown6HeaderAddress2>1151218255</Unknown6HeaderAddress2>
-    <Unknown4HeaderCount>1</Unknown4HeaderCount>
-    <Unknown4HeaderAddress>1151218431</Unknown4HeaderAddress>
+    <Unknown6HeaderAddress>688</Unknown6HeaderAddress>
+    <RoomObjectHeaderCount>1</RoomObjectHeaderCount>
+    <RoomObjectHeaderAddress>864</RoomObjectHeaderAddress>
     <Unknown5HeaderCount>1</Unknown5HeaderCount>
-    <Unknown5HeaderAddress>1151218447</Unknown5HeaderAddress>
+    <Unknown5HeaderAddress>880</Unknown5HeaderAddress>
     <AlwaysZero1>0</AlwaysZero1>
     <AlwaysZero2>0</AlwaysZero2>
     <AlwaysZero3>0</AlwaysZero3>
@@ -27,155 +27,200 @@
     <StaticSpriteHeader>
       <Index>0</Index>
       <Identifier>0</Identifier>
-      <Unkn1>9600</Unkn1>
-      <Unkn2>2592</Unkn2>
+      <SourceWidth>9600</SourceWidth>
+      <SourceHeight>2592</SourceHeight>
       <StaticSpriteCount>8</StaticSpriteCount>
-      <StaticSpriteAddress>1151218463</StaticSpriteAddress>
+      <StaticSpriteAddress>896</StaticSpriteAddress>
     </StaticSpriteHeader>
     <StaticSpriteHeader>
       <Index>1</Index>
       <Identifier>1</Identifier>
-      <Unkn1>9600</Unkn1>
-      <Unkn2>2592</Unkn2>
+      <SourceWidth>9600</SourceWidth>
+      <SourceHeight>2592</SourceHeight>
       <StaticSpriteCount>8</StaticSpriteCount>
-      <StaticSpriteAddress>1151218623</StaticSpriteAddress>
+      <StaticSpriteAddress>1056</StaticSpriteAddress>
     </StaticSpriteHeader>
   </StaticSpriteHeaderList>
   <SpriteHeaderList>
     <SpriteHeader>
       <Index>0</Index>
+      <Identifier>315</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>1</Index>
+      <Identifier>316</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>2</Index>
+      <Identifier>317</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>3</Index>
+      <Identifier>318</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>4</Index>
+      <Identifier>319</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>5</Index>
+      <Identifier>324</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>6</Index>
+      <Identifier>325</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>7</Index>
+      <Identifier>326</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>8</Index>
+      <Identifier>327</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>9</Index>
+      <Identifier>328</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>10</Index>
+      <Identifier>329</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>11</Index>
+      <Identifier>330</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>12</Index>
+      <Identifier>331</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>13</Index>
+      <Identifier>332</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>14</Index>
+      <Identifier>333</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>15</Index>
+      <Identifier>334</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>16</Index>
+      <Identifier>335</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>17</Index>
+      <Identifier>336</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>18</Index>
+      <Identifier>337</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>19</Index>
+      <Identifier>338</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>20</Index>
+      <Identifier>339</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>21</Index>
+      <Identifier>340</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>22</Index>
+      <Identifier>341</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>23</Index>
+      <Identifier>342</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>24</Index>
+      <Identifier>343</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>25</Index>
+      <Identifier>344</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>26</Index>
+      <Identifier>345</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>27</Index>
+      <Identifier>346</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>28</Index>
+      <Identifier>347</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>29</Index>
+      <Identifier>348</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>30</Index>
+      <Identifier>349</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>31</Index>
+      <Identifier>350</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>32</Index>
+      <Identifier>351</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>33</Index>
+      <Identifier>352</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>34</Index>
+      <Identifier>353</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>35</Index>
+      <Identifier>354</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>36</Index>
+      <Identifier>355</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>37</Index>
+      <Identifier>356</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>38</Index>
+      <Identifier>357</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>39</Index>
+      <Identifier>358</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>40</Index>
+      <Identifier>362</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>41</Index>
+      <Identifier>363</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>42</Index>
+      <Identifier>364</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>43</Index>
+      <Identifier>365</Identifier>
     </SpriteHeader>
     <SpriteHeader>
       <Index>44</Index>
+      <Identifier>366</Identifier>
     </SpriteHeader>
   </SpriteHeaderList>
   <Unknown6HeaderList>
@@ -186,7 +231,7 @@
       <Unkn4>102</Unkn4>
       <Unkn5>0</Unkn5>
       <Unknown6Count>64</Unknown6Count>
-      <Unknown6Address>1151220543</Unknown6Address>
+      <Unknown6Address>2976</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>124</Unkn1>
@@ -195,7 +240,7 @@
       <Unkn4>23</Unkn4>
       <Unkn5>0</Unkn5>
       <Unknown6Count>44</Unknown6Count>
-      <Unknown6Address>1151220607</Unknown6Address>
+      <Unknown6Address>3040</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>108</Unkn1>
@@ -204,7 +249,7 @@
       <Unkn4>106</Unkn4>
       <Unkn5>0</Unkn5>
       <Unknown6Count>24</Unknown6Count>
-      <Unknown6Address>1151220655</Unknown6Address>
+      <Unknown6Address>3088</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>108</Unkn1>
@@ -213,7 +258,7 @@
       <Unkn4>106</Unkn4>
       <Unkn5>1</Unkn5>
       <Unknown6Count>24</Unknown6Count>
-      <Unknown6Address>1151220687</Unknown6Address>
+      <Unknown6Address>3120</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>124</Unkn1>
@@ -222,7 +267,7 @@
       <Unkn4>23</Unkn4>
       <Unkn5>1</Unkn5>
       <Unknown6Count>44</Unknown6Count>
-      <Unknown6Address>1151220719</Unknown6Address>
+      <Unknown6Address>3152</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>108</Unkn1>
@@ -231,7 +276,7 @@
       <Unkn4>106</Unkn4>
       <Unkn5>2</Unkn5>
       <Unknown6Count>24</Unknown6Count>
-      <Unknown6Address>1151220767</Unknown6Address>
+      <Unknown6Address>3200</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>124</Unkn1>
@@ -240,7 +285,7 @@
       <Unkn4>23</Unkn4>
       <Unkn5>2</Unkn5>
       <Unknown6Count>44</Unknown6Count>
-      <Unknown6Address>1151220799</Unknown6Address>
+      <Unknown6Address>3232</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>108</Unkn1>
@@ -249,7 +294,7 @@
       <Unkn4>106</Unkn4>
       <Unkn5>3</Unkn5>
       <Unknown6Count>24</Unknown6Count>
-      <Unknown6Address>1151220847</Unknown6Address>
+      <Unknown6Address>3280</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>27</Unkn1>
@@ -258,7 +303,7 @@
       <Unkn4>6</Unkn4>
       <Unkn5>0</Unkn5>
       <Unknown6Count>24</Unknown6Count>
-      <Unknown6Address>1151220879</Unknown6Address>
+      <Unknown6Address>3312</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>27</Unkn1>
@@ -267,7 +312,7 @@
       <Unkn4>6</Unkn4>
       <Unkn5>1</Unkn5>
       <Unknown6Count>24</Unknown6Count>
-      <Unknown6Address>1151220911</Unknown6Address>
+      <Unknown6Address>3344</Unknown6Address>
     </Unknown6Header>
     <Unknown6Header>
       <Unkn1>20</Unkn1>
@@ -276,20 +321,21 @@
       <Unkn4>61</Unkn4>
       <Unkn5>0</Unkn5>
       <Unknown6Count>36</Unknown6Count>
-      <Unknown6Address>1151220943</Unknown6Address>
+      <Unknown6Address>3376</Unknown6Address>
     </Unknown6Header>
   </Unknown6HeaderList>
-  <Unknown4HeaderList>
-    <Unknown4Header>
-      <Unknown4NameAddress>1151220991</Unknown4NameAddress>
-      <Unknown4Count>1</Unknown4Count>
-      <Unknown4Address>1151221007</Unknown4Address>
-    </Unknown4Header>
-  </Unknown4HeaderList>
+  <RoomObjectHeaderList>
+    <RoomObjectHeader>
+      <NameAddress>3424</NameAddress>
+      <Name>Chandelier</Name>
+      <RoomObjectCount>1</RoomObjectCount>
+      <RoomObjectAddress>3440</RoomObjectAddress>
+    </RoomObjectHeader>
+  </RoomObjectHeaderList>
   <Unknown5HeaderList>
     <Unknown5Header>
       <Unknown5Count>5</Unknown5Count>
-      <Unknown5Address>1151221023</Unknown5Address>
+      <Unknown5Address>3456</Unknown5Address>
     </Unknown5Header>
   </Unknown5HeaderList>
   <StaticSpriteList>
@@ -300,7 +346,7 @@
         <Y>0</Y>
         <Width>1024</Width>
         <Height>1024</Height>
-        <TextureFileNameAddress>1151221055</TextureFileNameAddress>
+        <TextureFileNameAddress>3488</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer0_chunk_0_0.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -309,7 +355,7 @@
         <Y>1024</Y>
         <Width>1024</Width>
         <Height>13</Height>
-        <TextureFileNameAddress>1151221103</TextureFileNameAddress>
+        <TextureFileNameAddress>3536</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer0_chunk_0_1024.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -318,7 +364,7 @@
         <Y>0</Y>
         <Width>1024</Width>
         <Height>1024</Height>
-        <TextureFileNameAddress>1151221151</TextureFileNameAddress>
+        <TextureFileNameAddress>3584</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer0_chunk_1024_0.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -327,7 +373,7 @@
         <Y>1024</Y>
         <Width>1024</Width>
         <Height>13</Height>
-        <TextureFileNameAddress>1151221199</TextureFileNameAddress>
+        <TextureFileNameAddress>3632</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer0_chunk_1024_1024.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -336,7 +382,7 @@
         <Y>0</Y>
         <Width>1024</Width>
         <Height>1024</Height>
-        <TextureFileNameAddress>1151221263</TextureFileNameAddress>
+        <TextureFileNameAddress>3696</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer0_chunk_2048_0.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -345,7 +391,7 @@
         <Y>1024</Y>
         <Width>1024</Width>
         <Height>13</Height>
-        <TextureFileNameAddress>1151221311</TextureFileNameAddress>
+        <TextureFileNameAddress>3744</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer0_chunk_2048_1024.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -354,7 +400,7 @@
         <Y>0</Y>
         <Width>769</Width>
         <Height>1024</Height>
-        <TextureFileNameAddress>1151221375</TextureFileNameAddress>
+        <TextureFileNameAddress>3808</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer0_chunk_3072_0.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -363,7 +409,7 @@
         <Y>1024</Y>
         <Width>769</Width>
         <Height>13</Height>
-        <TextureFileNameAddress>1151221423</TextureFileNameAddress>
+        <TextureFileNameAddress>3856</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer0_chunk_3072_1024.dxt</TextureFileName>
       </StaticSprite>
     </ArrayOfStaticSprite>
@@ -374,7 +420,7 @@
         <Y>0</Y>
         <Width>1024</Width>
         <Height>1024</Height>
-        <TextureFileNameAddress>1151221487</TextureFileNameAddress>
+        <TextureFileNameAddress>3920</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer1_chunk_0_0.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -383,7 +429,7 @@
         <Y>1024</Y>
         <Width>1024</Width>
         <Height>13</Height>
-        <TextureFileNameAddress>1151221535</TextureFileNameAddress>
+        <TextureFileNameAddress>3968</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer1_chunk_0_1024.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -392,7 +438,7 @@
         <Y>0</Y>
         <Width>1024</Width>
         <Height>1024</Height>
-        <TextureFileNameAddress>1151221583</TextureFileNameAddress>
+        <TextureFileNameAddress>4016</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer1_chunk_1024_0.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -401,7 +447,7 @@
         <Y>1024</Y>
         <Width>1024</Width>
         <Height>13</Height>
-        <TextureFileNameAddress>1151221631</TextureFileNameAddress>
+        <TextureFileNameAddress>4064</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer1_chunk_1024_1024.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -410,7 +456,7 @@
         <Y>0</Y>
         <Width>1024</Width>
         <Height>1024</Height>
-        <TextureFileNameAddress>1151221695</TextureFileNameAddress>
+        <TextureFileNameAddress>4128</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer1_chunk_2048_0.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -419,7 +465,7 @@
         <Y>1024</Y>
         <Width>1024</Width>
         <Height>13</Height>
-        <TextureFileNameAddress>1151221743</TextureFileNameAddress>
+        <TextureFileNameAddress>4176</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer1_chunk_2048_1024.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -428,7 +474,7 @@
         <Y>0</Y>
         <Width>769</Width>
         <Height>1024</Height>
-        <TextureFileNameAddress>1151221807</TextureFileNameAddress>
+        <TextureFileNameAddress>4240</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer1_chunk_3072_0.dxt</TextureFileName>
       </StaticSprite>
       <StaticSprite>
@@ -437,7 +483,7 @@
         <Y>1024</Y>
         <Width>769</Width>
         <Height>13</Height>
-        <TextureFileNameAddress>1151221855</TextureFileNameAddress>
+        <TextureFileNameAddress>4288</TextureFileNameAddress>
         <TextureFileName>art/rooms/images/28_bar/layer1_chunk_3072_1024.dxt</TextureFileName>
       </StaticSprite>
     </ArrayOfStaticSprite>
@@ -447,7 +493,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>708</TextureX>
           <TextureY>500</TextureY>
@@ -463,7 +509,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>324</TextureX>
           <TextureY>0</TextureY>
@@ -475,7 +521,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151221967</TextureFileNameAddress>
+          <TextureFileNameAddress>4400</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
           <TextureX>292</TextureX>
           <TextureY>540</TextureY>
@@ -491,7 +537,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>436</TextureX>
           <TextureY>864</TextureY>
@@ -507,7 +553,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>324</TextureX>
           <TextureY>864</TextureY>
@@ -523,7 +569,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>912</TextureX>
           <TextureY>896</TextureY>
@@ -539,7 +585,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>396</TextureX>
           <TextureY>0</TextureY>
@@ -555,7 +601,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>0</TextureY>
@@ -571,7 +617,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>252</TextureX>
           <TextureY>0</TextureY>
@@ -587,7 +633,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>0</TextureY>
@@ -603,7 +649,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221967</TextureFileNameAddress>
+          <TextureFileNameAddress>4400</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>0</TextureY>
@@ -619,7 +665,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>0</TextureY>
@@ -635,7 +681,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221967</TextureFileNameAddress>
+          <TextureFileNameAddress>4400</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>552</TextureY>
@@ -651,7 +697,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221967</TextureFileNameAddress>
+          <TextureFileNameAddress>4400</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
           <TextureX>576</TextureX>
           <TextureY>0</TextureY>
@@ -667,7 +713,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>780</TextureX>
           <TextureY>564</TextureY>
@@ -683,7 +729,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>496</TextureX>
           <TextureY>316</TextureY>
@@ -699,7 +745,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>832</TextureX>
           <TextureY>316</TextureY>
@@ -715,7 +761,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>664</TextureX>
           <TextureY>316</TextureY>
@@ -731,7 +777,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>928</TextureY>
@@ -743,7 +789,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>324</TextureX>
           <TextureY>500</TextureY>
@@ -759,7 +805,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>564</TextureY>
@@ -775,7 +821,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>604</TextureX>
           <TextureY>928</TextureY>
@@ -787,7 +833,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>396</TextureX>
           <TextureY>564</TextureY>
@@ -803,7 +849,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>780</TextureX>
           <TextureY>896</TextureY>
@@ -819,7 +865,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>664</TextureX>
           <TextureY>380</TextureY>
@@ -835,7 +881,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>784</TextureX>
           <TextureY>380</TextureY>
@@ -851,7 +897,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>680</TextureX>
           <TextureY>208</TextureY>
@@ -863,7 +909,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>444</TextureX>
           <TextureY>208</TextureY>
@@ -879,7 +925,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>200</TextureX>
           <TextureY>208</TextureY>
@@ -891,7 +937,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151221967</TextureFileNameAddress>
+          <TextureFileNameAddress>4400</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
           <TextureX>576</TextureX>
           <TextureY>324</TextureY>
@@ -907,7 +953,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>452</TextureX>
           <TextureY>0</TextureY>
@@ -919,7 +965,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>200</TextureX>
           <TextureY>0</TextureY>
@@ -935,7 +981,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>560</TextureY>
@@ -951,7 +997,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221919</TextureFileNameAddress>
+          <TextureFileNameAddress>4352</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a1.dxt</TextureFileName>
           <TextureX>664</TextureX>
           <TextureY>0</TextureY>
@@ -967,7 +1013,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>748</TextureX>
           <TextureY>0</TextureY>
@@ -983,7 +1029,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>0</TextureY>
@@ -999,7 +1045,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>664</TextureX>
           <TextureY>700</TextureY>
@@ -1015,7 +1061,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>276</TextureY>
@@ -1031,7 +1077,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>716</TextureX>
           <TextureY>0</TextureY>
@@ -1047,7 +1093,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221967</TextureFileNameAddress>
+          <TextureFileNameAddress>4400</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
           <TextureX>824</TextureX>
           <TextureY>0</TextureY>
@@ -1063,7 +1109,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>496</TextureX>
           <TextureY>0</TextureY>
@@ -1079,7 +1125,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>976</TextureY>
@@ -1091,7 +1137,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151221967</TextureFileNameAddress>
+          <TextureFileNameAddress>4400</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
           <TextureX>676</TextureX>
           <TextureY>540</TextureY>
@@ -1107,7 +1153,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>252</TextureX>
           <TextureY>580</TextureY>
@@ -1123,7 +1169,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151221967</TextureFileNameAddress>
+          <TextureFileNameAddress>4400</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
           <TextureX>460</TextureX>
           <TextureY>540</TextureY>
@@ -1135,7 +1181,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151222063</TextureFileNameAddress>
+          <TextureFileNameAddress>4496</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a3.dxt</TextureFileName>
           <TextureX>0</TextureX>
           <TextureY>576</TextureY>
@@ -1151,7 +1197,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>748</TextureX>
           <TextureY>380</TextureY>
@@ -1163,7 +1209,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>704</TextureX>
           <TextureY>0</TextureY>
@@ -1179,7 +1225,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222111</TextureFileNameAddress>
+          <TextureFileNameAddress>4544</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a4.dxt</TextureFileName>
           <TextureX>200</TextureX>
           <TextureY>420</TextureY>
@@ -1195,7 +1241,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>540</TextureX>
           <TextureY>928</TextureY>
@@ -1211,7 +1257,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>384</TextureX>
           <TextureY>564</TextureY>
@@ -1223,7 +1269,7 @@
         </Sprite>
         <Sprite>
           <Index>1</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>396</TextureX>
           <TextureY>928</TextureY>
@@ -1239,7 +1285,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>336</TextureX>
           <TextureY>928</TextureY>
@@ -1255,7 +1301,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>224</TextureX>
           <TextureY>928</TextureY>
@@ -1271,7 +1317,7 @@
       <SpriteList>
         <Sprite>
           <Index>0</Index>
-          <TextureFileNameAddress>1151222015</TextureFileNameAddress>
+          <TextureFileNameAddress>4448</TextureFileNameAddress>
           <TextureFileName>art/rooms/images/28_bar/objects_a0.dxt</TextureFileName>
           <TextureX>472</TextureX>
           <TextureY>928</TextureY>
@@ -1717,27 +1763,28 @@
       </ByteList>
     </Unknown6>
   </Unknown6List>
-  <Unknown4GroupList>
-    <Unknown4Group>
+  <RoomObjectGroupList>
+    <RoomObjectGroup>
       <Index>0</Index>
-      <Unknown4List>
-        <Unknown4>
+      <RoomObjectList>
+        <RoomObject>
           <Index>0</Index>
-          <Unknown4_1Address>1151222159</Unknown4_1Address>
-          <Unknown4_2Address>0</Unknown4_2Address>
-          <Unkn3>939.381165</Unkn3>
-          <Unkn4>0</Unkn4>
-          <Unknown4_1>
-            <Unkn1>-192</Unkn1>
-            <Unkn2>292</Unkn2>
-            <Unkn3>0</Unkn3>
-            <Unkn4>279</Unkn4>
-            <Unkn5>535</Unkn5>
-          </Unknown4_1>
-        </Unknown4>
-      </Unknown4List>
-    </Unknown4Group>
-  </Unknown4GroupList>
+          <SpriteAddress>4592</SpriteAddress>
+          <ImageAddress>0</ImageAddress>
+          <OffsetX>939.381165</OffsetX>
+          <OffsetY>0</OffsetY>
+          <Sprite>
+            <TextureFileNameAddress>4400</TextureFileNameAddress>
+            <TextureFileName>art/rooms/images/28_bar/objects_a2.dxt</TextureFileName>
+            <X>292</X>
+            <Y>0</Y>
+            <Width>279</Width>
+            <Height>535</Height>
+          </Sprite>
+        </RoomObject>
+      </RoomObjectList>
+    </RoomObjectGroup>
+  </RoomObjectGroupList>
   <Unknown5List>
     <Unknown5>
       <Index>0</Index>

@@ -27,9 +27,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		} = index;
 
 		/// <summary>
-		/// Gets or sets the identifier.
+		/// Gets or sets the identifier (the classic-game object id this sprite group
+		/// corresponds to).
 		/// </summary>
-		[XmlIgnore]
 		public int Identifier
 		{
 			get;
@@ -37,7 +37,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities
 		} = identifier;
 
 		/// <summary>
-		/// Gets or sets the number of sprites.
+		/// Gets or sets the number of sprites. Recomputed from the sprite list on write,
+		/// so it is not serialized.
 		/// </summary>
 		[XmlIgnore]
 		public int SpriteCount

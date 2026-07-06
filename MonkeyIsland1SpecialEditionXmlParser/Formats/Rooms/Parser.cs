@@ -30,26 +30,26 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 		{
 			return Helper.ReadObjectFromFile<Room>( fileName );
 		}
-		
+
 		public static Room ReadRoom( BinaryReader reader )
 		{
 			// read header
 			var header = new Header(
 				identifier: reader.ReadInt32(),
 				nameAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
-				unkn03: reader.ReadInt32(),
-				unkn04: reader.ReadInt32(),
+				width: reader.ReadInt32(),
+				height: reader.ReadInt32(),
 				staticSpriteHeaderCount: reader.ReadInt32(),
 				staticSpriteHeaderAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				spriteHeaderCount: reader.ReadInt32(),
 				spriteHeaderAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
-				unkn09: reader.ReadInt32(),
-				unkn10: reader.ReadInt32(),
-				unknown6HeaderAddress1: reader.ReadInt32PlusBytePosition( value => value > 0 ),
+				unknown9: reader.ReadInt32(),
+				unknown6HeaderCountA: reader.ReadInt32(),
+				unknown6HeaderAddressA: reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				unknown6HeaderCount: reader.ReadInt32(),
-				unknown6HeaderAddress2: reader.ReadInt32PlusBytePosition( value => value > 0 ),
-				unknown4HeaderCount: reader.ReadInt32(),
-				unknown4HeaderAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
+				unknown6HeaderAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
+				roomObjectHeaderCount: reader.ReadInt32(),
+				roomObjectHeaderAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				unknown5HeaderCount: reader.ReadInt32(),
 				unknown5HeaderAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
 				alwaysZero1: reader.ReadInt32(),
@@ -66,8 +66,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				var staticSpriteHeader = new StaticSpriteHeader(
 					index: index,
 					identifier: reader.ReadInt32(),
-					unkn1: reader.ReadInt32(),
-					unkn2: reader.ReadInt32(),
+					sourceWidth: reader.ReadInt32(),
+					sourceHeight: reader.ReadInt32(),
 					staticSpriteCount: reader.ReadInt32(),
 					staticSpriteAddress: reader.ReadInt32PlusBytePosition( value => value > 0 )
 				);
@@ -89,7 +89,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			}
 
 			// read unknown6 header list
-			reader.BaseStream.Position = header.Unknown6HeaderAddress2;
+			reader.BaseStream.Position = header.Unknown6HeaderAddress;
 			var unknown6HeaderList = new List<Unknown6Header>();
 			for( var index = 0; index < header.Unknown6HeaderCount; index++ )
 			{
@@ -105,17 +105,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				unknown6HeaderList.Add( unknown6Header );
 			}
 
-			// read unknown4 header list
-			reader.BaseStream.Position = header.Unknown4HeaderAddress;
-			var unknown4HeaderList = new List<Unknown4Header>();
-			for( var index = 0; index < header.Unknown4HeaderCount; index++ )
+			// read room object header list
+			reader.BaseStream.Position = header.RoomObjectHeaderAddress;
+			var roomObjectHeaderList = new List<RoomObjectHeader>();
+			for( var index = 0; index < header.RoomObjectHeaderCount; index++ )
 			{
-				var unknown4Header = new Unknown4Header(
-					unknown4NameAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
-					unknown4Count: reader.ReadInt32(),
-					unknown4Address: reader.ReadInt32PlusBytePosition( value => value > 0 )
+				var roomObjectHeader = new RoomObjectHeader(
+					nameAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
+					roomObjectCount: reader.ReadInt32(),
+					roomObjectAddress: reader.ReadInt32PlusBytePosition( value => value > 0 )
 				);
-				unknown4HeaderList.Add( unknown4Header );
+				roomObjectHeaderList.Add( roomObjectHeader );
 			}
 
 			// read unknown5 header list
@@ -160,14 +160,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				}
 			}
 
-			// read unknown1 list
+			// read sprite list
 			var spriteGroupList = new List<SpriteGroup>();
 			for( var index = 0; index < spriteHeaderList.Count; index++ )
 			{
-				var unknown2 = spriteHeaderList[index];
+				var spriteHeader = spriteHeaderList[index];
 				var spriteList = new List<Sprite>();
-				reader.BaseStream.Position = unknown2.SpriteAddress;
-				for( var index2 = 0; index2 < unknown2.SpriteCount; index2++ )
+				reader.BaseStream.Position = spriteHeader.SpriteAddress;
+				for( var index2 = 0; index2 < spriteHeader.SpriteCount; index2++ )
 				{
 					var sprite = new Sprite(
 						index: index2,
@@ -197,71 +197,117 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				}
 			}
 
-			// read unknown 6 list
+			// read unknown6 list
 			var unknown6List = new List<Unknown6>();
 			for( var index = 0; index < unknown6HeaderList.Count; index++ )
 			{
-				var unknown3 = unknown6HeaderList[index];
-				reader.BaseStream.Position = unknown3.Unknown6Address;
+				var unknown6Header = unknown6HeaderList[index];
+				reader.BaseStream.Position = unknown6Header.Unknown6Address;
 				var unknown6 = new Unknown6(
 					index: index,
-					byteList: reader.ReadBytes( unknown3.Unknown6Count ).ToList()
+					byteList: reader.ReadBytes( unknown6Header.Unknown6Count ).ToList()
 				);
 				unknown6List.Add( unknown6 );
 			}
 
-			// read unknown4 group list
-			var unknown4GroupList = new List<Unknown4Group>();
-			for( var index = 0; index < unknown4HeaderList.Count; index++ )
+			// read room object group list
+			var roomObjectGroupList = new List<RoomObjectGroup>();
+			for( var index = 0; index < roomObjectHeaderList.Count; index++ )
 			{
-				var unknown4Header = unknown4HeaderList[index];
-				var unknown4List = new List<Unknown4>();
-				reader.BaseStream.Position = unknown4Header.Unknown4Address;
-				for( var index2 = 0; index2 < unknown4Header.Unknown4Count; index2++ )
+				var roomObjectHeader = roomObjectHeaderList[index];
+
+				// the object's name is stored separately, referenced by the header
+				if( roomObjectHeader.NameAddress > 0 )
 				{
-					var unknown4 = new Unknown4(
-						index: index2,
-						unknown41Address: reader.ReadInt32PlusBytePosition( value => value > 0 ),
-						unknown42Address: reader.ReadInt32PlusBytePosition( value => value > 0 ),
-						unkn3: reader.ReadSingle(),
-						unkn4: reader.ReadSingle()
-						);
-					unknown4List.Add( unknown4 );
+					reader.BaseStream.Position = roomObjectHeader.NameAddress;
+					roomObjectHeader.Name = reader.ReadStringMonkey();
 				}
 
-				var unknown4Group = new Unknown4Group(
-					unknown4List: unknown4List
+				var roomObjectList = new List<RoomObject>();
+				reader.BaseStream.Position = roomObjectHeader.RoomObjectAddress;
+				for( var index2 = 0; index2 < roomObjectHeader.RoomObjectCount; index2++ )
+				{
+					var roomObject = new RoomObject(
+						index: index2,
+						spriteAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
+						imageAddress: reader.ReadInt32PlusBytePosition( value => value > 0 ),
+						offsetX: reader.ReadSingle(),
+						offsetY: reader.ReadSingle()
+					);
+					roomObjectList.Add( roomObject );
+				}
+
+				var roomObjectGroup = new RoomObjectGroup(
+					roomObjectList: roomObjectList
 				);
-				unknown4GroupList.Add( unknown4Group );
+				roomObjectGroupList.Add( roomObjectGroup );
 			}
 
-			// read unknown4_x entities
-			foreach( var unknown4Group in unknown4GroupList )
+			// read the room object sprite / image records referenced by each object
+			foreach( var roomObjectGroup in roomObjectGroupList )
 			{
-				foreach( var unknown4 in unknown4Group.Unknown4List )
+				foreach( var roomObject in roomObjectGroup.RoomObjectList )
 				{
-					if( unknown4.Unknown4_1Address > 0 )
+					if( roomObject.SpriteAddress > 0 )
 					{
-						reader.BaseStream.Position = unknown4.Unknown4_1Address;
-						var unknown4_1 = new Unknown4_1(
-							unkn1: reader.ReadInt32(),
-							unkn2: reader.ReadInt32(),
-							unkn3: reader.ReadInt32(),
-							unkn4: reader.ReadInt32(),
-							unkn5: reader.ReadInt32()
+						reader.BaseStream.Position = roomObject.SpriteAddress;
+						var sprite = new RoomObjectSprite(
+							// this texture offset is signed - it usually points backwards
+							// into the sprite texture name pool
+							textureFileNameAddress: reader.ReadInt32PlusBytePosition( value => value != 0 ),
+							x: reader.ReadInt32(),
+							y: reader.ReadInt32(),
+							width: reader.ReadInt32(),
+							height: reader.ReadInt32()
 						);
-						unknown4.Unknown4_1 = unknown4_1;
+						roomObject.Sprite = sprite;
 					}
-					if( unknown4.Unknown4_2Address > 0 )
+					if( roomObject.ImageAddress > 0 )
 					{
-						reader.BaseStream.Position = unknown4.Unknown4_2Address;
-						var unknown4_2 = new Unknown4_2(
-							unkn1: reader.ReadInt32(),
-							unkn2: reader.ReadInt32(),
-							unkn3: reader.ReadInt32(),
-							unkn4: reader.ReadInt32()
+						reader.BaseStream.Position = roomObject.ImageAddress;
+						var image = new RoomObjectImage(
+							sourceWidth: reader.ReadInt32(),
+							sourceHeight: reader.ReadInt32(),
+							chunkAddress: ReadChunkCountThenAddress( reader, out var chunkCount )
 						);
-						unknown4.Unknown4_2 = unknown4_2;
+						reader.BaseStream.Position = image.ChunkAddress;
+						for( var chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++ )
+						{
+							var chunk = new RoomObjectImageChunk(
+								index: chunkIndex,
+								x: reader.ReadInt32(),
+								y: reader.ReadInt32(),
+								width: reader.ReadInt32(),
+								height: reader.ReadInt32(),
+								textureFileNameAddress: reader.ReadInt32PlusBytePosition( value => value != 0 )
+							);
+							image.ChunkList.Add( chunk );
+						}
+						roomObject.Image = image;
+					}
+				}
+			}
+
+			// read the room object sprite / image texture file names
+			foreach( var roomObjectGroup in roomObjectGroupList )
+			{
+				foreach( var roomObject in roomObjectGroup.RoomObjectList )
+				{
+					if( roomObject.Sprite != null && roomObject.Sprite.TextureFileNameAddress != 0 )
+					{
+						reader.BaseStream.Position = roomObject.Sprite.TextureFileNameAddress;
+						roomObject.Sprite.TextureFileName = reader.ReadStringMonkey();
+					}
+					if( roomObject.Image != null )
+					{
+						foreach( var chunk in roomObject.Image.ChunkList )
+						{
+							if( chunk.TextureFileNameAddress != 0 )
+							{
+								reader.BaseStream.Position = chunk.TextureFileNameAddress;
+								chunk.TextureFileName = reader.ReadStringMonkey();
+							}
+						}
 					}
 				}
 			}
@@ -285,18 +331,28 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 				staticSpriteHeaderList: staticSpriteHeaderList,
 				spriteHeaderList: spriteHeaderList,
 				unknown6HeaderList: unknown6HeaderList,
-				unknown4HeaderList: unknown4HeaderList,
+				roomObjectHeaderList: roomObjectHeaderList,
 				unknown5HeaderList: unknown5HeaderList,
 				staticSpriteList: staticSpriteList,
 				spriteGroupList: spriteGroupList,
 				unknown6List: unknown6List,
-				unknown4GroupList: unknown4GroupList,
+				roomObjectGroupList: roomObjectGroupList,
 				unknown5List: unknown5List
 			);
 
 			// validate and return room
 			SanityChecker.Check( room );
 			return room;
+		}
+
+		/// <summary>
+		/// Reads a room object image's chunk count followed by the relative address of the
+		/// chunk array, returning the resolved chunk array address.
+		/// </summary>
+		private static int ReadChunkCountThenAddress( BinaryReader reader, out int chunkCount )
+		{
+			chunkCount = reader.ReadInt32();
+			return reader.ReadInt32PlusBytePosition( value => value > 0 );
 		}
 	}
 }
