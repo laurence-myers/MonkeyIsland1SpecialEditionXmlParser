@@ -40,9 +40,6 @@
     <StartupObject>MonkeyIsland1SpecialEditionXmlParser.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DevIL.NET2">
-      <HintPath>..\3rd Party\DevILDotNet_1.3\DevIL.NET2.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -52,6 +49,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Pfim" Version="0.11.4" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\ApplyOverrideCommand.cs" />
@@ -230,18 +230,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Collaboration readme.txt" />
-    <Content Include="DevIL.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="DevIL.License.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ILU.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="ILUT.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Readme.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

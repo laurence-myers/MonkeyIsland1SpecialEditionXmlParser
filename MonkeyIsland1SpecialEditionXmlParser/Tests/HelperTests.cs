@@ -297,6 +297,70 @@ namespace Tests
 			}
 		}
 
+		[Test]
+		public void ImageFromDxtBytes_Dxt1_DecodesSolidColorsWithCorrectChannels()
+		{
+			// Arrange: four opaque solid 4x4 quadrants. Primary colors survive RGB565
+			// quantization exactly, so a correct decode returns them exactly. A swapped
+			// R/B channel would turn the red quadrant blue.
+			using( var source = new System.Drawing.Bitmap( 8, 8 ) )
+			{
+				FillQuadrant( source, 0, 0, System.Drawing.Color.Red );
+				FillQuadrant( source, 4, 0, System.Drawing.Color.Lime );
+				FillQuadrant( source, 0, 4, System.Drawing.Color.Blue );
+				FillQuadrant( source, 4, 4, System.Drawing.Color.White );
+
+				var bytes = Helper.DxtBytesFromImage( source, "DXT1" );
+
+				// Act
+				using( var decoded = (System.Drawing.Bitmap)Helper.ImageFromDxtBytes( bytes ) )
+				{
+					// Assert
+					Assert.That( decoded.Width, Is.EqualTo( 8 ) );
+					Assert.That( decoded.Height, Is.EqualTo( 8 ) );
+					Assert.That( decoded.GetPixel( 1, 1 ).ToArgb(), Is.EqualTo( System.Drawing.Color.Red.ToArgb() ), "red quadrant" );
+					Assert.That( decoded.GetPixel( 5, 1 ).ToArgb(), Is.EqualTo( System.Drawing.Color.Lime.ToArgb() ), "green quadrant" );
+					Assert.That( decoded.GetPixel( 1, 5 ).ToArgb(), Is.EqualTo( System.Drawing.Color.Blue.ToArgb() ), "blue quadrant" );
+					Assert.That( decoded.GetPixel( 5, 5 ).ToArgb(), Is.EqualTo( System.Drawing.Color.White.ToArgb() ), "white quadrant" );
+				}
+			}
+		}
+
+		[Test]
+		public void ImageFromDxtBytes_Dxt5_PreservesAlpha()
+		{
+			// Arrange: a uniform 4x4 block with alpha 128 (min == max, so the alpha decodes
+			// exactly), color chosen away from 565 boundaries so it survives within tolerance.
+			using( var source = new System.Drawing.Bitmap( 4, 4 ) )
+			{
+				FillQuadrant( source, 0, 0, System.Drawing.Color.FromArgb( 128, 10, 200, 90 ) );
+
+				var bytes = Helper.DxtBytesFromImage( source, "DXT5" );
+
+				// Act
+				using( var decoded = (System.Drawing.Bitmap)Helper.ImageFromDxtBytes( bytes ) )
+				{
+					// Assert
+					var pixel = decoded.GetPixel( 2, 2 );
+					Assert.That( pixel.A, Is.EqualTo( 128 ), "alpha" );
+					Assert.That( (int)pixel.R, Is.EqualTo( 10 ).Within( 12 ), "red" );
+					Assert.That( (int)pixel.G, Is.EqualTo( 200 ).Within( 12 ), "green" );
+					Assert.That( (int)pixel.B, Is.EqualTo( 90 ).Within( 12 ), "blue" );
+				}
+			}
+		}
+
+		private static void FillQuadrant( System.Drawing.Bitmap bitmap, int x, int y, System.Drawing.Color color )
+		{
+			for( var yy = y; yy < y + 4; yy++ )
+			{
+				for( var xx = x; xx < x + 4; xx++ )
+				{
+					bitmap.SetPixel( xx, yy, color );
+				}
+			}
+		}
+
 		private void RemoveAddressValues( XDocument doc )
 		{
 			var addressElements = doc.Descendants().Where( e => 

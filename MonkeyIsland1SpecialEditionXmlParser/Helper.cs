@@ -354,37 +354,89 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 		public static Image ImageFromDxtBytes( byte[] bytes )
 		{
-			Image? image = null;
-			var tempFileName = Path.GetTempFileName();
-			Helper.WriteBinaryFile( tempFileName, writer =>
+			// Wrap the game's 12 byte .dxt blob (fourCC, width, height followed by raw DXT
+			// blocks) in a standard 128 byte DDS header, then decode it with Pfim. This is
+			// the inverse of DxtBytesFromImage.
+			using( var stream = new MemoryStream() )
 			{
-				writer.Write( Encoding.ASCII.GetBytes( "DDS " ) );
-				writer.Write( 124 ); // size (of what???)
-				writer.Write( 528391 ); // some flags: DDSD_CAPS, DDSD_HEIGHT, DDSD_WIDTH, DDSD_PIXELFORMAT and DDSD_LINEARSIZE
-				writer.Write( BitConverter.ToInt32( bytes, 8 ) ); // height
-				writer.Write( BitConverter.ToInt32( bytes, 4 ) ); // width
-				writer.Write( bytes.Length - 12 ); // dwPitchOrLinearSize
-				writer.Write( 0 ); // depth
-				writer.Write( 0 ); // mipmap count
-				for( var reserved = 0; reserved < 11; reserved++ ) writer.Write( 0 );
-				writer.Write( 32 ); // size (of what???)
-				writer.Write( 0x00000004 ); // more flags: DDPF_FOURCC
-				writer.Write( BitConverter.ToInt32( bytes, 0 ) ); // DXTn
-				writer.Write( 0 ); // dwRGBBitCount
-				writer.Write( 0 ); // dwRBitMask
-				writer.Write( 0 ); // dwGBitMask
-				writer.Write( 0 ); // dwBBitMask
-				writer.Write( 0 ); // dwAlphaBitMask
-				writer.Write( 0x00001000 ); // dwCaps1 : DDSCAPS_TEXTURE
-				writer.Write( 0 ); // dwCaps2
-				writer.Write( 0 ); // dwDDSX
-				writer.Write( 0 ); // dwReserved
-				writer.Write( 0 ); // dwReserved2
-				writer.Write( bytes, 12, bytes.Length - 12 );
-			} );
-			image = DevIL.DevIL.LoadBitmap( tempFileName );
-			File.Delete( tempFileName );
-			return image;
+				using( var writer = new BinaryWriter( stream, Encoding.ASCII, leaveOpen: true ) )
+				{
+					writer.Write( Encoding.ASCII.GetBytes( "DDS " ) );
+					writer.Write( 124 ); // size (of what???)
+					writer.Write( 528391 ); // some flags: DDSD_CAPS, DDSD_HEIGHT, DDSD_WIDTH, DDSD_PIXELFORMAT and DDSD_LINEARSIZE
+					writer.Write( BitConverter.ToInt32( bytes, 8 ) ); // height
+					writer.Write( BitConverter.ToInt32( bytes, 4 ) ); // width
+					writer.Write( bytes.Length - 12 ); // dwPitchOrLinearSize
+					writer.Write( 0 ); // depth
+					writer.Write( 0 ); // mipmap count
+					for( var reserved = 0; reserved < 11; reserved++ ) writer.Write( 0 );
+					writer.Write( 32 ); // size (of what???)
+					writer.Write( 0x00000004 ); // more flags: DDPF_FOURCC
+					writer.Write( BitConverter.ToInt32( bytes, 0 ) ); // DXTn
+					writer.Write( 0 ); // dwRGBBitCount
+					writer.Write( 0 ); // dwRBitMask
+					writer.Write( 0 ); // dwGBitMask
+					writer.Write( 0 ); // dwBBitMask
+					writer.Write( 0 ); // dwAlphaBitMask
+					writer.Write( 0x00001000 ); // dwCaps1 : DDSCAPS_TEXTURE
+					writer.Write( 0 ); // dwCaps2
+					writer.Write( 0 ); // dwDDSX
+					writer.Write( 0 ); // dwReserved
+					writer.Write( 0 ); // dwReserved2
+					writer.Write( bytes, 12, bytes.Length - 12 );
+				}
+
+				stream.Position = 0;
+				using( var dds = Pfim.Pfimage.FromStream( stream ) )
+				{
+					return BitmapFromPfim( dds );
+				}
+			}
+		}
+
+		/// <summary>
+		/// Copies a Pfim decoded image into a GDI+ owned <see cref="Bitmap"/>. The copy is
+		/// required because the returned bitmap must stay valid after the Pfim image (and
+		/// its backing byte array) is disposed.
+		/// </summary>
+		private static Bitmap BitmapFromPfim( Pfim.IImage image )
+		{
+			System.Drawing.Imaging.PixelFormat pixelFormat;
+			if( image.Format == Pfim.ImageFormat.Rgba32 )
+			{
+				pixelFormat = System.Drawing.Imaging.PixelFormat.Format32bppArgb;
+			}
+			else if( image.Format == Pfim.ImageFormat.Rgb24 )
+			{
+				pixelFormat = System.Drawing.Imaging.PixelFormat.Format24bppRgb;
+			}
+			else
+			{
+				throw new NotSupportedException( string.Concat( "Pfim image format ", image.Format, " is not supported." ) );
+			}
+
+			var bitmap = new Bitmap( image.Width, image.Height, pixelFormat );
+			var bitmapData = bitmap.LockBits(
+				new Rectangle( 0, 0, image.Width, image.Height ),
+				System.Drawing.Imaging.ImageLockMode.WriteOnly,
+				pixelFormat
+			);
+			try
+			{
+				var rowBytes = Math.Min( image.Stride, bitmapData.Stride );
+				for( var y = 0; y < image.Height; y++ )
+				{
+					System.Runtime.InteropServices.Marshal.Copy(
+						image.Data, y * image.Stride,
+						IntPtr.Add( bitmapData.Scan0, y * bitmapData.Stride ), rowBytes
+					);
+				}
+			}
+			finally
+			{
+				bitmap.UnlockBits( bitmapData );
+			}
+			return bitmap;
 		}
 
 		public static Image? LoadImage( this LPAKFile file, string? fileName )

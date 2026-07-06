@@ -1,4 +1,10 @@
-﻿[ 2026/07/05 ]
+﻿[ 2026/07/06 ]
+---------------------------------------------------------------
+- Replaced the bundled DevIL.NET2 wrapper and native DevIL DLLs
+  (DevIL.dll/ILU.dll/ILUT.dll) with the managed Pfim NuGet package
+  for decoding DXT textures; no native runtime is shipped anymore
+
+[ 2026/07/05 ]
 ---------------------------------------------------------------
 - Added classic SCUMM data parser (monkey1.000/monkey1.001) for room
   object positions; the files are read straight out of the pak
