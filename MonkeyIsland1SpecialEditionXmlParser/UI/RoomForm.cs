@@ -1,18 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Commands;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
 	public partial class RoomForm : Form
 	{
 		private static readonly List<RoomForm> instances = new List<RoomForm>();
-		private float scale = 0.5f;
+		private readonly Dictionary<string, Image?> textureCache = new Dictionary<string, Image?>();
+		private bool populatingGroupList;
 
 		private Room? Room
 		{
@@ -46,7 +49,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.LPAKFile = lpakFile;
 			this.MdiParent = mdiParent;
 			this.WindowState = windowState;
-			
+
 			RoomForm.instances.Add( this );
 			this.FormClosed += delegate { RoomForm.instances.Remove( this ); };
 
@@ -57,130 +60,171 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void RenderRoom()
 		{
-			var fileEntry = this.LPAKFile.PakFileEntries[this.FileIndex];
-			Helper.ReadBinaryFile( this.LPAKFile.FileNameOnDisk, reader =>
-			{
-				reader.BaseStream.Position = fileEntry.OffsetToStartOfData + this.LPAKFile.PakHeader.StartOfData;
-				this.Room = MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Parser.ReadRoom( reader );
-			} );
+			this.Room = this.LPAKFile.LoadRoom( this.FileIndex );
 
-			for( var index = 0; index < this.Room?.StaticSpriteList.Count; index++ )
+			if( this.Room == null )
 			{
-				var staticSpriteList = this.Room.StaticSpriteList[index];
-				var staticSprite = this.RenderStaticSpriteList( staticSpriteList );
-				if( staticSprite == null )
-				{
-					continue;
-				}
-
-				this.spriteSetPreviewControl.Sprites.Add(
-					new SpriteSetPreviewControlSprite(
-						image: staticSprite,
-						layer: index,
-						name: "StaticSprite" + index
-					)
-				);
+				return;
 			}
 
-			//for( var index = 0; index < this.Room.SpriteGroupList.Count; index++ )
-			//{
-			//    var spriteGroup = this.Room.SpriteGroupList[index];
-			//    var image = this.RenderSpriteGroup( spriteGroup );
-			//    if( image == null )
-			//    {
-			//        continue;
-			//    }
+			this.label1.Text = string.Concat( "Room ", this.Room.Header.Identifier, " - ", this.Room.Header.Name );
 
-			//    this.spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite()
-			//    {
-			//        Image = image,
-			//        Layer = index * 100,
-			//        Name = "Sprite" + index,
-			//    } );
+			// composite the background from the static sprites
+			var background = Renderer.RenderBackground( this.Room, this.LoadTexture );
 
-			//    return;
-			//}
+			// resolve object sprite positions from the classic SCUMM data
+			var classicData = ClassicDataLocator.GetOrLoad( this.LPAKFile, this.PromptForClassicDataFolder );
+			var classicRoom = classicData?.FindRoom( this.Room.Header.Identifier );
+			var placements = Renderer.ResolvePlacements( this.Room, classicRoom?.GetObjectsById(), Renderer.DefaultHdScale );
+
+			this.roomPreviewControl.Background = background;
+			this.roomPreviewControl.Sprites.Clear();
+			this.roomPreviewControl.Sprites.AddRange(
+				placements.Select( p => new RoomPreviewControlSprite( p, this.LoadTexture( p.Sprite.TextureFileName ) ) )
+			);
+			this.roomPreviewControl.RefreshContent();
+
+			this.UpdateWarningLabel( classicData, classicRoom, placements.Count );
+			this.PopulateGroupList();
 		}
 
-		private Bitmap RenderStaticSpriteList( List<StaticSprite> staticSpriteList )
+		private void UpdateWarningLabel( MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities.ClassicData? classicData, MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities.ClassicRoom? classicRoom, int placementCount )
 		{
-			var width = staticSpriteList.Max( ss => ss.X + ss.Width );
-			var height = staticSpriteList.Max( ss => ss.Y + ss.Height );
-
-			var bitmap = new Bitmap( (int)( width * this.scale ), (int)( height * this.scale ) );
-			var graphics = Graphics.FromImage( bitmap );
-			graphics.Clear( Color.Transparent );
-
-			foreach( var staticSprite in staticSpriteList )
+			if( classicData == null )
 			{
-				var textureFileName = staticSprite.TextureFileName;
-				var texture = this.LoadTexture( textureFileName );
-				if( texture == null )
-				{
-					continue;
-				}
-
-				var destRect = new RectangleF( staticSprite.X * this.scale, staticSprite.Y * this.scale, staticSprite.Width * this.scale, staticSprite.Height * this.scale );
-				var srcRect = new RectangleF( 0.0f, 0.0f, texture.Width, texture.Height );
-				graphics.DrawImage( texture, destRect, srcRect, GraphicsUnit.Pixel );
+				this.warningLabel.Text = "Classic SCUMM data (monkey1.000/001) not found - object sprites are placed by their offset only.";
+				this.warningLabel.Visible = true;
 			}
-
-			return bitmap;
+			else if( classicRoom == null && placementCount > 0 )
+			{
+				this.warningLabel.Text = string.Concat( "No classic room ", this.Room!.Header.Identifier, " in ", classicData.Source, " - object sprites are placed by their offset only." );
+				this.warningLabel.Visible = true;
+			}
+			else
+			{
+				this.warningLabel.Visible = false;
+			}
 		}
 
-		private Bitmap? RenderSpriteGroup(SpriteGroup spriteGroup)
+		private void PopulateGroupList()
 		{
-			if( spriteGroup == null || spriteGroup.SpriteList == null || spriteGroup.SpriteList.Count == 0 )
+			this.populatingGroupList = true;
+			try
 			{
-				return null;
-			}
-
-			var maxWidth = spriteGroup.SpriteList.Max( s => s.TextureWidth );
-			var maxHeight = spriteGroup.SpriteList.Max( s => s.TextureHeight );
-
-			var width = maxWidth;
-			var height = maxHeight * spriteGroup.SpriteList.Count;
-
-			var bitmap = new Bitmap( (int)( width * this.scale ), (int)( height * this.scale ) );
-			var graphics = Graphics.FromImage( bitmap );
-
-			for( var index = 0; index < spriteGroup.SpriteList.Count; index++ )
-			{
-				var sprite = spriteGroup.SpriteList[index];
-				var textureFileName = sprite.TextureFileName;
-				var texture = this.LoadTexture( textureFileName );
-				if( texture == null )
+				this.checkedListBoxGroups.Items.Clear();
+				if( this.Room == null )
 				{
-					continue;
+					return;
 				}
 
-				var destRect = new RectangleF( sprite.OffsetX * this.scale, index * maxHeight * this.scale + sprite.OffsetY, bitmap.Width, bitmap.Height );
-				var srcRect = new RectangleF( sprite.TextureX, sprite.TextureY, sprite.TextureWidth, sprite.TextureHeight );
-				graphics.DrawImage( texture, destRect, srcRect, GraphicsUnit.Pixel );
+				for( var index = 0; index < this.Room.SpriteHeaderList.Count; index++ )
+				{
+					var spriteHeader = this.Room.SpriteHeaderList[index];
+					var placement = this.roomPreviewControl.Sprites.FirstOrDefault( s => s.Placement.GroupIndex == index );
+					var classicObject = placement?.Placement.ClassicObject;
+					var text = string.Concat(
+						index, ": id=", spriteHeader.Identifier,
+						classicObject?.Name is { Length: > 0 } ? " " + classicObject.Name : "",
+						placement != null && !placement.Placement.HasClassicMatch ? " [unplaced]" : ""
+					);
+					this.checkedListBoxGroups.Items.Add( text, true );
+				}
+			}
+			finally
+			{
+				this.populatingGroupList = false;
+			}
+		}
+
+		private void HandleGroupItemCheck( object sender, ItemCheckEventArgs args )
+		{
+			if( this.populatingGroupList )
+			{
+				return;
 			}
 
-			return bitmap;
+			var visible = args.NewValue == CheckState.Checked;
+			foreach( var sprite in this.roomPreviewControl.Sprites )
+			{
+				if( sprite.Placement.GroupIndex == args.Index )
+				{
+					sprite.Visible = visible;
+				}
+			}
+			this.roomPreviewControl.Invalidate();
+		}
+
+		private void ToggleCalibrationOverlay( object sender, EventArgs args )
+		{
+			this.roomPreviewControl.ShowCalibrationOverlay = this.calibrationOverlayToolStripMenuItem.Checked;
+			this.roomPreviewControl.Invalidate();
+		}
+
+		private string? PromptForClassicDataFolder()
+		{
+			using( var dialog = new FolderBrowserDialog() )
+			{
+				dialog.Description = "Classic SCUMM data (monkey1.000 / monkey1.001) was not found automatically. Select the folder containing it (e.g. the game's 'classic' folder).";
+				return dialog.ShowDialog( this ) == DialogResult.OK ? dialog.SelectedPath : null;
+			}
 		}
 
 		private Image? LoadTexture( string? fileName )
 		{
-			var image = this.LPAKFile.LoadImage( fileName );
+			if( string.IsNullOrEmpty( fileName ) )
+			{
+				return null;
+			}
+
+			Image? image;
+			if( this.textureCache.TryGetValue( fileName!, out image ) )
+			{
+				return image;
+			}
+
+			try
+			{
+				image = this.LPAKFile.LoadImage( fileName );
+			}
+			catch( Exception )
+			{
+				image = null;
+			}
+			this.textureCache[fileName!] = image;
 			return image;
+		}
+
+		private void OpenSpriteSheetEditor( object sender, EventArgs args )
+		{
+			var fileName = this.LPAKFile.PakFileNames[this.FileIndex].FileName;
+			new OpenSpriteSheetEditorCommand( this.LPAKFile, fileName, this.FileIndex ).Execute();
 		}
 
 		private void ExportAsXml( object sender, EventArgs args )
 		{
-			new ExportToXmlCommand( this.Room!, string.Concat( this.Room!.Header.Identifier, "_", this.Room.Header.Name, ".xml" ) ).Execute();
+			if( this.Room == null )
+			{
+				return;
+			}
+			new ExportToXmlCommand( this.Room, string.Concat( this.Room.Header.Identifier, "_", this.Room.Header.Name, ".xml" ) ).Execute();
 		}
 
 		private void ExportAsMergedPng( object sender, EventArgs args )
 		{
-			new ExportRoomToMergedPngWithDialogCommand( this.LPAKFile!, this.Room! ).Execute();
+			if( this.Room == null )
+			{
+				return;
+			}
+			new ExportRoomToMergedPngWithDialogCommand( this.LPAKFile, this.Room ).Execute();
 		}
 
 		private void ExportAsPng( object sender, EventArgs args )
 		{
-			new ExportRoomToPngWithDialogCommand( this.LPAKFile!, this.Room! ).Execute();
+			if( this.Room == null )
+			{
+				return;
+			}
+			new ExportRoomToPngWithDialogCommand( this.LPAKFile, this.Room ).Execute();
 		}
 	}
 }

@@ -365,9 +365,67 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.saveAsToolStripMenuItem.Enabled = node.Level == 2;
 			this.saveOverrideToolStripMenuItem.Enabled = node.Level == 2;
 			this.applyOverrideToolStripMenuItem.Enabled = node.Level == 2;
+			this.openSpriteSheetEditorToolStripMenuItem.Enabled = node.Level == 2 && node.Parent.Text == "Rooms";
+			this.importTexturePngToolStripMenuItem.Enabled = node.Level == 2 && node.Parent.Text == "Textures";
 
 			this.contextMenuStrip.Tag = node;
 			this.contextMenuStrip.Show( this.treeView1.PointToScreen( args.Location ) );
+		}
+
+		private void ImportTexturePng( object sender, EventArgs args )
+		{
+			var selectedNode = this.contextMenuStrip.Tag as TreeNode;
+			if( selectedNode == null )
+			{
+				return;
+			}
+
+			var fileIndex = (int)selectedNode.Tag;
+			if( fileIndex < 0 || fileIndex >= this.LPAKFile.PakFileNames.Length )
+			{
+				return;
+			}
+
+			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
+			if( string.IsNullOrWhiteSpace( fileName ) )
+			{
+				return;
+			}
+
+			using( var dialog = new OpenFileDialog() )
+			{
+				dialog.Filter = "PNG files (*.png)|*.png|All files (*.*)|*.*";
+				dialog.Title = string.Concat( "Import PNG as ", fileName );
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+
+				new ImportTexturePngCommand( this.LPAKFile, fileName, dialog.FileName ).Execute();
+			}
+		}
+
+		private void OpenInSpriteSheetEditor( object sender, EventArgs args )
+		{
+			var selectedNode = this.contextMenuStrip.Tag as TreeNode;
+			if( selectedNode == null )
+			{
+				return;
+			}
+
+			var fileIndex = (int)selectedNode.Tag;
+			if( fileIndex < 0 || fileIndex >= this.LPAKFile.PakFileNames.Length )
+			{
+				return;
+			}
+
+			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
+			if( string.IsNullOrWhiteSpace( fileName ) )
+			{
+				return;
+			}
+
+			new OpenSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 		}
 
 		private void SaveAs( object sender, EventArgs args )

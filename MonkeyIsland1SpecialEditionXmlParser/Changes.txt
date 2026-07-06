@@ -1,4 +1,22 @@
-﻿[ 2026/03/22 ]
+﻿[ 2026/07/05 ]
+---------------------------------------------------------------
+- Added classic SCUMM data parser (monkey1.000/monkey1.001) for room
+  object positions; the files are read straight out of the pak
+- Room preview now draws object sprites over the background at their
+  in-game positions (classic position x HD scale 6.0/7.2 + offset),
+  with layer ordering, group visibility toggles, zoom and a
+  calibration overlay
+- Added Spritesheet Editor (right-click a room / File menu in the
+  room viewer): atlas view with selectable sprite rectangles,
+  drag/arrow-key nudging, numeric editing of texture rect, offset
+  and layer, live room preview and a diagnostics panel
+- Added "Save override" in the Spritesheet Editor: writes the loose
+  override binary the game loads plus the overrides XML export
+- Added texture PNG export/import: repaint a spritesheet and import
+  it back as a loose override .dxt (managed DXT1/DXT5 encoder)
+- Texture loading now respects loose override files, like the game
+
+[ 2026/03/22 ]
 ---------------------------------------------------------------
 - Added "Export override XML" and "Apply override" for Room entities
 

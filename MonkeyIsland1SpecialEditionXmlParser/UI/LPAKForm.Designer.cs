@@ -37,6 +37,8 @@
 			this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.applyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.openSpriteSheetEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.importTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label1 = new System.Windows.Forms.Label();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.menuStrip1.SuspendLayout();
@@ -78,7 +80,9 @@
 	            this.viewAsHEXToolStripMenuItem,
 	            this.saveAsToolStripMenuItem,
 	            this.saveOverrideToolStripMenuItem,
-	            this.applyOverrideToolStripMenuItem
+	            this.applyOverrideToolStripMenuItem,
+	            this.openSpriteSheetEditorToolStripMenuItem,
+	            this.importTexturePngToolStripMenuItem
 			});
 			this.contextMenuStrip.Name = "contextMenuStrip";
 			this.contextMenuStrip.Size = new System.Drawing.Size(153, 92);
@@ -110,6 +114,20 @@
 			this.applyOverrideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.applyOverrideToolStripMenuItem.Text = "Apply override";
 			this.applyOverrideToolStripMenuItem.Click += new System.EventHandler(this.ApplyOverride);
+			//
+			// openSpriteSheetEditorToolStripMenuItem
+			//
+			this.openSpriteSheetEditorToolStripMenuItem.Name = "openSpriteSheetEditorToolStripMenuItem";
+			this.openSpriteSheetEditorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openSpriteSheetEditorToolStripMenuItem.Text = "Open in Spritesheet Editor";
+			this.openSpriteSheetEditorToolStripMenuItem.Click += new System.EventHandler(this.OpenInSpriteSheetEditor);
+			//
+			// importTexturePngToolStripMenuItem
+			//
+			this.importTexturePngToolStripMenuItem.Name = "importTexturePngToolStripMenuItem";
+			this.importTexturePngToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.importTexturePngToolStripMenuItem.Text = "Import texture PNG...";
+			this.importTexturePngToolStripMenuItem.Click += new System.EventHandler(this.ImportTexturePng);
 
 			//
 			// label1
@@ -171,5 +189,7 @@
 		private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem applyOverrideToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem openSpriteSheetEditorToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem importTexturePngToolStripMenuItem;
 	}
 }

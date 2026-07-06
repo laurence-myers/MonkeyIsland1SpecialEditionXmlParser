@@ -1,0 +1,328 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Linq;
+using System.Windows.Forms;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
+
+namespace MonkeyIsland1SpecialEditionXmlParser.UI
+{
+	/// <summary>
+	/// Draws a room the way the game composites it: the static background plus every object
+	/// sprite at its resolved screen position, ordered by layer. Supports mouse wheel zoom,
+	/// click selection with hit-testing and a calibration overlay that outlines the classic
+	/// object rectangles the placements were derived from.
+	/// </summary>
+	public class RoomPreviewControl : Control
+	{
+		private float zoom = 0.5f;
+		private Bitmap? background;
+		private RoomPreviewControlSprite? selectedSprite;
+
+		public event EventHandler? SelectedSpriteChanged;
+		public event EventHandler? ZoomChanged;
+
+		public RoomPreviewControl()
+		{
+			this.SetStyle( ControlStyles.AllPaintingInWmPaint, true );
+			this.SetStyle( ControlStyles.UserPaint, true );
+			this.SetStyle( ControlStyles.OptimizedDoubleBuffer, true );
+			this.SetStyle( ControlStyles.Selectable, true );
+
+			this.Sprites = new List<RoomPreviewControlSprite>();
+			this.HdScale = Renderer.DefaultHdScale;
+		}
+
+		/// <summary>
+		/// Gets or sets the composited background image, drawn below all sprites.
+		/// </summary>
+		public Bitmap? Background
+		{
+			get
+			{
+				return this.background;
+			}
+			set
+			{
+				this.background = value;
+				this.UpdateContentSize();
+				this.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Gets the sprites to draw. Call <see cref="RefreshContent"/> after changing the list
+		/// or any sprite's placement.
+		/// </summary>
+		public List<RoomPreviewControlSprite> Sprites
+		{
+			get;
+			private set;
+		}
+
+		/// <summary>
+		/// Gets or sets the zoom factor applied to the whole room.
+		/// </summary>
+		public float Zoom
+		{
+			get
+			{
+				return this.zoom;
+			}
+			set
+			{
+				var clamped = Math.Max( 0.05f, Math.Min( 4.0f, value ) );
+				if( clamped == this.zoom )
+				{
+					return;
+				}
+				this.zoom = clamped;
+				this.UpdateContentSize();
+				this.Invalidate();
+				this.ZoomChanged?.Invoke( this, EventArgs.Empty );
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets whether the calibration overlay is drawn: a grid every 8 classic pixels
+		/// and the classic object rectangle of every visible sprite.
+		/// </summary>
+		public bool ShowCalibrationOverlay
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the classic-to-HD scale used by the calibration overlay.
+		/// </summary>
+		public SizeF HdScale
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the selected sprite; it is outlined and reported by hit-testing.
+		/// </summary>
+		public RoomPreviewControlSprite? SelectedSprite
+		{
+			get
+			{
+				return this.selectedSprite;
+			}
+			set
+			{
+				if( this.selectedSprite == value )
+				{
+					return;
+				}
+				this.selectedSprite = value;
+				this.Invalidate();
+				this.SelectedSpriteChanged?.Invoke( this, EventArgs.Empty );
+			}
+		}
+
+		/// <summary>
+		/// Recomputes the control size from the current content and repaints.
+		/// </summary>
+		public void RefreshContent()
+		{
+			this.UpdateContentSize();
+			this.Invalidate();
+		}
+
+		/// <summary>
+		/// Returns the topmost visible sprite at the given client point, or null.
+		/// </summary>
+		public RoomPreviewControlSprite? HitTest( Point clientPoint )
+		{
+			var roomPoint = new PointF( clientPoint.X / this.zoom, clientPoint.Y / this.zoom );
+
+			// walk from the topmost drawn sprite down; skip sprites that aren't painted
+			foreach( var sprite in this.GetDrawOrder().Reverse() )
+			{
+				if( sprite.Visible && sprite.Texture != null && sprite.Placement.ScreenRect.Contains( roomPoint ) )
+				{
+					return sprite;
+				}
+			}
+			return null;
+		}
+
+		protected override void OnMouseDown( MouseEventArgs args )
+		{
+			base.OnMouseDown( args );
+			this.Focus();
+			if( args.Button == MouseButtons.Left )
+			{
+				this.SelectedSprite = this.HitTest( args.Location );
+			}
+		}
+
+		protected override void OnMouseWheel( MouseEventArgs args )
+		{
+			base.OnMouseWheel( args );
+
+			// keep the wheel from also scrolling the hosting AutoScroll panel
+			if( args is HandledMouseEventArgs handledArgs )
+			{
+				handledArgs.Handled = true;
+			}
+
+			this.Zoom = args.Delta > 0 ? this.zoom * 1.25f : this.zoom / 1.25f;
+		}
+
+		protected override void OnPaint( PaintEventArgs args )
+		{
+			base.OnPaint( args );
+			var graphics = args.Graphics;
+
+			graphics.ClearWithTransparencyGrid();
+
+			// fast, crisp scaling; the content is large and repainted often
+			graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+			graphics.PixelOffsetMode = PixelOffsetMode.Half;
+
+			if( this.background != null )
+			{
+				var destRect = new RectangleF( 0, 0, this.background.Width * this.zoom, this.background.Height * this.zoom );
+				var srcRect = new RectangleF( 0, 0, this.background.Width, this.background.Height );
+				graphics.DrawImage( this.background, destRect, srcRect, GraphicsUnit.Pixel );
+			}
+
+			foreach( var sprite in this.GetDrawOrder() )
+			{
+				if( !sprite.Visible || sprite.Texture == null )
+				{
+					continue;
+				}
+
+				var screenRect = sprite.Placement.ScreenRect;
+				var destRect = new RectangleF(
+					screenRect.X * this.zoom,
+					screenRect.Y * this.zoom,
+					screenRect.Width * this.zoom,
+					screenRect.Height * this.zoom
+				);
+				graphics.DrawImage( sprite.Texture, destRect, (RectangleF)sprite.SourceRect, GraphicsUnit.Pixel );
+			}
+
+			if( this.ShowCalibrationOverlay )
+			{
+				this.PaintCalibrationOverlay( graphics );
+			}
+
+			if( this.selectedSprite != null )
+			{
+				var screenRect = this.selectedSprite.Placement.ScreenRect;
+				using( var pen = new Pen( Color.Red, 2 ) )
+				{
+					graphics.DrawRectangle(
+						pen,
+						screenRect.X * this.zoom,
+						screenRect.Y * this.zoom,
+						screenRect.Width * this.zoom,
+						screenRect.Height * this.zoom
+					);
+				}
+			}
+		}
+
+		protected override void OnPaintBackground( PaintEventArgs args )
+		{
+			// everything is painted in OnPaint over a transparency grid
+		}
+
+		protected override bool IsInputKey( Keys keyData )
+		{
+			// let arrow keys reach KeyDown handlers (used for nudging in the editor)
+			switch( keyData & Keys.KeyCode )
+			{
+				case Keys.Up:
+				case Keys.Down:
+				case Keys.Left:
+				case Keys.Right:
+					return true;
+				default:
+					return base.IsInputKey( keyData );
+			}
+		}
+
+		private IEnumerable<RoomPreviewControlSprite> GetDrawOrder()
+		{
+			return this.Sprites.OrderBy( s => s.Placement.Sprite.Layer );
+		}
+
+		private void UpdateContentSize()
+		{
+			var width = this.background?.Width ?? 0;
+			var height = this.background?.Height ?? 0;
+
+			foreach( var sprite in this.Sprites )
+			{
+				var screenRect = sprite.Placement.ScreenRect;
+				width = Math.Max( width, (int)Math.Ceiling( screenRect.Right ) );
+				height = Math.Max( height, (int)Math.Ceiling( screenRect.Bottom ) );
+			}
+
+			var newSize = new Size(
+				Math.Max( 50, (int)( width * this.zoom ) ),
+				Math.Max( 50, (int)( height * this.zoom ) )
+			);
+			if( this.Size != newSize )
+			{
+				this.Size = newSize;
+			}
+		}
+
+		private void PaintCalibrationOverlay( Graphics graphics )
+		{
+			var width = this.Width;
+			var height = this.Height;
+
+			// grid every 8 classic pixels (one SCUMM strip)
+			using( var gridPen = new Pen( Color.FromArgb( 80, Color.White ) ) )
+			{
+				var stepX = 8 * this.HdScale.Width * this.zoom;
+				var stepY = 8 * this.HdScale.Height * this.zoom;
+				if( stepX >= 4 )
+				{
+					for( var x = 0.0f; x < width; x += stepX )
+					{
+						graphics.DrawLine( gridPen, x, 0, x, height );
+					}
+				}
+				if( stepY >= 4 )
+				{
+					for( var y = 0.0f; y < height; y += stepY )
+					{
+						graphics.DrawLine( gridPen, 0, y, width, y );
+					}
+				}
+			}
+
+			// classic object rectangles of the visible sprites
+			using( var classicPen = new Pen( Color.Cyan ) )
+			{
+				foreach( var sprite in this.Sprites )
+				{
+					var classicObject = sprite.Placement.ClassicObject;
+					if( !sprite.Visible || classicObject == null )
+					{
+						continue;
+					}
+
+					graphics.DrawRectangle(
+						classicPen,
+						classicObject.X * this.HdScale.Width * this.zoom,
+						classicObject.Y * this.HdScale.Height * this.zoom,
+						classicObject.Width * this.HdScale.Width * this.zoom,
+						classicObject.Height * this.HdScale.Height * this.zoom
+					);
+				}
+			}
+		}
+	}
+}

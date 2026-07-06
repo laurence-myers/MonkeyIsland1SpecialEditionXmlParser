@@ -64,12 +64,15 @@
     <Compile Include="Commands\ExportRoomToMergedPngCommand.cs" />
     <Compile Include="Commands\ExportRoomToMergedPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportToBinaryCommand.cs" />
+    <Compile Include="Commands\ImportTexturePngCommand.cs" />
     <Compile Include="Commands\ExportToBinaryWithDialogCommand.cs" />
     <Compile Include="Commands\ExportToPngCommand.cs" />
     <Compile Include="Commands\ExportToXmlCommand.cs" />
     <Compile Include="Commands\OpenImageFormCommand.cs" />
     <Compile Include="Commands\OpenQuickStartDialogCommand.cs" />
     <Compile Include="Commands\OpenRoomFormCommand.cs" />
+    <Compile Include="Commands\OpenSpriteSheetEditorCommand.cs" />
+    <Compile Include="Commands\SaveRoomOverrideCommand.cs" />
     <Compile Include="Commands\OpenHexFormCommand.cs" />
     <Compile Include="Commands\OpenShaderFormCommand.cs" />
     <Compile Include="Commands\OpenLPAKFormCommand.cs" />
@@ -115,6 +118,12 @@
     <Compile Include="Formats\Rooms\Packer.cs" />
     <Compile Include="Formats\Rooms\Parser.cs" />
     <Compile Include="Formats\Rooms\SanityChecker.cs" />
+    <Compile Include="Formats\Rooms\Renderer.cs" />
+    <Compile Include="Formats\Scumm\ClassicDataLocator.cs" />
+    <Compile Include="Formats\Scumm\Entities\ClassicData.cs" />
+    <Compile Include="Formats\Scumm\Entities\ClassicObject.cs" />
+    <Compile Include="Formats\Scumm\Entities\ClassicRoom.cs" />
+    <Compile Include="Formats\Scumm\Parser.cs" />
     <Compile Include="Lib\Result.cs" />
     <Compile Include="Parsing\GenericReader.cs" />
     <Compile Include="Parsing\IgnoreAttribute.cs" />
@@ -184,6 +193,19 @@
     </Compile>
     <Compile Include="UI\ShaderForm.Designer.cs">
       <DependentUpon>ShaderForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\AtlasViewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\RoomPreviewControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\RoomPreviewControlSprite.cs" />
+    <Compile Include="UI\SpriteSheetEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\SpriteSheetEditorForm.Designer.cs">
+      <DependentUpon>SpriteSheetEditorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="UI\SpriteSetPreviewControl.cs">
       <SubType>Component</SubType>
@@ -262,6 +284,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="UI\ShaderForm.resx">
       <DependentUpon>ShaderForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\SpriteSheetEditorForm.resx">
+      <DependentUpon>SpriteSheetEditorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\XmlExportDialog.resx">
       <DependentUpon>XmlExportDialog.cs</DependentUpon>

@@ -219,6 +219,84 @@ namespace Tests
 			}
 		}
 
+		[TestCase( "DXT1", 8 )]
+		[TestCase( "DXT5", 16 )]
+		public void DxtBytesFromImage_WritesValidHeaderAndBlockData( string fourCC, int blockSize )
+		{
+			// Arrange: 16x8 pixels = 4x2 blocks
+			using( var bitmap = new System.Drawing.Bitmap( 16, 8 ) )
+			{
+				using( var graphics = System.Drawing.Graphics.FromImage( bitmap ) )
+				{
+					graphics.Clear( System.Drawing.Color.Red );
+				}
+
+				// Act
+				var bytes = Helper.DxtBytesFromImage( bitmap, fourCC );
+
+				// Assert: the game's 12 byte wrapper header
+				Assert.That( System.Text.Encoding.ASCII.GetString( bytes, 0, 4 ), Is.EqualTo( fourCC ) );
+				Assert.That( System.BitConverter.ToInt32( bytes, 4 ), Is.EqualTo( 16 ), "width" );
+				Assert.That( System.BitConverter.ToInt32( bytes, 8 ), Is.EqualTo( 8 ), "height" );
+				Assert.That( bytes.Length, Is.EqualTo( 12 + 4 * 2 * blockSize ), "block data size" );
+			}
+		}
+
+		[Test]
+		public void DxtBytesFromImage_SolidColor_EncodesMatchingEndpoints()
+		{
+			// Arrange: a solid color quantizes exactly to RGB565 endpoints
+			using( var bitmap = new System.Drawing.Bitmap( 4, 4 ) )
+			{
+				using( var graphics = System.Drawing.Graphics.FromImage( bitmap ) )
+				{
+					graphics.Clear( System.Drawing.Color.FromArgb( 255, 255, 0, 0 ) );
+				}
+
+				// Act
+				var bytes = Helper.DxtBytesFromImage( bitmap, "DXT1" );
+
+				// Assert: both color endpoints of the single block should be pure red in 565
+				var color0 = (ushort)( bytes[12] | ( bytes[13] << 8 ) );
+				var color1 = (ushort)( bytes[14] | ( bytes[15] << 8 ) );
+				Assert.That( color0, Is.EqualTo( 0xF800 ), "color0 should be pure red" );
+				Assert.That( color1, Is.EqualTo( 0xF800 ), "color1 should be pure red" );
+			}
+		}
+
+		[Test]
+		public void DxtBytesFromImage_Dxt5_PreservesAlphaEndpoints()
+		{
+			// Arrange: a 4x4 block with alpha ranging between two values
+			using( var bitmap = new System.Drawing.Bitmap( 4, 4 ) )
+			{
+				for( var y = 0; y < 4; y++ )
+				{
+					for( var x = 0; x < 4; x++ )
+					{
+						var alpha = y < 2 ? 32 : 224;
+						bitmap.SetPixel( x, y, System.Drawing.Color.FromArgb( alpha, 0, 255, 0 ) );
+					}
+				}
+
+				// Act
+				var bytes = Helper.DxtBytesFromImage( bitmap, "DXT5" );
+
+				// Assert: alpha0 = max, alpha1 = min (8 value palette mode)
+				Assert.That( bytes[12], Is.EqualTo( 224 ), "alpha0" );
+				Assert.That( bytes[13], Is.EqualTo( 32 ), "alpha1" );
+			}
+		}
+
+		[Test]
+		public void DxtBytesFromImage_UnknownFormat_Throws()
+		{
+			using( var bitmap = new System.Drawing.Bitmap( 4, 4 ) )
+			{
+				Assert.Throws<System.NotSupportedException>( () => Helper.DxtBytesFromImage( bitmap, "DXT3" ) );
+			}
+		}
+
 		private void RemoveAddressValues( XDocument doc )
 		{
 			var addressElements = doc.Descendants().Where( e => 
