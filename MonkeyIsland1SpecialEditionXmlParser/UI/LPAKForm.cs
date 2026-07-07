@@ -423,7 +423,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			switch( selectedNode.Parent.Text )
 			{
 				case "Costumes":
-					new OpenCostumeFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+					new OpenCostumeSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Rooms":
 					new OpenRoomFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
