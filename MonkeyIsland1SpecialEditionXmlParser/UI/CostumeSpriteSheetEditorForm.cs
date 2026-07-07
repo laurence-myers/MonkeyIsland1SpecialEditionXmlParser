@@ -111,6 +111,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.PopulateTextureCombo();
 			this.PopulateSpriteTree();
 			this.PopulateDiagnostics();
+			this.UpdateStepRange();
 			this.RefreshPlacements();
 			this.UpdateNumericEditors();
 		}
@@ -301,9 +302,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			var animation = this.SelectedAnimation;
+
+			// the frame numeric is 1-based for display; the renderer counts from 0
+			var step = Math.Max( 0, (int)this.numericStep.Value - 1 );
 			var placements = animation == null
 				? new List<CostumeSpritePlacement>()
-				: Renderer.ResolveFramePlacements( this.Costume, animation, (int)this.numericStep.Value, this.classicCostume );
+				: Renderer.ResolveFramePlacements( this.Costume, animation, step, this.classicCostume );
 
 			this.costumePreviewControl.Sprites.Clear();
 			foreach( var placement in placements )
@@ -339,10 +343,12 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.suppressUiEvents = true;
 			try
 			{
-				this.numericStep.Maximum = Math.Max( 0, stepCount - 1 );
-				if( this.numericStep.Value > this.numericStep.Maximum )
+				// frames are shown 1-based: "1 of 5" to "5 of 5"
+				this.numericStep.Minimum = stepCount > 0 ? 1 : 0;
+				this.numericStep.Maximum = Math.Max( stepCount > 0 ? 1 : 0, stepCount );
+				if( this.numericStep.Value < this.numericStep.Minimum || this.numericStep.Value > this.numericStep.Maximum )
 				{
-					this.numericStep.Value = 0;
+					this.numericStep.Value = this.numericStep.Minimum;
 				}
 				this.labelStepCount.Text = string.Concat( "of ", stepCount );
 			}
@@ -350,6 +356,37 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				this.suppressUiEvents = false;
 			}
+
+			this.UpdateAnimationBounds();
+		}
+
+		/// <summary>
+		/// Fixes the preview canvas to the union of every step of the selected animation,
+		/// so the actor origin stays stationary while stepping through frames.
+		/// </summary>
+		private void UpdateAnimationBounds()
+		{
+			var animation = this.SelectedAnimation;
+			if( this.Costume == null || animation == null )
+			{
+				this.costumePreviewControl.FixedBounds = null;
+				return;
+			}
+
+			RectangleF? bounds = null;
+			var stepCount = Renderer.GetStepCount( animation );
+			for( var step = 0; step < stepCount; step++ )
+			{
+				foreach( var placement in Renderer.ResolveFramePlacements( this.Costume, animation, step, this.classicCostume ) )
+				{
+					bounds = bounds == null ? placement.ScreenRect : RectangleF.Union( bounds.Value, placement.ScreenRect );
+					if( placement.ClassicCel != null )
+					{
+						bounds = RectangleF.Union( bounds.Value, Renderer.GetClassicScreenRect( placement.ClassicCel, placement.Flipped, Renderer.DefaultHdScale ) );
+					}
+				}
+			}
+			this.costumePreviewControl.FixedBounds = bounds;
 		}
 
 		//-------------------------------------------
@@ -766,14 +803,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 		private void HandlePlaybackTick( object? sender, EventArgs args )
 		{
-			if( this.numericStep.Maximum <= 0 )
+			if( this.numericStep.Maximum <= this.numericStep.Minimum )
 			{
 				return;
 			}
 			this.suppressUiEvents = true;
 			try
 			{
-				this.numericStep.Value = ( this.numericStep.Value + 1 ) > this.numericStep.Maximum ? 0 : this.numericStep.Value + 1;
+				this.numericStep.Value = this.numericStep.Value >= this.numericStep.Maximum
+					? this.numericStep.Minimum
+					: this.numericStep.Value + 1;
 			}
 			finally
 			{

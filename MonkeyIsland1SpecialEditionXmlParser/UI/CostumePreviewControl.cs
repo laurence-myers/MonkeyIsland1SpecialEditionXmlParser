@@ -68,6 +68,19 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		}
 
 		/// <summary>
+		/// Gets or sets a canvas area (relative to the actor origin) the control always
+		/// covers, typically the union of every step of the current animation. This keeps
+		/// the origin stationary while stepping through frames; without it the canvas would
+		/// re-fit each frame and the animation would appear to jump around. The current
+		/// frame's sprites still extend the canvas when they fall outside this area.
+		/// </summary>
+		public RectangleF? FixedBounds
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Gets or sets the selected sprite; it is outlined in red.
 		/// </summary>
 		public CostumePreviewControlSprite? SelectedSprite
@@ -115,8 +128,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		/// </summary>
 		public void RefreshContent()
 		{
-			// the canvas covers all sprites, their classic references and the origin
+			// the canvas covers the fixed area, all sprites, their classic references and
+			// the origin
 			var bounds = new RectangleF( -CanvasMargin, -CanvasMargin, CanvasMargin * 2, CanvasMargin * 2 );
+			if( this.FixedBounds != null )
+			{
+				bounds = RectangleF.Union( bounds, this.FixedBounds.Value );
+			}
 			foreach( var sprite in this.Sprites )
 			{
 				bounds = RectangleF.Union( bounds, sprite.Placement.ScreenRect );
