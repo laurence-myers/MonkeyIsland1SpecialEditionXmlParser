@@ -1,5 +1,17 @@
 ﻿[ 2026/07/07 ]
 ---------------------------------------------------------------
+- Room viewer now shows costume actors (e.g. the pirate leaders in
+  the bar) at the positions the game places them. The classic SCUMM
+  scripts are scanned with a new SCUMM v5 bytecode decoder (all 721
+  retail scripts decode byte-exactly) for putActorInRoom/putActor
+  opcodes with literal arguments, together with the costume, facing
+  direction and elevation the same script sets up. Each placement
+  gets a checkbox in a new "Actors" list; the first placement per
+  actor (the room's initial setup) starts visible, later ones
+  (mostly cutscene positions) start hidden. Actors draw above the
+  object sprites and below the static foreground, like the game.
+  Placements whose coordinates are computed at runtime from
+  variables cannot be extracted statically and are not shown
 - Room preview now composites like the game: only the first static
   sprite layer is the background; further static layers (tables,
   door frames) are drawn as a foreground above the object sprites.

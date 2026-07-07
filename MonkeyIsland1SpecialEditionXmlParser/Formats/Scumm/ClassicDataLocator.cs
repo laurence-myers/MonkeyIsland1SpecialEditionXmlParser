@@ -158,6 +158,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 					source: string.Concat( Path.GetFileName( lpakFile.FileNameOnDisk ), ":", lpakFile.PakFileNames[dataIndex].FileName )
 				);
 				ApplyRoomNames( data );
+				ApplyActorPlacementsSafely( data, () => ScriptScanner.ScanFromEncodedBytes( lpakFile.ReadEntryBytes( dataIndex ) ) );
 				return data;
 			}
 			catch( Exception )
@@ -191,6 +192,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 					source: files.DataFileName
 				);
 				ApplyRoomNames( data );
+				ApplyActorPlacementsSafely( data, () => ScriptScanner.ScanFromEncodedBytes( File.ReadAllBytes( files.DataFileName ) ) );
 				return data;
 			}
 			catch( Exception )
@@ -211,6 +213,29 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 			catch( Exception )
 			{
 				return new List<ClassicCostume>();
+			}
+		}
+
+		/// <summary>
+		/// Actor placements are optional extra data; a script scan failure must not lose
+		/// the rooms.
+		/// </summary>
+		private static void ApplyActorPlacementsSafely( ClassicData data, Func<ScriptScanner.ScanResult> scan )
+		{
+			try
+			{
+				var result = scan();
+				foreach( var room in data.RoomList )
+				{
+					List<Entities.ClassicActorPlacement> placements;
+					if( result.PlacementsByRoom.TryGetValue( room.RoomNumber, out placements ) )
+					{
+						room.ActorPlacementList = placements;
+					}
+				}
+			}
+			catch( Exception )
+			{
 			}
 		}
 

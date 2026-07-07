@@ -172,6 +172,117 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 		}
 
 		/// <summary>
+		/// Finds the animation that best represents the costume standing still and facing
+		/// the given direction ("Left", "Right", "Front" or "Back"): the stand animation,
+		/// then the init animation, then any direction, then whatever comes first.
+		/// </summary>
+		public static Animation? FindStandingAnimation( Costume costume, string directionName )
+		{
+			var nameCandidates = new[]
+			{
+				"Stand" + directionName,
+				"Init" + directionName,
+				"StandFront",
+				"InitFront",
+			};
+			foreach( var name in nameCandidates )
+			{
+				var animation = costume.AnimationList.FirstOrDefault(
+					a => string.Equals( a.Name, name, StringComparison.OrdinalIgnoreCase ) );
+				if( animation != null && GetStepCount( animation ) > 0 )
+				{
+					return animation;
+				}
+			}
+			return costume.AnimationList.FirstOrDefault( a => GetStepCount( a ) > 0 );
+		}
+
+		/// <summary>
+		/// Renders the first step of the costume's standing animation into a bitmap, the way
+		/// the room preview shows an idle actor.
+		/// </summary>
+		/// <param name="costume">The costume to render.</param>
+		/// <param name="directionName">The facing direction ("Left", "Right", "Front", "Back").</param>
+		/// <param name="textureLoader">Loads a texture by file name; may return null for missing textures.</param>
+		/// <param name="origin">Receives the actor origin (the feet position) within the returned bitmap.</param>
+		/// <returns>The composited actor, or null when nothing is drawable.</returns>
+		public static Bitmap? RenderStandingActor( Costume costume, string directionName, Func<string?, Image?> textureLoader, out PointF origin )
+		{
+			origin = PointF.Empty;
+
+			var animation = FindStandingAnimation( costume, directionName );
+			if( animation == null )
+			{
+				return null;
+			}
+
+			var placements = ResolveFramePlacements( costume, animation, step: 0, classicCostume: null )
+				.Where( p => p.Sprite.TextureNumber >= 0 && p.Sprite.TextureNumber < costume.TextureFileNameList.Count )
+				.ToList();
+			if( placements.Count == 0 )
+			{
+				return null;
+			}
+
+			var bounds = placements[0].ScreenRect;
+			foreach( var placement in placements )
+			{
+				bounds = RectangleF.Union( bounds, placement.ScreenRect );
+			}
+			var width = (int)Math.Ceiling( bounds.Width );
+			var height = (int)Math.Ceiling( bounds.Height );
+			if( width <= 0 || height <= 0 )
+			{
+				return null;
+			}
+
+			var bitmap = new Bitmap( width, height );
+			using( var graphics = Graphics.FromImage( bitmap ) )
+			{
+				graphics.Clear( Color.Transparent );
+				foreach( var placement in placements )
+				{
+					var texture = textureLoader( costume.TextureFileNameList[placement.Sprite.TextureNumber].Path );
+					if( texture == null )
+					{
+						continue;
+					}
+
+					var destRect = new RectangleF(
+						placement.ScreenRect.X - bounds.X,
+						placement.ScreenRect.Y - bounds.Y,
+						placement.ScreenRect.Width,
+						placement.ScreenRect.Height
+					);
+					var sourceRect = new RectangleF(
+						placement.Sprite.TextureX,
+						placement.Sprite.TextureY,
+						placement.Sprite.TextureWidth,
+						placement.Sprite.TextureHeight
+					);
+					if( placement.Flipped )
+					{
+						// draw mirrored by swapping the destination corners
+						var destPoints = new[]
+						{
+							new PointF( destRect.Right, destRect.Top ),
+							new PointF( destRect.Left, destRect.Top ),
+							new PointF( destRect.Right, destRect.Bottom ),
+						};
+						graphics.DrawImage( texture, destPoints, sourceRect, GraphicsUnit.Pixel );
+					}
+					else
+					{
+						graphics.DrawImage( texture, destRect, sourceRect, GraphicsUnit.Pixel );
+					}
+				}
+			}
+
+			origin = new PointF( -bounds.X, -bounds.Y );
+			return bitmap;
+		}
+
+		/// <summary>
 		/// Returns the classic cel's draw rectangle relative to the actor origin, scaled to
 		/// HD pixels, with the same mirroring the sprite placement uses.
 		/// </summary>

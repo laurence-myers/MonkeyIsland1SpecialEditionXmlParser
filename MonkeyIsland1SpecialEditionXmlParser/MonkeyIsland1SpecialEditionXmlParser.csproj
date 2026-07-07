@@ -124,11 +124,13 @@
     <Compile Include="Formats\Rooms\SanityChecker.cs" />
     <Compile Include="Formats\Rooms\Renderer.cs" />
     <Compile Include="Formats\Scumm\ClassicDataLocator.cs" />
+    <Compile Include="Formats\Scumm\Entities\ClassicActorPlacement.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicCostume.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicData.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicObject.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicRoom.cs" />
     <Compile Include="Formats\Scumm\Parser.cs" />
+    <Compile Include="Formats\Scumm\ScriptScanner.cs" />
     <Compile Include="Lib\Result.cs" />
     <Compile Include="Parsing\GenericReader.cs" />
     <Compile Include="Parsing\IgnoreAttribute.cs" />
@@ -205,6 +207,7 @@
     <Compile Include="UI\RoomPreviewControl.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="UI\RoomPreviewControlActor.cs" />
     <Compile Include="UI\RoomPreviewControlSprite.cs" />
     <Compile Include="UI\CostumePreviewControl.cs">
       <SubType>Component</SubType>

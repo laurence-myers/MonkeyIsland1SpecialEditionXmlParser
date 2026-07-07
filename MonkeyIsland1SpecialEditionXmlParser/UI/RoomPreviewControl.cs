@@ -33,6 +33,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.SetStyle( ControlStyles.Selectable, true );
 
 			this.Sprites = new List<RoomPreviewControlSprite>();
+			this.Actors = new List<RoomPreviewControlActor>();
 			this.HdScale = Renderer.DefaultHdScale;
 		}
 
@@ -92,6 +93,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		/// or any sprite's placement.
 		/// </summary>
 		public List<RoomPreviewControlSprite> Sprites
+		{
+			get;
+			private set;
+		}
+
+		/// <summary>
+		/// Gets the costume actors to draw, the way the game shows them: above the object
+		/// sprites but below the static foreground. Call <see cref="RefreshContent"/> after
+		/// changing the list.
+		/// </summary>
+		public List<RoomPreviewControlActor> Actors
 		{
 			get;
 			private set;
@@ -245,6 +257,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				graphics.DrawImage( sprite.Texture, destRect, (RectangleF)sprite.SourceRect, GraphicsUnit.Pixel );
 			}
 
+			foreach( var actor in this.Actors )
+			{
+				if( !actor.Visible || actor.Image == null )
+				{
+					continue;
+				}
+
+				var screenRect = actor.ScreenRect;
+				var destRect = new RectangleF(
+					screenRect.X * this.zoom,
+					screenRect.Y * this.zoom,
+					screenRect.Width * this.zoom,
+					screenRect.Height * this.zoom
+				);
+				var srcRect = new RectangleF( 0, 0, actor.Image.Width, actor.Image.Height );
+				graphics.DrawImage( actor.Image, destRect, srcRect, GraphicsUnit.Pixel );
+			}
+
 			if( this.foreground != null && this.showForeground )
 			{
 				var destRect = new RectangleF( 0, 0, this.foreground.Width * this.zoom, this.foreground.Height * this.zoom );
@@ -306,6 +336,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			foreach( var sprite in this.Sprites )
 			{
 				var screenRect = sprite.Placement.ScreenRect;
+				width = Math.Max( width, (int)Math.Ceiling( screenRect.Right ) );
+				height = Math.Max( height, (int)Math.Ceiling( screenRect.Bottom ) );
+			}
+
+			foreach( var actor in this.Actors )
+			{
+				var screenRect = actor.ScreenRect;
 				width = Math.Max( width, (int)Math.Ceiling( screenRect.Right ) );
 				height = Math.Max( height, (int)Math.Ceiling( screenRect.Bottom ) );
 			}

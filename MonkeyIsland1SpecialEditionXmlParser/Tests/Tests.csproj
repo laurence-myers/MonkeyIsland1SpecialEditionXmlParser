@@ -48,6 +48,7 @@
         <Compile Include="HelperTests.cs" />
         <Compile Include="RoomPackerRoundTripTests.cs" />
         <Compile Include="RoomRendererTests.cs" />
+        <Compile Include="ScriptScannerTests.cs" />
         <Compile Include="ScummParserTests.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>

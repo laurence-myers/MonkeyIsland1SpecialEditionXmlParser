@@ -2,20 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.Commands;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms.Entities;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm;
+using MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities;
+using Costume = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Entities.Costume;
+using CostumeRenderer = MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes.Renderer;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
 	public partial class RoomForm : Form
 	{
+		/// <summary>
+		/// Matches SE costume pak entries; the number prefix is the classic costume number.
+		/// </summary>
+		private static readonly Regex costumeFileNameRegex = new Regex(
+			@"^art/costumes/(\d+)_.*\.costume\.xml$", RegexOptions.IgnoreCase | RegexOptions.Compiled );
+
 		private static readonly List<RoomForm> instances = new List<RoomForm>();
 		private readonly Dictionary<string, Image?> textureCache = new Dictionary<string, Image?>();
+		private readonly Dictionary<int, Costume?> costumeCache = new Dictionary<int, Costume?>();
 		private bool populatingGroupList;
+		private bool populatingActorList;
 
 		private Room? Room
 		{
@@ -83,10 +95,140 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.roomPreviewControl.Sprites.AddRange(
 				placements.Select( p => new RoomPreviewControlSprite( p, this.LoadTexture( p.Sprite.TextureFileName ) ) )
 			);
+			this.BuildActorOverlays( classicRoom );
 			this.roomPreviewControl.RefreshContent();
 
 			this.UpdateWarningLabel( classicData, classicRoom, placements.Count );
 			this.PopulateGroupList();
+			this.PopulateActorList();
+		}
+
+		/// <summary>
+		/// Builds a costume overlay for every actor placement the classic scripts make in
+		/// this room. The first placement of each actor (the room's initial setup) starts
+		/// visible; later placements (mostly cutscene positions) start hidden.
+		/// </summary>
+		private void BuildActorOverlays( MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities.ClassicRoom? classicRoom )
+		{
+			this.roomPreviewControl.Actors.Clear();
+			if( classicRoom == null )
+			{
+				return;
+			}
+
+			var visibleActors = new HashSet<int>();
+			foreach( var placement in classicRoom.ActorPlacementList )
+			{
+				var overlay = this.BuildActorOverlay( placement );
+				overlay.Visible = overlay.Image != null && visibleActors.Add( placement.ActorNumber );
+				this.roomPreviewControl.Actors.Add( overlay );
+			}
+		}
+
+		private RoomPreviewControlActor BuildActorOverlay( ClassicActorPlacement placement )
+		{
+			Bitmap? image = null;
+			var position = PointF.Empty;
+			var costumeName = placement.CostumeId != null
+				? string.Concat( "costume ", placement.CostumeId )
+				: "costume unknown";
+
+			if( placement.CostumeId != null )
+			{
+				var costume = this.LoadCostumeById( placement.CostumeId.Value );
+				if( costume != null )
+				{
+					costumeName = costume.Header.Name;
+					PointF origin;
+					image = CostumeRenderer.RenderStandingActor( costume, placement.DirectionName, this.LoadTexture, out origin );
+					if( image != null )
+					{
+						// the actor origin is its feet: classic position scaled to HD,
+						// lifted by the elevation
+						var originX = placement.X * this.roomPreviewControl.HdScale.Width;
+						var originY = ( placement.Y - ( placement.Elevation ?? 0 ) ) * this.roomPreviewControl.HdScale.Height;
+						position = new PointF( originX - origin.X, originY - origin.Y );
+					}
+				}
+			}
+
+			var label = string.Concat(
+				"actor ", placement.ActorNumber, ": ", costumeName,
+				placement.CostumeInferred ? "?" : "",
+				" (", placement.X, ",", placement.Y, ") ",
+				placement.Source
+			);
+			return new RoomPreviewControlActor( placement, image, position, label );
+		}
+
+		/// <summary>
+		/// Loads the SE costume whose file name prefix matches the classic costume number,
+		/// caching the result (including misses).
+		/// </summary>
+		private Costume? LoadCostumeById( int costumeId )
+		{
+			Costume? costume;
+			if( this.costumeCache.TryGetValue( costumeId, out costume ) )
+			{
+				return costume;
+			}
+
+			try
+			{
+				for( var index = 0; index < this.LPAKFile.PakFileNames.Length; index++ )
+				{
+					var fileName = this.LPAKFile.PakFileNames[index].FileName;
+					if( fileName == null )
+					{
+						continue;
+					}
+					var match = RoomForm.costumeFileNameRegex.Match( fileName );
+					if( match.Success && int.Parse( match.Groups[1].Value ) == costumeId )
+					{
+						costume = this.LPAKFile.LoadCostume( index );
+						break;
+					}
+				}
+			}
+			catch( Exception )
+			{
+				costume = null;
+			}
+
+			this.costumeCache[costumeId] = costume;
+			return costume;
+		}
+
+		private void PopulateActorList()
+		{
+			this.populatingActorList = true;
+			try
+			{
+				this.checkedListBoxActors.Items.Clear();
+				foreach( var actor in this.roomPreviewControl.Actors )
+				{
+					this.checkedListBoxActors.Items.Add( actor.Label, actor.Visible );
+				}
+				this.panelActors.Visible = this.roomPreviewControl.Actors.Count > 0;
+			}
+			finally
+			{
+				this.populatingActorList = false;
+			}
+		}
+
+		private void HandleActorItemCheck( object sender, ItemCheckEventArgs args )
+		{
+			if( this.populatingActorList )
+			{
+				return;
+			}
+
+			if( args.Index >= 0 && args.Index < this.roomPreviewControl.Actors.Count )
+			{
+				this.roomPreviewControl.Actors[args.Index].Visible = args.NewValue == CheckState.Checked;
+				this.roomPreviewControl.Invalidate();
+			}
 		}
 
 		private void UpdateWarningLabel( MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities.ClassicData? classicData, MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities.ClassicRoom? classicRoom, int placementCount )

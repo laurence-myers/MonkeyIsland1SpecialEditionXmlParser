@@ -43,10 +43,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.panelGroups = new System.Windows.Forms.Panel();
 			this.checkedListBoxGroups = new System.Windows.Forms.CheckedListBox();
 			this.labelGroups = new System.Windows.Forms.Label();
+			this.panelActors = new System.Windows.Forms.Panel();
+			this.checkedListBoxActors = new System.Windows.Forms.CheckedListBox();
+			this.labelActors = new System.Windows.Forms.Label();
 			this.roomPreviewControl = new MonkeyIsland1SpecialEditionXmlParser.UI.RoomPreviewControl();
 			this.menuStrip1.SuspendLayout();
 			this.panel1.SuspendLayout();
 			this.panelGroups.SuspendLayout();
+			this.panelActors.SuspendLayout();
 			this.SuspendLayout();
 			//
 			// menuStrip1
@@ -172,6 +176,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			//
 			this.panelGroups.Controls.Add(this.checkedListBoxGroups);
 			this.panelGroups.Controls.Add(this.labelGroups);
+			this.panelGroups.Controls.Add(this.panelActors);
 			this.panelGroups.Dock = System.Windows.Forms.DockStyle.Left;
 			this.panelGroups.Location = new System.Drawing.Point(0, 46);
 			this.panelGroups.Name = "panelGroups";
@@ -198,6 +203,38 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.labelGroups.Size = new System.Drawing.Size(160, 18);
 			this.labelGroups.TabIndex = 1;
 			this.labelGroups.Text = "Sprite groups";
+			//
+			// panelActors
+			//
+			this.panelActors.Controls.Add(this.checkedListBoxActors);
+			this.panelActors.Controls.Add(this.labelActors);
+			this.panelActors.Dock = System.Windows.Forms.DockStyle.Bottom;
+			this.panelActors.Location = new System.Drawing.Point(0, 76);
+			this.panelActors.Name = "panelActors";
+			this.panelActors.Size = new System.Drawing.Size(160, 140);
+			this.panelActors.TabIndex = 2;
+			this.panelActors.Visible = false;
+			//
+			// checkedListBoxActors
+			//
+			this.checkedListBoxActors.CheckOnClick = true;
+			this.checkedListBoxActors.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.checkedListBoxActors.IntegralHeight = false;
+			this.checkedListBoxActors.Location = new System.Drawing.Point(0, 18);
+			this.checkedListBoxActors.Name = "checkedListBoxActors";
+			this.checkedListBoxActors.Size = new System.Drawing.Size(160, 122);
+			this.checkedListBoxActors.TabIndex = 0;
+			this.checkedListBoxActors.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.HandleActorItemCheck);
+			//
+			// labelActors
+			//
+			this.labelActors.Dock = System.Windows.Forms.DockStyle.Top;
+			this.labelActors.Location = new System.Drawing.Point(0, 0);
+			this.labelActors.Name = "labelActors";
+			this.labelActors.Padding = new System.Windows.Forms.Padding(3, 3, 3, 0);
+			this.labelActors.Size = new System.Drawing.Size(160, 18);
+			this.labelActors.TabIndex = 1;
+			this.labelActors.Text = "Actors (from classic scripts)";
 			//
 			// roomPreviewControl
 			//
@@ -226,6 +263,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.menuStrip1.PerformLayout();
 			this.panel1.ResumeLayout(false);
 			this.panelGroups.ResumeLayout(false);
+			this.panelActors.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -247,6 +285,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private System.Windows.Forms.Panel panelGroups;
 		private System.Windows.Forms.CheckedListBox checkedListBoxGroups;
 		private System.Windows.Forms.Label labelGroups;
+		private System.Windows.Forms.Panel panelActors;
+		private System.Windows.Forms.CheckedListBox checkedListBoxActors;
+		private System.Windows.Forms.Label labelActors;
 		private RoomPreviewControl roomPreviewControl;
 		private System.Windows.Forms.ToolStripMenuItem asPNGFilesToolStripMenuItem;
 	}

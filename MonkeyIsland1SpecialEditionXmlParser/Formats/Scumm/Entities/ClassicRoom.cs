@@ -62,6 +62,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities
 		} = objectList;
 
 		/// <summary>
+		/// Gets or sets the actor placements extracted from the room's scripts (see
+		/// <see cref="ScriptScanner"/>), in setup order. Empty when the scripts were not
+		/// scanned or place no actors here.
+		/// </summary>
+		public List<ClassicActorPlacement> ActorPlacementList
+		{
+			get;
+			set;
+		} = new List<ClassicActorPlacement>();
+
+		/// <summary>
 		/// Returns the room's objects keyed by object number. The first occurrence wins on duplicates.
 		/// </summary>
 		public Dictionary<int, ClassicObject> GetObjectsById()
