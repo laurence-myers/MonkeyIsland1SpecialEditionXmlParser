@@ -65,6 +65,8 @@
     <Compile Include="Commands\ExportRoomToMergedPngWithDialogCommand.cs" />
     <Compile Include="Commands\ExportToBinaryCommand.cs" />
     <Compile Include="Commands\ImportTexturePngCommand.cs" />
+    <Compile Include="Commands\BatchExportTexturesPngCommand.cs" />
+    <Compile Include="Commands\BatchImportTexturesPngCommand.cs" />
     <Compile Include="Commands\ExportToBinaryWithDialogCommand.cs" />
     <Compile Include="Commands\ExportToPngCommand.cs" />
     <Compile Include="Commands\ExportToXmlCommand.cs" />

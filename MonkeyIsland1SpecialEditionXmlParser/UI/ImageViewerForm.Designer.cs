@@ -33,6 +33,8 @@
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.asPNGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.fromPNGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.spriteSetPreviewControl = new MonkeyIsland1SpecialEditionXmlParser.UI.SpriteSetPreviewControl();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
@@ -65,7 +67,8 @@
 			// fileToolStripMenuItem
 			// 
 			this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.exportToolStripMenuItem});
+            this.exportToolStripMenuItem,
+            this.importToolStripMenuItem});
 			this.fileToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.MatchOnly;
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(31, 20);
@@ -79,13 +82,30 @@
 			this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
 			this.exportToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.exportToolStripMenuItem.Text = "&Export";
-			// 
+			//
 			// asPNGToolStripMenuItem
-			// 
+			//
 			this.asPNGToolStripMenuItem.Name = "asPNGToolStripMenuItem";
 			this.asPNGToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.asPNGToolStripMenuItem.Text = "As PNG...";
 			this.asPNGToolStripMenuItem.Click += new System.EventHandler(this.ExportAsPng);
+			//
+			// importToolStripMenuItem
+			//
+			this.importToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fromPNGToolStripMenuItem});
+			this.importToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Insert;
+			this.importToolStripMenuItem.MergeIndex = 3;
+			this.importToolStripMenuItem.Name = "importToolStripMenuItem";
+			this.importToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.importToolStripMenuItem.Text = "&Import";
+			//
+			// fromPNGToolStripMenuItem
+			//
+			this.fromPNGToolStripMenuItem.Name = "fromPNGToolStripMenuItem";
+			this.fromPNGToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.fromPNGToolStripMenuItem.Text = "From PNG...";
+			this.fromPNGToolStripMenuItem.Click += new System.EventHandler(this.ImportFromPng);
 			// 
 			// spriteSetPreviewControl
 			// 
@@ -124,5 +144,7 @@
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem asPNGToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem importToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem fromPNGToolStripMenuItem;
 	}
 }

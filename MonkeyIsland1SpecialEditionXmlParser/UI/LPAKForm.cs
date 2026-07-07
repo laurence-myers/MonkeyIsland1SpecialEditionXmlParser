@@ -250,16 +250,16 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			switch( node.Parent.Text )
 			{
 				case "Costumes":
-					new OpenCostumeFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+					new OpenCostumeSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Rooms":
-					new OpenRoomFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+					new OpenSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Shaders":
 					new OpenShaderFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Textures":
-					new OpenImageFormCommand( this.LPAKFile.LoadImage( fileName ) as Bitmap, fileName ).Execute();
+					new OpenImageFormCommand( this.LPAKFile, fileName ).Execute();
 					break;
 				default:
 					new OpenHexFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
@@ -366,10 +366,153 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.saveOverrideToolStripMenuItem.Enabled = node.Level == 2;
 			this.applyOverrideToolStripMenuItem.Enabled = node.Level == 2;
 			this.openSpriteSheetEditorToolStripMenuItem.Enabled = node.Level == 2 && ( node.Parent.Text == "Rooms" || node.Parent.Text == "Costumes" );
+			this.openViewerToolStripMenuItem.Enabled = node.Level == 2 && ( node.Parent.Text == "Rooms" || node.Parent.Text == "Costumes" || node.Parent.Text == "Textures" );
+			this.exportTexturePngToolStripMenuItem.Enabled = node.Level == 2 && node.Parent.Text == "Textures";
 			this.importTexturePngToolStripMenuItem.Enabled = node.Level == 2 && node.Parent.Text == "Textures";
+
+			// batch export/import lives on the "Textures" folder itself
+			var isTexturesFolder = node.Level == 1 && node.Text == "Textures";
+			this.batchSeparatorToolStripMenuItem.Visible = isTexturesFolder;
+			this.exportAllTexturesToolStripMenuItem.Visible = isTexturesFolder;
+			this.importAllTexturesToolStripMenuItem.Visible = isTexturesFolder;
 
 			this.contextMenuStrip.Tag = node;
 			this.contextMenuStrip.Show( this.treeView1.PointToScreen( args.Location ) );
+		}
+
+		/// <summary>
+		/// Resolves the file entry of the tree node the context menu was opened on.
+		/// </summary>
+		private bool TryGetContextResource( out int fileIndex, out string fileName )
+		{
+			fileIndex = -1;
+			fileName = "";
+
+			var selectedNode = this.contextMenuStrip.Tag as TreeNode;
+			if( selectedNode == null || !( selectedNode.Tag is int ) )
+			{
+				return false;
+			}
+
+			fileIndex = (int)selectedNode.Tag;
+			if( fileIndex < 0 || fileIndex >= this.LPAKFile.PakFileNames.Length )
+			{
+				return false;
+			}
+
+			var name = this.LPAKFile.PakFileNames[fileIndex].FileName;
+			if( string.IsNullOrWhiteSpace( name ) || name is null )
+			{
+				return false;
+			}
+
+			fileName = name;
+			return true;
+		}
+
+		private void OpenInViewer( object sender, EventArgs args )
+		{
+			int fileIndex;
+			string fileName;
+			if( !this.TryGetContextResource( out fileIndex, out fileName ) )
+			{
+				return;
+			}
+
+			var selectedNode = (TreeNode)this.contextMenuStrip.Tag;
+			switch( selectedNode.Parent.Text )
+			{
+				case "Costumes":
+					new OpenCostumeFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+					break;
+				case "Rooms":
+					new OpenRoomFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+					break;
+				case "Textures":
+					new OpenImageFormCommand( this.LPAKFile, fileName ).Execute();
+					break;
+			}
+		}
+
+		private void ExportTexturePng( object sender, EventArgs args )
+		{
+			int fileIndex;
+			string fileName;
+			if( !this.TryGetContextResource( out fileIndex, out fileName ) )
+			{
+				return;
+			}
+
+			var bitmap = this.LPAKFile.LoadImage( fileName ) as Bitmap;
+			if( bitmap == null )
+			{
+				MessageBox.Show( this, "The texture could not be loaded.", "Export texture", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				return;
+			}
+
+			using( var dialog = new SaveFileDialog() )
+			{
+				dialog.Filter = "PNG files (*.png)|*.png|All files (*.*)|*.*";
+				dialog.Title = "Export texture as PNG";
+				dialog.FileName = Path.GetFileNameWithoutExtension( fileName.Replace( '/', '_' ) ) + ".png";
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+				new ExportToPngCommand( bitmap, dialog.FileName ).Execute();
+			}
+		}
+
+		private void ExportAllTextures( object sender, EventArgs args )
+		{
+			using( var dialog = new FolderBrowserDialog() )
+			{
+				dialog.Description = "Select the folder to export all textures into (subfolders mirror the resource paths, e.g. art\\...).";
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+
+				Cursor.Current = Cursors.WaitCursor;
+				try
+				{
+					var result = new BatchExportTexturesPngCommand( this.LPAKFile, dialog.SelectedPath, resourcePaths: null ).Execute();
+					if( !result.IsSuccess )
+					{
+						MessageBox.Show( this, result.Error, "Export all textures", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+					}
+				}
+				finally
+				{
+					Cursor.Current = Cursors.Default;
+				}
+			}
+		}
+
+		private void ImportAllTextures( object sender, EventArgs args )
+		{
+			using( var dialog = new FolderBrowserDialog() )
+			{
+				dialog.Description = "Select the folder to import texture PNGs from (subfolders must mirror the resource paths, as written by the batch export).";
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+
+				Cursor.Current = Cursors.WaitCursor;
+				try
+				{
+					var result = new BatchImportTexturesPngCommand( this.LPAKFile, dialog.SelectedPath, resourcePaths: null ).Execute();
+					if( !result.IsSuccess )
+					{
+						MessageBox.Show( this, result.Error, "Import all textures", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+					}
+				}
+				finally
+				{
+					Cursor.Current = Cursors.Default;
+				}
+			}
 		}
 
 		private void ImportTexturePng( object sender, EventArgs args )

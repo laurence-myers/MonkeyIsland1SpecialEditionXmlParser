@@ -947,6 +947,84 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.RefreshPlacements();
 		}
 
+		private string[] GetAllTextureNames()
+		{
+			return this.Costume == null
+				? new string[0]
+				: this.Costume.TextureFileNameList
+					.Select( t => t.Path )
+					.Where( p => !string.IsNullOrEmpty( p ) )
+					.Distinct()
+					.ToArray();
+		}
+
+		private void ExportAllTexturesPng( object sender, EventArgs args )
+		{
+			if( this.Costume == null )
+			{
+				return;
+			}
+
+			using( var dialog = new FolderBrowserDialog() )
+			{
+				dialog.Description = "Select the folder to export this costume's textures into (subfolders mirror the resource paths).";
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+
+				Cursor.Current = Cursors.WaitCursor;
+				try
+				{
+					var result = new BatchExportTexturesPngCommand( this.LPAKFile, dialog.SelectedPath, this.GetAllTextureNames() ).Execute();
+					if( !result.IsSuccess )
+					{
+						MessageBox.Show( this, result.Error, "Export all textures", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+					}
+				}
+				finally
+				{
+					Cursor.Current = Cursors.Default;
+				}
+			}
+		}
+
+		private void ImportAllTexturesPng( object sender, EventArgs args )
+		{
+			if( this.Costume == null )
+			{
+				return;
+			}
+
+			using( var dialog = new FolderBrowserDialog() )
+			{
+				dialog.Description = "Select the folder to import this costume's texture PNGs from (subfolders must mirror the resource paths, as written by the export).";
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+
+				Cursor.Current = Cursors.WaitCursor;
+				try
+				{
+					var result = new BatchImportTexturesPngCommand( this.LPAKFile, dialog.SelectedPath, this.GetAllTextureNames() ).Execute();
+					if( !result.IsSuccess )
+					{
+						MessageBox.Show( this, result.Error, "Import all textures", MessageBoxButtons.OK, MessageBoxIcon.Warning );
+					}
+				}
+				finally
+				{
+					Cursor.Current = Cursors.Default;
+				}
+			}
+
+			// some textures may have imported even when others failed, so always reload
+			this.textureCache.Clear();
+			this.UpdateAtlas();
+			this.RefreshPlacements();
+		}
+
 		//-------------------------------------------
 		// helpers
 

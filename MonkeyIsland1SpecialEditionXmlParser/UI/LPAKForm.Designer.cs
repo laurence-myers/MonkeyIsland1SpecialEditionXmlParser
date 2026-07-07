@@ -38,7 +38,12 @@
 			this.saveOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.applyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openSpriteSheetEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.openViewerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.importTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.batchSeparatorToolStripMenuItem = new System.Windows.Forms.ToolStripSeparator();
+			this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.importAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label1 = new System.Windows.Forms.Label();
 			this.textBox1 = new System.Windows.Forms.TextBox();
 			this.menuStrip1.SuspendLayout();
@@ -77,12 +82,17 @@
 			// contextMenuStrip
 			// 
 			this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+	            this.openSpriteSheetEditorToolStripMenuItem,
+	            this.openViewerToolStripMenuItem,
 	            this.viewAsHEXToolStripMenuItem,
 	            this.saveAsToolStripMenuItem,
 	            this.saveOverrideToolStripMenuItem,
 	            this.applyOverrideToolStripMenuItem,
-	            this.openSpriteSheetEditorToolStripMenuItem,
-	            this.importTexturePngToolStripMenuItem
+	            this.exportTexturePngToolStripMenuItem,
+	            this.importTexturePngToolStripMenuItem,
+	            this.batchSeparatorToolStripMenuItem,
+	            this.exportAllTexturesToolStripMenuItem,
+	            this.importAllTexturesToolStripMenuItem
 			});
 			this.contextMenuStrip.Name = "contextMenuStrip";
 			this.contextMenuStrip.Size = new System.Drawing.Size(153, 92);
@@ -122,12 +132,45 @@
 			this.openSpriteSheetEditorToolStripMenuItem.Text = "Open in Spritesheet Editor";
 			this.openSpriteSheetEditorToolStripMenuItem.Click += new System.EventHandler(this.OpenInSpriteSheetEditor);
 			//
+			// openViewerToolStripMenuItem
+			//
+			this.openViewerToolStripMenuItem.Name = "openViewerToolStripMenuItem";
+			this.openViewerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openViewerToolStripMenuItem.Text = "Open in Viewer";
+			this.openViewerToolStripMenuItem.Click += new System.EventHandler(this.OpenInViewer);
+			//
+			// exportTexturePngToolStripMenuItem
+			//
+			this.exportTexturePngToolStripMenuItem.Name = "exportTexturePngToolStripMenuItem";
+			this.exportTexturePngToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exportTexturePngToolStripMenuItem.Text = "Export texture as PNG...";
+			this.exportTexturePngToolStripMenuItem.Click += new System.EventHandler(this.ExportTexturePng);
+			//
 			// importTexturePngToolStripMenuItem
 			//
 			this.importTexturePngToolStripMenuItem.Name = "importTexturePngToolStripMenuItem";
 			this.importTexturePngToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.importTexturePngToolStripMenuItem.Text = "Import texture PNG...";
 			this.importTexturePngToolStripMenuItem.Click += new System.EventHandler(this.ImportTexturePng);
+			//
+			// batchSeparatorToolStripMenuItem
+			//
+			this.batchSeparatorToolStripMenuItem.Name = "batchSeparatorToolStripMenuItem";
+			this.batchSeparatorToolStripMenuItem.Size = new System.Drawing.Size(149, 6);
+			//
+			// exportAllTexturesToolStripMenuItem
+			//
+			this.exportAllTexturesToolStripMenuItem.Name = "exportAllTexturesToolStripMenuItem";
+			this.exportAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exportAllTexturesToolStripMenuItem.Text = "Export all textures to folder...";
+			this.exportAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ExportAllTextures);
+			//
+			// importAllTexturesToolStripMenuItem
+			//
+			this.importAllTexturesToolStripMenuItem.Name = "importAllTexturesToolStripMenuItem";
+			this.importAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.importAllTexturesToolStripMenuItem.Text = "Import all textures from folder...";
+			this.importAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ImportAllTextures);
 
 			//
 			// label1
@@ -190,6 +233,11 @@
 		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem applyOverrideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openSpriteSheetEditorToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem openViewerToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportTexturePngToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem importTexturePngToolStripMenuItem;
+		private System.Windows.Forms.ToolStripSeparator batchSeparatorToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportAllTexturesToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem importAllTexturesToolStripMenuItem;
 	}
 }

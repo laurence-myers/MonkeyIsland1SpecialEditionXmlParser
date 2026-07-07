@@ -1,36 +1,33 @@
-﻿using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 using MonkeyIsland1SpecialEditionXmlParser.UI;
 using MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK;
 
 namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 {
-	public class OpenImageFormCommand( Bitmap? image, string? title ) : BaseCommand
+	public class OpenImageFormCommand( LPAKFile lpakFile, string? fileName ) : BaseCommand
 	{
 		protected override CommandResult InnerExecute()
 		{
-			if( image == null )
+			if( string.IsNullOrWhiteSpace( fileName ) )
 			{
-				return CommandResult.Fail( "Invalid image" );
+				return CommandResult.Fail( "Invalid file name" );
 			}
 
-			var form = new ImageViewerForm()
+			var form = new ImageViewerForm( lpakFile, fileName! )
 			{
-				Text = title,
+				Text = fileName,
 				MdiParent = MainForm.Instance,
 				WindowState = FormWindowState.Normal,
 			};
 
-			var spriteSetPreviewControl = form.Controls.OfType<SpriteSetPreviewControl>().FirstOrDefault();
-			if( spriteSetPreviewControl == null )
+			if( !form.ReloadImage() )
 			{
-				return CommandResult.Fail( "SpriteSetPreviewControl not found" );
+				form.Dispose();
+				return CommandResult.Fail( "Invalid image" );
 			}
-			spriteSetPreviewControl.Sprites.Add( new SpriteSetPreviewControlSprite( image: image ) );
 
 			form.Show();
-			return CommandResult.Success(string.Empty);
+			return CommandResult.Success( string.Empty );
 		}
 	}
 }

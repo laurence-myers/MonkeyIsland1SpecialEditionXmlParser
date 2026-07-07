@@ -15,6 +15,15 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 	{
 		protected override CommandResult InnerExecute()
 		{
+			return ImportTexturePngCommand.Import( lpakFile, resourcePath, pngFileName );
+		}
+
+		/// <summary>
+		/// The reusable core of the command, so the batch import can run it per file
+		/// without spamming the status bar through Execute().
+		/// </summary>
+		internal static CommandResult Import( LPAKFile? lpakFile, string? resourcePath, string? pngFileName )
+		{
 			if( lpakFile == null || string.IsNullOrWhiteSpace( lpakFile.FileNameOnDisk ) )
 			{
 				return CommandResult.Fail( "Invalid LPAK file" );

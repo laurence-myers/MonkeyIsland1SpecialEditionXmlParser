@@ -36,6 +36,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Commands
 				return CommandResult.Fail( "Invalid export file name" );
 			}
 
+			this.saveFileDialog.FileName = exportFileName;
 			if( this.saveFileDialog.ShowDialog( MainForm.Instance ) != DialogResult.OK )
 			{
 				return CommandResult.Fail( "Export cancelled by user" );

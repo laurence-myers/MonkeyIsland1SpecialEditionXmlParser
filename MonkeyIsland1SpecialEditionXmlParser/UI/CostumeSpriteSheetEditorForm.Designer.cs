@@ -35,6 +35,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.revertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.importTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.importAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label1 = new System.Windows.Forms.Label();
 			this.warningLabel = new System.Windows.Forms.Label();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
@@ -123,7 +125,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
             this.saveOverrideToolStripMenuItem,
             this.revertToolStripMenuItem,
             this.exportTexturePngToolStripMenuItem,
-            this.importTexturePngToolStripMenuItem});
+            this.importTexturePngToolStripMenuItem,
+            this.exportAllTexturesToolStripMenuItem,
+            this.importAllTexturesToolStripMenuItem});
 			this.fileToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.MatchOnly;
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -165,6 +169,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.importTexturePngToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
 			this.importTexturePngToolStripMenuItem.Text = "&Import texture PNG...";
 			this.importTexturePngToolStripMenuItem.Click += new System.EventHandler(this.ImportTexturePng);
+			//
+			// exportAllTexturesToolStripMenuItem
+			//
+			this.exportAllTexturesToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Insert;
+			this.exportAllTexturesToolStripMenuItem.MergeIndex = 5;
+			this.exportAllTexturesToolStripMenuItem.Name = "exportAllTexturesToolStripMenuItem";
+			this.exportAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.exportAllTexturesToolStripMenuItem.Text = "Export &all textures to folder...";
+			this.exportAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ExportAllTexturesPng);
+			//
+			// importAllTexturesToolStripMenuItem
+			//
+			this.importAllTexturesToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Insert;
+			this.importAllTexturesToolStripMenuItem.MergeIndex = 6;
+			this.importAllTexturesToolStripMenuItem.Name = "importAllTexturesToolStripMenuItem";
+			this.importAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.importAllTexturesToolStripMenuItem.Text = "Import all te&xtures from folder...";
+			this.importAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ImportAllTexturesPng);
 			//
 			// label1
 			//
@@ -670,6 +692,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private System.Windows.Forms.ToolStripMenuItem revertToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportTexturePngToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem importTexturePngToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportAllTexturesToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem importAllTexturesToolStripMenuItem;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label warningLabel;
 		private System.Windows.Forms.SplitContainer splitMain;
