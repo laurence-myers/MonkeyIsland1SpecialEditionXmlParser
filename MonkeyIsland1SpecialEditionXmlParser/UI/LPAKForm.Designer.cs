@@ -35,13 +35,13 @@
 			this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.viewAsHEXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.overridesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.applyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openSpriteSheetEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openViewerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.importTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.batchSeparatorToolStripMenuItem = new System.Windows.Forms.ToolStripSeparator();
 			this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.importAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label1 = new System.Windows.Forms.Label();
@@ -86,11 +86,9 @@
 	            this.openViewerToolStripMenuItem,
 	            this.viewAsHEXToolStripMenuItem,
 	            this.saveAsToolStripMenuItem,
-	            this.saveOverrideToolStripMenuItem,
-	            this.applyOverrideToolStripMenuItem,
+	            this.overridesToolStripMenuItem,
 	            this.exportTexturePngToolStripMenuItem,
 	            this.importTexturePngToolStripMenuItem,
-	            this.batchSeparatorToolStripMenuItem,
 	            this.exportAllTexturesToolStripMenuItem,
 	            this.importAllTexturesToolStripMenuItem
 			});
@@ -110,7 +108,16 @@
 			this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.saveAsToolStripMenuItem.Text = "Save as binary...";
 			this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAs);
-			// 
+			//
+			// overridesToolStripMenuItem
+			//
+			this.overridesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+	            this.saveOverrideToolStripMenuItem,
+	            this.applyOverrideToolStripMenuItem});
+			this.overridesToolStripMenuItem.Name = "overridesToolStripMenuItem";
+			this.overridesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.overridesToolStripMenuItem.Text = "Overrides";
+			//
 			// saveOverrideToolStripMenuItem
 			//
 			this.saveOverrideToolStripMenuItem.Name = "saveOverrideToolStripMenuItem";
@@ -152,11 +159,6 @@
 			this.importTexturePngToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.importTexturePngToolStripMenuItem.Text = "Import texture PNG...";
 			this.importTexturePngToolStripMenuItem.Click += new System.EventHandler(this.ImportTexturePng);
-			//
-			// batchSeparatorToolStripMenuItem
-			//
-			this.batchSeparatorToolStripMenuItem.Name = "batchSeparatorToolStripMenuItem";
-			this.batchSeparatorToolStripMenuItem.Size = new System.Drawing.Size(149, 6);
 			//
 			// exportAllTexturesToolStripMenuItem
 			//
@@ -230,13 +232,13 @@
 		private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem viewAsHEXToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem overridesToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem applyOverrideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openSpriteSheetEditorToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openViewerToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportTexturePngToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem importTexturePngToolStripMenuItem;
-		private System.Windows.Forms.ToolStripSeparator batchSeparatorToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportAllTexturesToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem importAllTexturesToolStripMenuItem;
 	}

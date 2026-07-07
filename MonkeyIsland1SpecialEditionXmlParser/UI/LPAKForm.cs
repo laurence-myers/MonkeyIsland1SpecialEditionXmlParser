@@ -228,9 +228,14 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					node.Nodes.Add( textureNode );
 				}
 
-					//-------------------------------------------
-				// other folder
-				else if( node.Text == "Other" && !fileName.EndsWith( ".dxt" ) && !fileName.EndsWith( ".png" ) )
+				//-------------------------------------------
+				// other folder: anything not shown in the sections above
+				else if( node.Text == "Other"
+					&& !fileName.EndsWith( ".costume.xml" )
+					&& !fileName.EndsWith( ".room.xml" )
+					&& !fileName.EndsWith( ".fx" )
+					&& !fileName.EndsWith( ".dxt" )
+					&& !fileName.EndsWith( ".png" ) )
 				{
 					var otherNode = new TreeNode()
 					{
@@ -361,20 +366,32 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			this.viewAsHEXToolStripMenuItem.Enabled = node.Level == 2;
-			this.saveAsToolStripMenuItem.Enabled = node.Level == 2;
-			this.saveOverrideToolStripMenuItem.Enabled = node.Level == 2;
-			this.applyOverrideToolStripMenuItem.Enabled = node.Level == 2;
-			this.openSpriteSheetEditorToolStripMenuItem.Enabled = node.Level == 2 && ( node.Parent.Text == "Rooms" || node.Parent.Text == "Costumes" );
-			this.openViewerToolStripMenuItem.Enabled = node.Level == 2 && ( node.Parent.Text == "Rooms" || node.Parent.Text == "Costumes" || node.Parent.Text == "Textures" );
-			this.exportTexturePngToolStripMenuItem.Enabled = node.Level == 2 && node.Parent.Text == "Textures";
-			this.importTexturePngToolStripMenuItem.Enabled = node.Level == 2 && node.Parent.Text == "Textures";
+			var isResource = node.Level == 2;
+			var section = isResource ? node.Parent.Text : "";
+			var isCostume = section == "Costumes";
+			var isRoom = section == "Rooms";
+			var isShader = section == "Shaders";
+			var isTexture = section == "Textures";
+			var isKnownFormat = isCostume || isRoom || isShader || isTexture;
+
+			this.openViewerToolStripMenuItem.Visible = isKnownFormat;
+			// for costumes, the viewer IS the spritesheet editor, so hide the duplicate entry
+			this.openSpriteSheetEditorToolStripMenuItem.Visible = isRoom;
+			this.viewAsHEXToolStripMenuItem.Visible = isResource && !isKnownFormat;
+			this.saveAsToolStripMenuItem.Visible = isResource;
+			this.overridesToolStripMenuItem.Visible = isCostume || isRoom;
+			this.exportTexturePngToolStripMenuItem.Visible = isTexture;
+			this.importTexturePngToolStripMenuItem.Visible = isTexture;
 
 			// batch export/import lives on the "Textures" folder itself
 			var isTexturesFolder = node.Level == 1 && node.Text == "Textures";
-			this.batchSeparatorToolStripMenuItem.Visible = isTexturesFolder;
 			this.exportAllTexturesToolStripMenuItem.Visible = isTexturesFolder;
 			this.importAllTexturesToolStripMenuItem.Visible = isTexturesFolder;
+
+			if( !isResource && !isTexturesFolder )
+			{
+				return;
+			}
 
 			this.contextMenuStrip.Tag = node;
 			this.contextMenuStrip.Show( this.treeView1.PointToScreen( args.Location ) );
@@ -427,6 +444,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					break;
 				case "Rooms":
 					new OpenRoomFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+					break;
+				case "Shaders":
+					new OpenShaderFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Textures":
 					new OpenImageFormCommand( this.LPAKFile, fileName ).Execute();
