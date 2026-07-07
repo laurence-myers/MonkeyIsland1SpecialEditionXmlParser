@@ -127,6 +127,7 @@
     <Compile Include="Formats\Rooms\Renderer.cs" />
     <Compile Include="Formats\Scumm\ClassicDataLocator.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicActorPlacement.cs" />
+    <Compile Include="Formats\Scumm\Entities\ClassicBox.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicCostume.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicData.cs" />
     <Compile Include="Formats\Scumm\Entities\ClassicObject.cs" />

@@ -57,6 +57,18 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		} = true;
 
 		/// <summary>
+		/// Gets or sets whether the actor draws in front of the static foreground props,
+		/// like the game does for actors on walkboxes with mask 0 (e.g. the pirate leaders,
+		/// whose hands rest on their table); actors on masked boxes draw behind the
+		/// foreground (e.g. the storekeeper behind his counter).
+		/// </summary>
+		public bool DrawAboveForeground
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Gets the draw rectangle in HD room pixels.
 		/// </summary>
 		public RectangleF ScreenRect

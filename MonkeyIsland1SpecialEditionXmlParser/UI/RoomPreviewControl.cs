@@ -257,23 +257,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				graphics.DrawImage( sprite.Texture, destRect, (RectangleF)sprite.SourceRect, GraphicsUnit.Pixel );
 			}
 
-			foreach( var actor in this.Actors )
-			{
-				if( !actor.Visible || actor.Image == null )
-				{
-					continue;
-				}
-
-				var screenRect = actor.ScreenRect;
-				var destRect = new RectangleF(
-					screenRect.X * this.zoom,
-					screenRect.Y * this.zoom,
-					screenRect.Width * this.zoom,
-					screenRect.Height * this.zoom
-				);
-				var srcRect = new RectangleF( 0, 0, actor.Image.Width, actor.Image.Height );
-				graphics.DrawImage( actor.Image, destRect, srcRect, GraphicsUnit.Pixel );
-			}
+			// actors on masked walkboxes go behind the foreground props, the others in front
+			// (that is where their art expects the props: the pirate leaders' hands rest on
+			// their table)
+			this.PaintActors( graphics, drawAboveForeground: false );
 
 			if( this.foreground != null && this.showForeground )
 			{
@@ -281,6 +268,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				var srcRect = new RectangleF( 0, 0, this.foreground.Width, this.foreground.Height );
 				graphics.DrawImage( this.foreground, destRect, srcRect, GraphicsUnit.Pixel );
 			}
+
+			this.PaintActors( graphics, drawAboveForeground: true );
 
 			if( this.ShowCalibrationOverlay )
 			{
@@ -306,6 +295,27 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		protected override void OnPaintBackground( PaintEventArgs args )
 		{
 			// everything is painted in OnPaint over a transparency grid
+		}
+
+		private void PaintActors( Graphics graphics, bool drawAboveForeground )
+		{
+			foreach( var actor in this.Actors )
+			{
+				if( !actor.Visible || actor.Image == null || actor.DrawAboveForeground != drawAboveForeground )
+				{
+					continue;
+				}
+
+				var screenRect = actor.ScreenRect;
+				var destRect = new RectangleF(
+					screenRect.X * this.zoom,
+					screenRect.Y * this.zoom,
+					screenRect.Width * this.zoom,
+					screenRect.Height * this.zoom
+				);
+				var srcRect = new RectangleF( 0, 0, actor.Image.Width, actor.Image.Height );
+				graphics.DrawImage( actor.Image, destRect, srcRect, GraphicsUnit.Pixel );
+			}
 		}
 
 		protected override bool IsInputKey( Keys keyData )

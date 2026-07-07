@@ -19,6 +19,13 @@
   birds) carry SE offsets up to ~30 classic pixels off; the pirate
   leaders sank behind their table (only the hats showed) until the
   classic anchoring put their faces above it, as in-game
+- Actors draw in front of or behind the static foreground depending
+  on the mask (z-plane) of the nearest classic walkbox (BOXD, newly
+  parsed), like the game: the pirate leaders sit on an unmasked box,
+  so their hands and mugs rest on the table (the occlusion is drawn
+  into the costume art), while the cook, the storekeeper and the
+  fortune teller stand on masked boxes and stay behind their
+  table/counter foregrounds
 - Room preview now composites like the game: only the first static
   sprite layer is the background; further static layers (tables,
   door frames) are drawn as a foreground above the object sprites.

@@ -44,6 +44,7 @@
         <Reference Include="System.Xml.Linq" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="ClassicBoxTests.cs" />
         <Compile Include="CostumeAnchoringTests.cs" />
         <Compile Include="CostumePackerRoundTripTests.cs" />
         <Compile Include="HelperTests.cs" />
@@ -51,6 +52,7 @@
         <Compile Include="RoomRendererTests.cs" />
         <Compile Include="ScriptScannerTests.cs" />
         <Compile Include="ScummParserTests.cs" />
+        <Compile Include="TestData.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
     </ItemGroup>
     <ItemGroup>

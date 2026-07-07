@@ -73,6 +73,41 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities
 		} = new List<ClassicActorPlacement>();
 
 		/// <summary>
+		/// Gets or sets the walkboxes (BOXD).
+		/// </summary>
+		public List<ClassicBox> BoxList
+		{
+			get;
+			set;
+		} = new List<ClassicBox>();
+
+		/// <summary>
+		/// Returns the mask (z-plane) number an actor standing at the point gets: the mask
+		/// of the walkable box containing it, or of the nearest walkable box (the engine
+		/// snaps placed actors into the closest box the same way). 0 - meaning the actor
+		/// draws in front of the foreground props - when the room has no boxes.
+		/// </summary>
+		public int GetBoxMaskAt( int x, int y )
+		{
+			ClassicBox? best = null;
+			var bestDistance = double.MaxValue;
+			foreach( var box in this.BoxList )
+			{
+				if( !box.IsWalkable )
+				{
+					continue;
+				}
+				var distance = box.DistanceTo( x, y );
+				if( distance < bestDistance )
+				{
+					bestDistance = distance;
+					best = box;
+				}
+			}
+			return best?.Mask ?? 0;
+		}
+
+		/// <summary>
 		/// Returns the room's objects keyed by object number. The first occurrence wins on duplicates.
 		/// </summary>
 		public Dictionary<int, ClassicObject> GetObjectsById()

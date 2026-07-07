@@ -121,6 +121,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				var overlay = this.BuildActorOverlay( placement, classicData );
 				overlay.Visible = overlay.Image != null && visibleActors.Add( placement.ActorNumber );
+
+				// the walkbox mask decides whether the game draws the actor in front of or
+				// behind the foreground props (tables, counters)
+				overlay.DrawAboveForeground = classicRoom.GetBoxMaskAt( placement.X, placement.Y ) == 0;
 				this.roomPreviewControl.Actors.Add( overlay );
 			}
 		}

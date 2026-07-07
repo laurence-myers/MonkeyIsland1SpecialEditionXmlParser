@@ -545,6 +545,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 			var width = 0;
 			var height = 0;
 			var objectList = new List<ClassicObject>();
+			var boxList = new List<ClassicBox>();
 
 			foreach( var child in ReadBlocks( reader, roomBlock.PayloadPosition, roomBlock.EndPosition ) )
 			{
@@ -562,14 +563,56 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm
 						objectList.Add( classicObject );
 					}
 				}
+				else if( child.Tag == "BOXD" )
+				{
+					boxList = ReadBoxes( reader, child );
+				}
 			}
 
-			return new ClassicRoom(
+			var room = new ClassicRoom(
 				roomNumber: roomNumber,
 				width: width,
 				height: height,
 				objectList: objectList
 			);
+			room.BoxList = boxList;
+			return room;
+		}
+
+		/// <summary>
+		/// Reads the walkboxes (BOXD): a 16 bit box count followed by 20 byte records of
+		/// four 16 bit corner points, the mask (z-plane) byte, a flags byte and a 16 bit
+		/// scale value.
+		/// </summary>
+		private static List<ClassicBox> ReadBoxes( BinaryReader reader, Block boxd )
+		{
+			var boxList = new List<ClassicBox>();
+			reader.BaseStream.Position = boxd.PayloadPosition;
+			int count = reader.ReadUInt16();
+			for( var index = 0; index < count; index++ )
+			{
+				if( reader.BaseStream.Position + 20 > boxd.EndPosition )
+				{
+					break;
+				}
+				var corners = new System.Drawing.Point[4];
+				for( var corner = 0; corner < 4; corner++ )
+				{
+					int x = reader.ReadInt16();
+					int y = reader.ReadInt16();
+					corners[corner] = new System.Drawing.Point( x, y );
+				}
+				var mask = reader.ReadByte();
+				var flags = reader.ReadByte();
+				var scale = reader.ReadUInt16();
+				boxList.Add( new ClassicBox(
+					cornerList: corners,
+					mask: mask,
+					flags: flags,
+					scale: scale
+				) );
+			}
+			return boxList;
 		}
 
 		private static ClassicObject? ReadObject( BinaryReader reader, Block obcd )

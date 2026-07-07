@@ -92,7 +92,7 @@ namespace Tests
 		[Test]
 		public void Scan_RealGameData_DecodesEveryScriptAndFindsThePirateLeaders()
 		{
-			var dataFileName = FindRealDataFile();
+			var dataFileName = TestData.FindRealDataFile();
 			if( dataFileName == null )
 			{
 				Assert.Ignore( "Classic game data (monkey1.001) not found on this machine" );
@@ -177,55 +177,5 @@ namespace Tests
 			return bytes.ToArray();
 		}
 
-		/// <summary>
-		/// Looks for the real classic data next to a Special Edition install; the integration
-		/// test is skipped when it is not present.
-		/// </summary>
-		private static string? FindRealDataFile()
-		{
-			var candidates = new[]
-			{
-				@"F:\Games\Steam\steamapps\common\The Secret of Monkey Island Special Edition\classic\en\monkey1.001",
-				@"C:\Program Files (x86)\Steam\steamapps\common\The Secret of Monkey Island Special Edition\classic\en\monkey1.001",
-			};
-			foreach( var candidate in candidates )
-			{
-				if( File.Exists( candidate ) )
-				{
-					return candidate;
-				}
-			}
-
-			// the retail install embeds the classic files in the pak; extract on the fly
-			var pakCandidates = new[]
-			{
-				@"F:\Games\Steam\steamapps\common\The Secret of Monkey Island Special Edition\Monkey1.pak",
-				@"C:\Program Files (x86)\Steam\steamapps\common\The Secret of Monkey Island Special Edition\Monkey1.pak",
-			};
-			foreach( var pakCandidate in pakCandidates )
-			{
-				if( !File.Exists( pakCandidate ) )
-				{
-					continue;
-				}
-				var lpak = MonkeyIsland1SpecialEditionXmlParser.Formats.LPAK.Parser.Parse( pakCandidate );
-				if( lpak == null )
-				{
-					continue;
-				}
-				lpak.FileNameOnDisk = pakCandidate;
-				var index = MonkeyIsland1SpecialEditionXmlParser.Helper.FindEntryIndex(
-					lpak, name => name.EndsWith( ".001", System.StringComparison.OrdinalIgnoreCase ) );
-				if( index < 0 )
-				{
-					continue;
-				}
-				var tempFileName = Path.Combine( Path.GetTempPath(), "mi1se-test-monkey1.001" );
-				File.WriteAllBytes( tempFileName, MonkeyIsland1SpecialEditionXmlParser.Helper.ReadEntryBytes( lpak, index ) );
-				return tempFileName;
-			}
-
-			return null;
-		}
 	}
 }
