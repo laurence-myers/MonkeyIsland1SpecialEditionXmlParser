@@ -138,6 +138,66 @@ namespace Tests
 			Assert.That( background, Is.Null );
 		}
 
+		[Test]
+		public void RenderBackground_RendersOnlyTheFirstStaticLayer()
+		{
+			// Arrange: layer 0 red at 0,0; layer 1 (foreground) blue at 10,0
+			var room = MakeRoomWithTwoStaticLayers();
+			var textures = new Dictionary<string, Image>
+			{
+				{ "red.dxt", MakeSolidBitmap( Color.Red ) },
+				{ "blue.dxt", MakeSolidBitmap( Color.Blue ) },
+			};
+
+			// Act
+			var background = Renderer.RenderBackground( room, fileName => fileName != null && textures.ContainsKey( fileName ) ? textures[fileName] : null );
+
+			// Assert: sized to the whole room, but only layer 0 is drawn
+			Assert.That( background, Is.Not.Null );
+			Assert.That( background!.Width, Is.EqualTo( 20 ) );
+			Assert.That( background.GetPixel( 5, 5 ).ToArgb(), Is.EqualTo( Color.Red.ToArgb() ) );
+			Assert.That( background.GetPixel( 15, 5 ).A, Is.EqualTo( 0 ) );
+		}
+
+		[Test]
+		public void RenderForeground_RendersOnlyTheLayersAfterTheFirst()
+		{
+			// Arrange: layer 0 red at 0,0; layer 1 (foreground) blue at 10,0
+			var room = MakeRoomWithTwoStaticLayers();
+			var textures = new Dictionary<string, Image>
+			{
+				{ "red.dxt", MakeSolidBitmap( Color.Red ) },
+				{ "blue.dxt", MakeSolidBitmap( Color.Blue ) },
+			};
+
+			// Act
+			var foreground = Renderer.RenderForeground( room, fileName => fileName != null && textures.ContainsKey( fileName ) ? textures[fileName] : null );
+
+			// Assert: same size as the background so the two overlay 1:1
+			Assert.That( foreground, Is.Not.Null );
+			Assert.That( foreground!.Width, Is.EqualTo( 20 ) );
+			Assert.That( foreground.GetPixel( 15, 5 ).ToArgb(), Is.EqualTo( Color.Blue.ToArgb() ) );
+			Assert.That( foreground.GetPixel( 5, 5 ).A, Is.EqualTo( 0 ) );
+		}
+
+		[Test]
+		public void RenderForeground_WithoutForegroundLayers_ReturnsNull()
+		{
+			// Arrange: a single static layer only
+			var room = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
+			room.StaticSpriteHeaderList.Add( new StaticSpriteHeader( index: 0, identifier: 0, sourceWidth: 0, sourceHeight: 0, staticSpriteCount: 1, staticSpriteAddress: 0 ) );
+			room.StaticSpriteList.Add( new List<StaticSprite>
+			{
+				new StaticSprite( index: 0, x: 0, y: 0, width: 10, height: 10, textureFileNameAddress: 0 ) { TextureFileName = "red.dxt" },
+			} );
+
+			// Act
+			var foreground = Renderer.RenderForeground( room, fileName => MakeSolidBitmap( Color.Red ) );
+
+			// Assert
+			Assert.That( foreground, Is.Null );
+		}
+
 		//-------------------------------------------
 		// entity builders
 
@@ -156,6 +216,22 @@ namespace Tests
 				roomObjectGroupList: new List<RoomObjectGroup>(),
 				unknown5List: new List<Unknown5>()
 			);
+		}
+
+		private static Room MakeRoomWithTwoStaticLayers()
+		{
+			var room = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
+			room.StaticSpriteHeaderList.Add( new StaticSpriteHeader( index: 0, identifier: 0, sourceWidth: 0, sourceHeight: 0, staticSpriteCount: 1, staticSpriteAddress: 0 ) );
+			room.StaticSpriteHeaderList.Add( new StaticSpriteHeader( index: 1, identifier: 1, sourceWidth: 0, sourceHeight: 0, staticSpriteCount: 1, staticSpriteAddress: 0 ) );
+			room.StaticSpriteList.Add( new List<StaticSprite>
+			{
+				new StaticSprite( index: 0, x: 0, y: 0, width: 10, height: 10, textureFileNameAddress: 0 ) { TextureFileName = "red.dxt" },
+			} );
+			room.StaticSpriteList.Add( new List<StaticSprite>
+			{
+				new StaticSprite( index: 0, x: 10, y: 0, width: 10, height: 10, textureFileNameAddress: 0 ) { TextureFileName = "blue.dxt" },
+			} );
+			return room;
 		}
 
 		private static SpriteHeader MakeSpriteHeader( int identifier )

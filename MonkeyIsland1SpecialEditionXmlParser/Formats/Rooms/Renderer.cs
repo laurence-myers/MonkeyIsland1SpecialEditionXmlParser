@@ -81,9 +81,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 	}
 
 	/// <summary>
-	/// Renders SE rooms the way the game composites them: static background sprites at their
-	/// absolute positions, then object sprites placed via their classic SCUMM object position
-	/// scaled to HD plus the per-sprite offset.
+	/// Renders SE rooms the way the game composites them: the first static sprite layer (the
+	/// background) at its absolute positions, then object sprites placed via their classic
+	/// SCUMM object position scaled to HD plus the per-sprite offset, then any further static
+	/// sprite layers (foreground overlays such as tables and door frames) on top.
 	/// </summary>
 	public static class Renderer
 	{
@@ -110,15 +111,44 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 		}
 
 		/// <summary>
-		/// Renders all static sprite layers of the room into a single background bitmap.
+		/// Renders the first static sprite layer of the room into a background bitmap. The game
+		/// draws this layer below the object sprites; any further static sprite layers are
+		/// foreground overlays (see <see cref="RenderForeground"/>).
 		/// </summary>
 		/// <param name="room">The room to render.</param>
 		/// <param name="textureLoader">Loads a texture by file name; may return null for missing textures.</param>
 		/// <returns>The composited background, or null when the room has no static sprites.</returns>
 		public static Bitmap? RenderBackground( Room room, Func<string?, Image?> textureLoader )
 		{
+			return RenderStaticLayers( room, textureLoader, firstLayer: 0, lastLayer: 0 );
+		}
+
+		/// <summary>
+		/// Renders every static sprite layer after the first into a single foreground bitmap,
+		/// sized like the background so the two overlay 1:1. The game draws these layers over
+		/// the object sprites: they hold props the actors walk behind (tables, door frames) and
+		/// they mask object sprite regions that stick out past the visible scene (e.g. the
+		/// kitchen door of room 28, whose sprites keep their classic position while the painted
+		/// background moved).
+		/// </summary>
+		/// <param name="room">The room to render.</param>
+		/// <param name="textureLoader">Loads a texture by file name; may return null for missing textures.</param>
+		/// <returns>The composited foreground, or null when the room has no foreground layers.</returns>
+		public static Bitmap? RenderForeground( Room room, Func<string?, Image?> textureLoader )
+		{
+			return RenderStaticLayers( room, textureLoader, firstLayer: 1, lastLayer: int.MaxValue );
+		}
+
+		private static Bitmap? RenderStaticLayers( Room room, Func<string?, Image?> textureLoader, int firstLayer, int lastLayer )
+		{
 			var size = GetBackgroundSize( room );
-			if( size.IsEmpty )
+			if( size.IsEmpty || room.StaticSpriteList == null )
+			{
+				return null;
+			}
+
+			var lastIndex = Math.Min( lastLayer, room.StaticSpriteList.Count - 1 );
+			if( firstLayer > lastIndex || room.StaticSpriteList.Skip( firstLayer ).Take( lastIndex - firstLayer + 1 ).All( ssl => ssl.Count == 0 ) )
 			{
 				return null;
 			}
@@ -128,9 +158,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms
 			{
 				graphics.Clear( Color.Transparent );
 
-				foreach( var staticSpriteList in room.StaticSpriteList )
+				for( var layer = firstLayer; layer <= lastIndex; layer++ )
 				{
-					foreach( var staticSprite in staticSpriteList )
+					foreach( var staticSprite in room.StaticSpriteList[layer] )
 					{
 						var texture = textureLoader( staticSprite.TextureFileName );
 						if( texture == null )

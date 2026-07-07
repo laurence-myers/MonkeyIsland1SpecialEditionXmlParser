@@ -1,4 +1,18 @@
-﻿[ 2026/07/06 ]
+﻿[ 2026/07/07 ]
+---------------------------------------------------------------
+- Room preview now composites like the game: only the first static
+  sprite layer is the background; further static layers (tables,
+  door frames) are drawn as a foreground above the object sprites.
+  Previously all static layers were flattened under the sprites,
+  so sprite regions the game hides behind the foreground showed
+  through - e.g. the bar (room 28) kitchen door looked ~150 px too
+  far right because its sprites keep the classic door position
+  while the SE background art moved the painted door left, with the
+  foreground layer masking the difference in-game
+- Added a "Show foreground layer" toggle to the room spritesheet
+  editor for editing sprites the foreground covers
+
+[ 2026/07/06 ]
 ---------------------------------------------------------------
 - Decoded the "unknown" costume fields and renamed them: sprite
   MoveX/MoveY (floats, HD-scaled classic move deltas) and

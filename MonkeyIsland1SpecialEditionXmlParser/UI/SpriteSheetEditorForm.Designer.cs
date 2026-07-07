@@ -65,6 +65,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.labelScaleY = new System.Windows.Forms.Label();
 			this.numericScaleY = new System.Windows.Forms.NumericUpDown();
 			this.checkBoxCalibration = new System.Windows.Forms.CheckBox();
+			this.checkBoxForeground = new System.Windows.Forms.CheckBox();
 			this.labelHint = new System.Windows.Forms.Label();
 			this.panelPreview = new System.Windows.Forms.Panel();
 			this.roomPreviewControl = new MonkeyIsland1SpecialEditionXmlParser.UI.RoomPreviewControl();
@@ -325,6 +326,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.panelProperties.Controls.Add(this.labelScaleY);
 			this.panelProperties.Controls.Add(this.numericScaleY);
 			this.panelProperties.Controls.Add(this.checkBoxCalibration);
+			this.panelProperties.Controls.Add(this.checkBoxForeground);
 			this.panelProperties.Controls.Add(this.labelHint);
 			this.panelProperties.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.panelProperties.Location = new System.Drawing.Point(0, 0);
@@ -507,13 +509,24 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.checkBoxCalibration.Text = "Calibration overlay";
 			this.checkBoxCalibration.CheckedChanged += new System.EventHandler(this.HandleCalibrationCheckedChanged);
 			//
+			// checkBoxForeground
+			//
+			this.checkBoxForeground.Checked = true;
+			this.checkBoxForeground.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.checkBoxForeground.Location = new System.Drawing.Point(9, 274);
+			this.checkBoxForeground.Name = "checkBoxForeground";
+			this.checkBoxForeground.Size = new System.Drawing.Size(181, 20);
+			this.checkBoxForeground.TabIndex = 19;
+			this.checkBoxForeground.Text = "Show foreground layer";
+			this.checkBoxForeground.CheckedChanged += new System.EventHandler(this.HandleForegroundCheckedChanged);
+			//
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 274);
+			this.labelHint.Location = new System.Drawing.Point(6, 300);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(196, 70);
-			this.labelHint.TabIndex = 19;
+			this.labelHint.TabIndex = 20;
 			this.labelHint.Text = "Arrow keys nudge the selection:\r\natlas = texture rect, preview = offset.\r\nHold S" +
 				"hift for steps of 10.\r\nMouse wheel zooms.";
 			//
@@ -620,6 +633,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private System.Windows.Forms.Label labelScaleY;
 		private System.Windows.Forms.NumericUpDown numericScaleY;
 		private System.Windows.Forms.CheckBox checkBoxCalibration;
+		private System.Windows.Forms.CheckBox checkBoxForeground;
 		private System.Windows.Forms.Label labelHint;
 		private System.Windows.Forms.Panel panelPreview;
 		private RoomPreviewControl roomPreviewControl;

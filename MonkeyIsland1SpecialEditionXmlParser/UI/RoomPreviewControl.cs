@@ -9,15 +9,17 @@ using MonkeyIsland1SpecialEditionXmlParser.Formats.Rooms;
 namespace MonkeyIsland1SpecialEditionXmlParser.UI
 {
 	/// <summary>
-	/// Draws a room the way the game composites it: the static background plus every object
-	/// sprite at its resolved screen position, ordered by layer. Supports mouse wheel zoom,
-	/// click selection with hit-testing and a calibration overlay that outlines the classic
-	/// object rectangles the placements were derived from.
+	/// Draws a room the way the game composites it: the static background, every object
+	/// sprite at its resolved screen position ordered by layer, then the static foreground
+	/// on top. Supports mouse wheel zoom, click selection with hit-testing and a calibration
+	/// overlay that outlines the classic object rectangles the placements were derived from.
 	/// </summary>
 	public class RoomPreviewControl : Control
 	{
 		private float zoom = 0.5f;
 		private Bitmap? background;
+		private Bitmap? foreground;
+		private bool showForeground = true;
 		private RoomPreviewControlSprite? selectedSprite;
 
 		public event EventHandler? SelectedSpriteChanged;
@@ -47,6 +49,40 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				this.background = value;
 				this.UpdateContentSize();
+				this.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the composited foreground image, drawn above all sprites the way the
+		/// game draws its foreground static layers.
+		/// </summary>
+		public Bitmap? Foreground
+		{
+			get
+			{
+				return this.foreground;
+			}
+			set
+			{
+				this.foreground = value;
+				this.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets whether the foreground image is drawn. Hiding it helps editing sprites
+		/// that the game partially covers.
+		/// </summary>
+		public bool ShowForeground
+		{
+			get
+			{
+				return this.showForeground;
+			}
+			set
+			{
+				this.showForeground = value;
 				this.Invalidate();
 			}
 		}
@@ -207,6 +243,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					screenRect.Height * this.zoom
 				);
 				graphics.DrawImage( sprite.Texture, destRect, (RectangleF)sprite.SourceRect, GraphicsUnit.Pixel );
+			}
+
+			if( this.foreground != null && this.showForeground )
+			{
+				var destRect = new RectangleF( 0, 0, this.foreground.Width * this.zoom, this.foreground.Height * this.zoom );
+				var srcRect = new RectangleF( 0, 0, this.foreground.Width, this.foreground.Height );
+				graphics.DrawImage( this.foreground, destRect, srcRect, GraphicsUnit.Pixel );
 			}
 
 			if( this.ShowCalibrationOverlay )

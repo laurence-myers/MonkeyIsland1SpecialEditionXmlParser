@@ -102,6 +102,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			}
 
 			this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room, this.LoadTexture );
+			this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room, this.LoadTexture );
+			this.checkBoxForeground.Enabled = this.roomPreviewControl.Foreground != null;
 
 			this.PopulateTextureCombo();
 			this.PopulateSpriteTree();
@@ -598,6 +600,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.roomPreviewControl.Invalidate();
 		}
 
+		private void HandleForegroundCheckedChanged( object sender, EventArgs args )
+		{
+			this.roomPreviewControl.ShowForeground = this.checkBoxForeground.Checked;
+		}
+
 		private void HandleTextureSelected( object sender, EventArgs args )
 		{
 			if( this.suppressUiEvents )
@@ -752,6 +759,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			// reload everything that may show the replaced texture
 			this.textureCache.Clear();
 			this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room!, this.LoadTexture );
+			this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room!, this.LoadTexture );
 			this.UpdateAtlas();
 			this.RefreshPlacements();
 		}

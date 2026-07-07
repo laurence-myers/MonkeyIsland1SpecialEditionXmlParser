@@ -78,6 +78,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var placements = Renderer.ResolvePlacements( this.Room, classicRoom?.GetObjectsById(), Renderer.DefaultHdScale );
 
 			this.roomPreviewControl.Background = background;
+			this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room, this.LoadTexture );
 			this.roomPreviewControl.Sprites.Clear();
 			this.roomPreviewControl.Sprites.AddRange(
 				placements.Select( p => new RoomPreviewControlSprite( p, this.LoadTexture( p.Sprite.TextureFileName ) ) )
