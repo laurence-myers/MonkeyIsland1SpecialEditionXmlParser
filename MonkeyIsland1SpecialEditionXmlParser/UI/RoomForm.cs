@@ -95,7 +95,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.roomPreviewControl.Sprites.AddRange(
 				placements.Select( p => new RoomPreviewControlSprite( p, this.LoadTexture( p.Sprite.TextureFileName ) ) )
 			);
-			this.BuildActorOverlays( classicRoom );
+			this.BuildActorOverlays( classicRoom, classicData );
 			this.roomPreviewControl.RefreshContent();
 
 			this.UpdateWarningLabel( classicData, classicRoom, placements.Count );
@@ -108,7 +108,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		/// this room. The first placement of each actor (the room's initial setup) starts
 		/// visible; later placements (mostly cutscene positions) start hidden.
 		/// </summary>
-		private void BuildActorOverlays( MonkeyIsland1SpecialEditionXmlParser.Formats.Scumm.Entities.ClassicRoom? classicRoom )
+		private void BuildActorOverlays( ClassicRoom? classicRoom, ClassicData? classicData )
 		{
 			this.roomPreviewControl.Actors.Clear();
 			if( classicRoom == null )
@@ -119,13 +119,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var visibleActors = new HashSet<int>();
 			foreach( var placement in classicRoom.ActorPlacementList )
 			{
-				var overlay = this.BuildActorOverlay( placement );
+				var overlay = this.BuildActorOverlay( placement, classicData );
 				overlay.Visible = overlay.Image != null && visibleActors.Add( placement.ActorNumber );
 				this.roomPreviewControl.Actors.Add( overlay );
 			}
 		}
 
-		private RoomPreviewControlActor BuildActorOverlay( ClassicActorPlacement placement )
+		private RoomPreviewControlActor BuildActorOverlay( ClassicActorPlacement placement, ClassicData? classicData )
 		{
 			Bitmap? image = null;
 			var position = PointF.Empty;
@@ -139,8 +139,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				if( costume != null )
 				{
 					costumeName = costume.Header.Name;
+					var classicCostume = classicData?.FindCostume( placement.CostumeId.Value );
 					PointF origin;
-					image = CostumeRenderer.RenderStandingActor( costume, placement.DirectionName, this.LoadTexture, out origin );
+					image = CostumeRenderer.RenderStandingActor( costume, placement.DirectionName, this.LoadTexture, classicCostume, out origin );
 					if( image != null )
 					{
 						// the actor origin is its feet: classic position scaled to HD,

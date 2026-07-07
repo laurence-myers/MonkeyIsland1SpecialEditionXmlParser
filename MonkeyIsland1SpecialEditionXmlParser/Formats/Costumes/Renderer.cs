@@ -198,15 +198,42 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 		}
 
 		/// <summary>
+		/// Returns the rectangle the game actually shows the sprite at, relative to the actor
+		/// origin in HD pixels. The engine follows the classic renderer: each SE sprite is
+		/// anchored bottom-center to the classic cel it replaces, so the sprite's own
+		/// ScreenX/ScreenY only matter when no classic cel is known. (For most costumes the
+		/// two agree, but e.g. the bar's pirate leaders carry ScreenY values ~15 classic
+		/// pixels below their classic cels and would otherwise sink behind their table.)
+		/// </summary>
+		public static RectangleF GetAnchoredScreenRect( CostumeSpritePlacement placement, SizeF hdScale )
+		{
+			var screenRect = placement.ScreenRect;
+			if( placement.ClassicCel == null )
+			{
+				return screenRect;
+			}
+
+			var classicRect = GetClassicScreenRect( placement.ClassicCel, placement.Flipped, hdScale );
+			return new RectangleF(
+				classicRect.Left + ( classicRect.Width - screenRect.Width ) / 2.0f,
+				classicRect.Bottom - screenRect.Height,
+				screenRect.Width,
+				screenRect.Height
+			);
+		}
+
+		/// <summary>
 		/// Renders the first step of the costume's standing animation into a bitmap, the way
-		/// the room preview shows an idle actor.
+		/// the room preview shows an idle actor. When the matching classic costume is given,
+		/// sprites are anchored to their classic cels (see <see cref="GetAnchoredScreenRect"/>).
 		/// </summary>
 		/// <param name="costume">The costume to render.</param>
 		/// <param name="directionName">The facing direction ("Left", "Right", "Front", "Back").</param>
 		/// <param name="textureLoader">Loads a texture by file name; may return null for missing textures.</param>
+		/// <param name="classicCostume">The matching classic costume, or null.</param>
 		/// <param name="origin">Receives the actor origin (the feet position) within the returned bitmap.</param>
 		/// <returns>The composited actor, or null when nothing is drawable.</returns>
-		public static Bitmap? RenderStandingActor( Costume costume, string directionName, Func<string?, Image?> textureLoader, out PointF origin )
+		public static Bitmap? RenderStandingActor( Costume costume, string directionName, Func<string?, Image?> textureLoader, ClassicCostume? classicCostume, out PointF origin )
 		{
 			origin = PointF.Empty;
 
@@ -216,7 +243,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				return null;
 			}
 
-			var placements = ResolveFramePlacements( costume, animation, step: 0, classicCostume: null )
+			var placements = ResolveFramePlacements( costume, animation, step: 0, classicCostume: classicCostume )
 				.Where( p => p.Sprite.TextureNumber >= 0 && p.Sprite.TextureNumber < costume.TextureFileNameList.Count )
 				.ToList();
 			if( placements.Count == 0 )
@@ -224,10 +251,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 				return null;
 			}
 
-			var bounds = placements[0].ScreenRect;
-			foreach( var placement in placements )
+			var anchoredRects = placements
+				.Select( p => GetAnchoredScreenRect( p, DefaultHdScale ) )
+				.ToList();
+			var bounds = anchoredRects[0];
+			foreach( var anchoredRect in anchoredRects )
 			{
-				bounds = RectangleF.Union( bounds, placement.ScreenRect );
+				bounds = RectangleF.Union( bounds, anchoredRect );
 			}
 			var width = (int)Math.Ceiling( bounds.Width );
 			var height = (int)Math.Ceiling( bounds.Height );
@@ -240,8 +270,9 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 			using( var graphics = Graphics.FromImage( bitmap ) )
 			{
 				graphics.Clear( Color.Transparent );
-				foreach( var placement in placements )
+				for( var index = 0; index < placements.Count; index++ )
 				{
+					var placement = placements[index];
 					var texture = textureLoader( costume.TextureFileNameList[placement.Sprite.TextureNumber].Path );
 					if( texture == null )
 					{
@@ -249,10 +280,10 @@ namespace MonkeyIsland1SpecialEditionXmlParser.Formats.Costumes
 					}
 
 					var destRect = new RectangleF(
-						placement.ScreenRect.X - bounds.X,
-						placement.ScreenRect.Y - bounds.Y,
-						placement.ScreenRect.Width,
-						placement.ScreenRect.Height
+						anchoredRects[index].X - bounds.X,
+						anchoredRects[index].Y - bounds.Y,
+						anchoredRects[index].Width,
+						anchoredRects[index].Height
 					);
 					var sourceRect = new RectangleF(
 						placement.Sprite.TextureX,
