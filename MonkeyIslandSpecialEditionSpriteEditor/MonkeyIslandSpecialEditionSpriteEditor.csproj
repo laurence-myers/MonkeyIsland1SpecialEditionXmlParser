@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>MonkeyIslandSpecialEditionSpriteEditor</RootNamespace>
+    <AssemblyName>MonkeyIslandSpecialEditionSpriteEditor</AssemblyName>
+    <!-- Tests is a nested project directory; keep its files out of this project's default globs. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);Tests\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <!-- Replaces Properties\AssemblyInfo.cs. -->
+  <PropertyGroup>
+    <AssemblyTitle>Monkey Island SE Sprite Editor</AssemblyTitle>
+    <Product>Monkey Island SE Sprite Editor</Product>
+    <Copyright>Public Domain</Copyright>
+    <Version>2026.03.22.0</Version>
+    <AssemblyVersion>2026.03.22.0</AssemblyVersion>
+    <FileVersion>2026.03.22.0</FileVersion>
+    <!-- The SDK otherwise defaults Company to the assembly name; the app has never had one. -->
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Not one of the SDK's implicit .NET Framework references. -->
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pfim" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="UI\AboutBoxLogo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Changes.txt" CopyToOutputDirectory="Always" />
+    <None Update="Readme.txt" CopyToOutputDirectory="Always" />
+    <None Update="XSLT\Cleanup.xslt" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+</Project>

@@ -19,4 +19,7 @@ jobs:
         vs-version: '[18,]'
 
     - name: Build
-      run: msbuild MonkeyIsland1SpecialEditionXmlParser/MonkeyIsland1SpecialEditionXmlParser.sln -p:Configuration=Release -t:build -restore
+      run: msbuild MonkeyIslandSpecialEditionSpriteEditor/MonkeyIslandSpecialEditionSpriteEditor.sln -p:Configuration=Release -t:build -restore
+
+    - name: Test
+      run: dotnet test MonkeyIslandSpecialEditionSpriteEditor/MonkeyIslandSpecialEditionSpriteEditor.sln -c Release --no-build

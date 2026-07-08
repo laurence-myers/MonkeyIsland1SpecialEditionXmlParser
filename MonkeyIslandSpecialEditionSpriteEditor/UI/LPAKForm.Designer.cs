@@ -1,0 +1,245 @@
+﻿namespace MonkeyIslandSpecialEditionSpriteEditor.UI
+{
+	partial class LPAKForm
+	{
+		/// <summary>
+		/// Required designer variable.
+		/// </summary>
+		private System.ComponentModel.IContainer components = null;
+
+		/// <summary>
+		/// Clean up any resources being used.
+		/// </summary>
+		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		protected override void Dispose( bool disposing )
+		{
+			if( disposing && ( components != null ) )
+			{
+				components.Dispose();
+			}
+			base.Dispose( disposing );
+		}
+
+		#region Windows Form Designer generated code
+
+		/// <summary>
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
+		/// </summary>
+		private void InitializeComponent()
+		{
+			this.components = new System.ComponentModel.Container();
+			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.treeView1 = new System.Windows.Forms.TreeView();
+			this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.viewAsHEXToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.overridesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.saveOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.applyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.openSpriteSheetEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.openViewerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.importTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.importAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.label1 = new System.Windows.Forms.Label();
+			this.textBox1 = new System.Windows.Forms.TextBox();
+			this.menuStrip1.SuspendLayout();
+			this.contextMenuStrip.SuspendLayout();
+			this.SuspendLayout();
+			// 
+			// menuStrip1
+			// 
+			this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem});
+			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+			this.menuStrip1.Name = "menuStrip1";
+			this.menuStrip1.Size = new System.Drawing.Size(737, 24);
+			this.menuStrip1.TabIndex = 0;
+			this.menuStrip1.Text = "menuStrip1";
+			this.menuStrip1.Visible = false;
+			// 
+			// fileToolStripMenuItem
+			// 
+			this.fileToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.MatchOnly;
+			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+			this.fileToolStripMenuItem.Size = new System.Drawing.Size(31, 20);
+			this.fileToolStripMenuItem.Text = "&File";
+			// 
+			// treeView1
+			// 
+			this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.treeView1.Location = new System.Drawing.Point(0, 23);
+			this.treeView1.Name = "treeView1";
+			this.treeView1.Size = new System.Drawing.Size(198, 526);
+			this.treeView1.TabIndex = 3;
+			this.treeView1.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.HandleBeforeExpand);
+			this.treeView1.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ShowContextMenu);
+			this.treeView1.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.HandleMouseDoubleClick);
+			// 
+			// contextMenuStrip
+			// 
+			this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+	            this.openSpriteSheetEditorToolStripMenuItem,
+	            this.openViewerToolStripMenuItem,
+	            this.viewAsHEXToolStripMenuItem,
+	            this.saveAsToolStripMenuItem,
+	            this.overridesToolStripMenuItem,
+	            this.exportTexturePngToolStripMenuItem,
+	            this.importTexturePngToolStripMenuItem,
+	            this.exportAllTexturesToolStripMenuItem,
+	            this.importAllTexturesToolStripMenuItem
+			});
+			this.contextMenuStrip.Name = "contextMenuStrip";
+			this.contextMenuStrip.Size = new System.Drawing.Size(153, 92);
+			// 
+			// viewAsHEXToolStripMenuItem
+			// 
+			this.viewAsHEXToolStripMenuItem.Name = "viewAsHEXToolStripMenuItem";
+			this.viewAsHEXToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.viewAsHEXToolStripMenuItem.Text = "View as &HEX";
+			this.viewAsHEXToolStripMenuItem.Click += new System.EventHandler(this.OpenInHexView);
+			// 
+			// saveAsToolStripMenuItem
+			// 
+			this.saveAsToolStripMenuItem.Name = "saveAsToolStripMenuItem";
+			this.saveAsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.saveAsToolStripMenuItem.Text = "Save as binary...";
+			this.saveAsToolStripMenuItem.Click += new System.EventHandler(this.SaveAs);
+			//
+			// overridesToolStripMenuItem
+			//
+			this.overridesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+	            this.saveOverrideToolStripMenuItem,
+	            this.applyOverrideToolStripMenuItem});
+			this.overridesToolStripMenuItem.Name = "overridesToolStripMenuItem";
+			this.overridesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.overridesToolStripMenuItem.Text = "Overrides";
+			//
+			// saveOverrideToolStripMenuItem
+			//
+			this.saveOverrideToolStripMenuItem.Name = "saveOverrideToolStripMenuItem";
+			this.saveOverrideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.saveOverrideToolStripMenuItem.Text = "Export override XML";
+			this.saveOverrideToolStripMenuItem.Click += new System.EventHandler(this.ExportOverrideXML);
+			//
+			// applyOverrideToolStripMenuItem
+			//
+			this.applyOverrideToolStripMenuItem.Name = "applyOverrideToolStripMenuItem";
+			this.applyOverrideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.applyOverrideToolStripMenuItem.Text = "Apply override";
+			this.applyOverrideToolStripMenuItem.Click += new System.EventHandler(this.ApplyOverride);
+			//
+			// openSpriteSheetEditorToolStripMenuItem
+			//
+			this.openSpriteSheetEditorToolStripMenuItem.Name = "openSpriteSheetEditorToolStripMenuItem";
+			this.openSpriteSheetEditorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openSpriteSheetEditorToolStripMenuItem.Text = "Open in Spritesheet Editor";
+			this.openSpriteSheetEditorToolStripMenuItem.Click += new System.EventHandler(this.OpenInSpriteSheetEditor);
+			//
+			// openViewerToolStripMenuItem
+			//
+			this.openViewerToolStripMenuItem.Name = "openViewerToolStripMenuItem";
+			this.openViewerToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.openViewerToolStripMenuItem.Text = "Open in Viewer";
+			this.openViewerToolStripMenuItem.Click += new System.EventHandler(this.OpenInViewer);
+			//
+			// exportTexturePngToolStripMenuItem
+			//
+			this.exportTexturePngToolStripMenuItem.Name = "exportTexturePngToolStripMenuItem";
+			this.exportTexturePngToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exportTexturePngToolStripMenuItem.Text = "Export texture as PNG...";
+			this.exportTexturePngToolStripMenuItem.Click += new System.EventHandler(this.ExportTexturePng);
+			//
+			// importTexturePngToolStripMenuItem
+			//
+			this.importTexturePngToolStripMenuItem.Name = "importTexturePngToolStripMenuItem";
+			this.importTexturePngToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.importTexturePngToolStripMenuItem.Text = "Import texture PNG...";
+			this.importTexturePngToolStripMenuItem.Click += new System.EventHandler(this.ImportTexturePng);
+			//
+			// exportAllTexturesToolStripMenuItem
+			//
+			this.exportAllTexturesToolStripMenuItem.Name = "exportAllTexturesToolStripMenuItem";
+			this.exportAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.exportAllTexturesToolStripMenuItem.Text = "Export all textures to folder...";
+			this.exportAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ExportAllTextures);
+			//
+			// importAllTexturesToolStripMenuItem
+			//
+			this.importAllTexturesToolStripMenuItem.Name = "importAllTexturesToolStripMenuItem";
+			this.importAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+			this.importAllTexturesToolStripMenuItem.Text = "Import all textures from folder...";
+			this.importAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ImportAllTextures);
+
+			//
+			// label1
+			// 
+			this.label1.AutoEllipsis = true;
+			this.label1.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+			this.label1.Dock = System.Windows.Forms.DockStyle.Top;
+			this.label1.ForeColor = System.Drawing.SystemColors.ButtonFace;
+			this.label1.Location = new System.Drawing.Point(0, 0);
+			this.label1.Name = "label1";
+			this.label1.Padding = new System.Windows.Forms.Padding(3);
+			this.label1.Size = new System.Drawing.Size(198, 23);
+			this.label1.TabIndex = 2;
+			this.label1.Text = "Explorer";
+			this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			// 
+			// textBox1
+			// 
+			this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.textBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
+			this.textBox1.Location = new System.Drawing.Point(0, 549);
+			this.textBox1.Name = "textBox1";
+			this.textBox1.Size = new System.Drawing.Size(198, 20);
+			this.textBox1.TabIndex = 4;
+			this.textBox1.TextChanged += new System.EventHandler(this.ApplyFilter);
+			// 
+			// LPAKForm
+			// 
+			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.ClientSize = new System.Drawing.Size(198, 569);
+			this.Controls.Add(this.treeView1);
+			this.Controls.Add(this.textBox1);
+			this.Controls.Add(this.label1);
+			this.Controls.Add(this.menuStrip1);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
+			this.MainMenuStrip = this.menuStrip1;
+			this.Name = "LPAKForm";
+			this.ShowIcon = false;
+			this.ShowInTaskbar = false;
+			this.Load += new System.EventHandler(this.HandleFormLoad);
+			this.menuStrip1.ResumeLayout(false);
+			this.menuStrip1.PerformLayout();
+			this.contextMenuStrip.ResumeLayout(false);
+			this.ResumeLayout(false);
+			this.PerformLayout();
+
+		}
+
+		#endregion
+
+		private System.Windows.Forms.MenuStrip menuStrip1;
+		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+		private System.Windows.Forms.TreeView treeView1;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.TextBox textBox1;
+		private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
+		private System.Windows.Forms.ToolStripMenuItem viewAsHEXToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem overridesToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem applyOverrideToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem openSpriteSheetEditorToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem openViewerToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportTexturePngToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem importTexturePngToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportAllTexturesToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem importAllTexturesToolStripMenuItem;
+	}
+}
