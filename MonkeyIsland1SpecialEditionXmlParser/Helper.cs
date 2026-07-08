@@ -215,14 +215,21 @@ namespace MonkeyIsland1SpecialEditionXmlParser
 
 		public static void ClearWithTransparencyGrid( this Graphics graphics )
 		{
-			var gray = new SolidBrush( Color.FromArgb( 255, 191, 191, 191 ) );
-			for( var y = graphics.VisibleClipBounds.Y; y < graphics.VisibleClipBounds.Height; y += 10 )
+			// scrolling repaints only the newly exposed part, so the clip bounds can start
+			// anywhere; snap to whole cells and key the parity on absolute cell indices to
+			// keep the pattern anchored to the control rather than to the clip region
+			var bounds = graphics.VisibleClipBounds;
+			var firstCellX = (int)Math.Floor( bounds.X / 10.0f );
+			var firstCellY = (int)Math.Floor( bounds.Y / 10.0f );
+			using( var gray = new SolidBrush( Color.FromArgb( 255, 191, 191, 191 ) ) )
 			{
-				for( var x = graphics.VisibleClipBounds.X; x < graphics.VisibleClipBounds.Width; x += 10 )
+				for( var cellY = firstCellY; cellY * 10 < bounds.Bottom; cellY++ )
 				{
-					var brushIndex = ( x / 10 + y / 10 ) % 2;
-					var brush = brushIndex == 0 ? Brushes.White : gray;
-					graphics.FillRectangle( brush, x, y, 10, 10 );
+					for( var cellX = firstCellX; cellX * 10 < bounds.Right; cellX++ )
+					{
+						var brush = ( cellX + cellY ) % 2 == 0 ? Brushes.White : gray;
+						graphics.FillRectangle( brush, cellX * 10, cellY * 10, 10, 10 );
+					}
 				}
 			}
 		}

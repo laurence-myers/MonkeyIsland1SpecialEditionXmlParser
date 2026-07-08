@@ -87,8 +87,11 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			// resolve object sprite positions from the classic SCUMM data
 			var classicData = ClassicDataLocator.GetOrLoad( this.LPAKFile, this.PromptForClassicDataFolder );
 			var classicRoom = classicData?.FindRoom( this.Room.Header.Identifier );
-			var placements = Renderer.ResolvePlacements( this.Room, classicRoom?.GetObjectsById(), Renderer.DefaultHdScale );
+			var hdTransform = Renderer.GetHdTransform( this.Room, classicRoom );
+			var placements = Renderer.ResolvePlacements( this.Room, classicRoom?.GetObjectsById(), hdTransform );
 
+			this.roomPreviewControl.HdScale = hdTransform.Scale;
+			this.roomPreviewControl.HdOrigin = hdTransform.Origin;
 			this.roomPreviewControl.Background = background;
 			this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room, this.LoadTexture );
 			this.roomPreviewControl.Sprites.Clear();
@@ -150,8 +153,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 					{
 						// the actor origin is its feet: classic position scaled to HD,
 						// lifted by the elevation
-						var originX = placement.X * this.roomPreviewControl.HdScale.Width;
-						var originY = ( placement.Y - ( placement.Elevation ?? 0 ) ) * this.roomPreviewControl.HdScale.Height;
+						var originX = this.roomPreviewControl.HdOrigin.X + placement.X * this.roomPreviewControl.HdScale.Width;
+						var originY = this.roomPreviewControl.HdOrigin.Y + ( placement.Y - ( placement.Elevation ?? 0 ) ) * this.roomPreviewControl.HdScale.Height;
 						position = new PointF( originX - origin.X, originY - origin.Y );
 					}
 				}

@@ -86,6 +86,22 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.classicRoom = this.classicData?.FindRoom( this.Room.Header.Identifier );
 			this.classicObjects = this.classicRoom?.GetObjectsById();
 
+			// seed the scale editors with the room's own classic-to-HD scale (fullscreen
+			// 200-line rooms like the island maps scale by 1037/200, not the usual 7.2,
+			// and X is always Y over the 1.2 VGA pixel aspect)
+			var hdTransform = Renderer.GetHdTransform( this.Room, this.classicRoom );
+			this.suppressUiEvents = true;
+			try
+			{
+				this.numericScaleX.Value = (decimal)hdTransform.Scale.Width;
+				this.numericScaleY.Value = (decimal)hdTransform.Scale.Height;
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+			this.ApplyHdTransformToPreview();
+
 			if( this.classicData == null )
 			{
 				this.warningLabel.Text = "Classic SCUMM data (monkey1.000/001) not found - object sprites are placed by their offset only.";
@@ -262,7 +278,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 				return;
 			}
 
-			var placements = Renderer.ResolvePlacements( this.Room, this.classicObjects, this.GetHdScale() );
+			var placements = Renderer.ResolvePlacements( this.Room, this.classicObjects, this.GetHdTransform() );
 
 			this.roomPreviewControl.Sprites.Clear();
 			foreach( var placement in placements )
@@ -290,9 +306,30 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.roomPreviewControl.RefreshContent();
 		}
 
-		private SizeF GetHdScale()
+		/// <summary>
+		/// Builds the classic-to-HD transform from the editable scale fields. The origin is
+		/// recomputed from the scale so the classic view stays centered in the room the way
+		/// the game places it (fullscreen rooms have widescreen margins on both sides).
+		/// </summary>
+		private RoomHdTransform GetHdTransform()
 		{
-			return new SizeF( (float)this.numericScaleX.Value, (float)this.numericScaleY.Value );
+			var scale = new SizeF( (float)this.numericScaleX.Value, (float)this.numericScaleY.Value );
+			var origin = PointF.Empty;
+			if( this.Room != null && this.classicRoom != null && this.classicRoom.Width > 0 && this.classicRoom.Height > 0 )
+			{
+				origin = new PointF(
+					( this.Room.Header.Width - this.classicRoom.Width * scale.Width ) / 2.0f,
+					( this.Room.Header.Height - this.classicRoom.Height * scale.Height ) / 2.0f
+				);
+			}
+			return new RoomHdTransform( scale, origin );
+		}
+
+		private void ApplyHdTransformToPreview()
+		{
+			var hdTransform = this.GetHdTransform();
+			this.roomPreviewControl.HdScale = hdTransform.Scale;
+			this.roomPreviewControl.HdOrigin = hdTransform.Origin;
 		}
 
 		//-------------------------------------------
@@ -589,13 +626,13 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			{
 				return;
 			}
-			this.roomPreviewControl.HdScale = this.GetHdScale();
+			this.ApplyHdTransformToPreview();
 			this.RefreshPlacements();
 		}
 
 		private void HandleCalibrationCheckedChanged( object sender, EventArgs args )
 		{
-			this.roomPreviewControl.HdScale = this.GetHdScale();
+			this.ApplyHdTransformToPreview();
 			this.roomPreviewControl.ShowCalibrationOverlay = this.checkBoxCalibration.Checked;
 			this.roomPreviewControl.Invalidate();
 		}

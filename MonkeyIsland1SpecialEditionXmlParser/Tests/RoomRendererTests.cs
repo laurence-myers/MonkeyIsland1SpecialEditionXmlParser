@@ -26,14 +26,14 @@ namespace Tests
 			};
 
 			// Act
-			var placements = Renderer.ResolvePlacements( room, classicObjects, new SizeF( 6.0f, 7.2f ) );
+			var placements = Renderer.ResolvePlacements( room, classicObjects, new RoomHdTransform( new SizeF( 6.0f, 7.2f ), new PointF( 10.0f, 20.0f ) ) );
 
 			// Assert
 			Assert.That( placements.Count, Is.EqualTo( 1 ) );
 			var placement = placements[0];
 			Assert.That( placement.HasClassicMatch, Is.True );
-			Assert.That( placement.ScreenRect.X, Is.EqualTo( 32 * 6.0f - 6.4f ).Within( 0.001f ) );
-			Assert.That( placement.ScreenRect.Y, Is.EqualTo( 72 * 7.2f + 2.4f ).Within( 0.001f ) );
+			Assert.That( placement.ScreenRect.X, Is.EqualTo( 10.0f + 32 * 6.0f - 6.4f ).Within( 0.001f ) );
+			Assert.That( placement.ScreenRect.Y, Is.EqualTo( 20.0f + 72 * 7.2f + 2.4f ).Within( 0.001f ) );
 			Assert.That( placement.ScreenRect.Width, Is.EqualTo( 269 ) );
 			Assert.That( placement.ScreenRect.Height, Is.EqualTo( 346 ) );
 		}
@@ -49,9 +49,11 @@ namespace Tests
 			);
 			var classicObjects = new Dictionary<int, ClassicObject>();
 
-			// Act: also cover a null dictionary
-			var placements = Renderer.ResolvePlacements( room, classicObjects, new SizeF( 6.0f, 7.2f ) );
-			var placementsWithNull = Renderer.ResolvePlacements( room, null, new SizeF( 6.0f, 7.2f ) );
+			// Act: also cover a null dictionary; the origin shift must not leak into
+			// offset-only placements
+			var transform = new RoomHdTransform( new SizeF( 6.0f, 7.2f ), new PointF( 267.7f, 0.0f ) );
+			var placements = Renderer.ResolvePlacements( room, classicObjects, transform );
+			var placementsWithNull = Renderer.ResolvePlacements( room, null, transform );
 
 			// Assert: the sprite is flagged, not dropped
 			Assert.That( placements.Count, Is.EqualTo( 1 ) );
@@ -84,12 +86,73 @@ namespace Tests
 			);
 
 			// Act
-			var placements = Renderer.ResolvePlacements( room, null, Renderer.DefaultHdScale );
+			var placements = Renderer.ResolvePlacements( room, null, new RoomHdTransform( Renderer.DefaultHdScale, PointF.Empty ) );
 
 			// Assert: layer 0 sprites first (group 0 before group 1), then layer 5
 			Assert.That( placements.Select( p => p.Sprite.Layer ).ToArray(), Is.EqualTo( new[] { 0, 0, 5 } ) );
 			Assert.That( placements[0].GroupIndex, Is.EqualTo( 0 ) );
 			Assert.That( placements[1].GroupIndex, Is.EqualTo( 1 ) );
+		}
+
+		[Test]
+		public void GetHdTransform_ScrollingRoom_GivesAspectCorrectedScaleAndNoMargin()
+		{
+			// Arrange: a normal 144-line room (28 bar); its art is authored exactly as wide
+			// as the classic view, so the origin is ~0 and the scale is the familiar
+			// 7.2014 with X = Y / 1.2
+			var barRoom = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
+			barRoom.Header = new Header { Width = 3841, Height = 1037 };
+			var barClassic = new ClassicRoom( roomNumber: 28, width: 640, height: 144, objectList: new List<ClassicObject>() );
+
+			// Act
+			var transform = Renderer.GetHdTransform( barRoom, barClassic );
+
+			// Assert
+			var scaleY = 1037 / 144.0f;
+			Assert.That( transform.Scale.Height, Is.EqualTo( scaleY ).Within( 0.0001f ) );
+			Assert.That( transform.Scale.Width, Is.EqualTo( scaleY / 1.2f ).Within( 0.0001f ) );
+			Assert.That( transform.Origin.X, Is.EqualTo( 0.0f ).Within( 0.5f ) );
+			Assert.That( transform.Origin.Y, Is.EqualTo( 0.0f ).Within( 0.5f ) );
+		}
+
+		[Test]
+		public void GetHdTransform_FullscreenRoom_CentersTheClassicViewInTheWidescreenArt()
+		{
+			// Arrange: a fullscreen 200-line room (4 monkey-3, the island map); the art
+			// carries widescreen margins, the classic 4:3 view sits centered between them
+			var mapRoom = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
+			mapRoom.Header = new Header { Width = 1918, Height = 1037 };
+			var mapClassic = new ClassicRoom( roomNumber: 4, width: 320, height: 200, objectList: new List<ClassicObject>() );
+
+			// Act
+			var transform = Renderer.GetHdTransform( mapRoom, mapClassic );
+
+			// Assert: Y is 1037/200 = 5.185, X is that over 1.2 = 4.3208, and the classic
+			// view (320 * 4.3208 = 1382.7 wide) is centered with ~268 px margins
+			var scaleY = 1037 / 200.0f;
+			var scaleX = scaleY / 1.2f;
+			Assert.That( transform.Scale.Height, Is.EqualTo( scaleY ).Within( 0.0001f ) );
+			Assert.That( transform.Scale.Width, Is.EqualTo( scaleX ).Within( 0.0001f ) );
+			Assert.That( transform.Origin.X, Is.EqualTo( ( 1918 - 320 * scaleX ) / 2.0f ).Within( 0.001f ) );
+			Assert.That( transform.Origin.X, Is.EqualTo( 267.67f ).Within( 0.1f ) );
+			Assert.That( transform.Origin.Y, Is.EqualTo( 0.0f ).Within( 0.001f ) );
+		}
+
+		[Test]
+		public void GetHdTransform_WithoutUsableSizes_FallsBackToDefault()
+		{
+			// Arrange
+			var room = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
+			room.Header = new Header { Width = 1920, Height = 1037 };
+			var zeroSizeClassic = new ClassicRoom( roomNumber: 24, width: 0, height: 0, objectList: new List<ClassicObject>() );
+			var zeroSizeRoom = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
+			var normalClassic = new ClassicRoom( roomNumber: 24, width: 320, height: 144, objectList: new List<ClassicObject>() );
+
+			// Act + Assert
+			Assert.That( Renderer.GetHdTransform( room, null ).Scale, Is.EqualTo( Renderer.DefaultHdScale ) );
+			Assert.That( Renderer.GetHdTransform( room, null ).Origin, Is.EqualTo( PointF.Empty ) );
+			Assert.That( Renderer.GetHdTransform( room, zeroSizeClassic ).Scale, Is.EqualTo( Renderer.DefaultHdScale ) );
+			Assert.That( Renderer.GetHdTransform( zeroSizeRoom, normalClassic ).Scale, Is.EqualTo( Renderer.DefaultHdScale ) );
 		}
 
 		[Test]

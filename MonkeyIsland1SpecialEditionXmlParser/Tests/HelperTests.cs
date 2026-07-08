@@ -350,6 +350,66 @@ namespace Tests
 			}
 		}
 
+		[Test]
+		public void ClearWithTransparencyGrid_PaintsTheWholeClipRegion_EvenWhenItStartsPastTheOrigin()
+		{
+			// Arrange: scrolling invalidates only the newly exposed part of the control, so
+			// the clip region starts away from the origin (and not on a cell boundary)
+			using( var bitmap = new System.Drawing.Bitmap( 60, 60 ) )
+			{
+				using( var graphics = System.Drawing.Graphics.FromImage( bitmap ) )
+				{
+					graphics.SetClip( new System.Drawing.Rectangle( 25, 35, 35, 25 ) );
+
+					// Act
+					graphics.ClearWithTransparencyGrid();
+				}
+
+				// Assert: every pixel inside the clip got one of the two grid colors
+				var white = System.Drawing.Color.White.ToArgb();
+				var gray = System.Drawing.Color.FromArgb( 255, 191, 191, 191 ).ToArgb();
+				for( var y = 35; y < 60; y++ )
+				{
+					for( var x = 25; x < 60; x++ )
+					{
+						var pixel = bitmap.GetPixel( x, y ).ToArgb();
+						Assert.That( pixel == white || pixel == gray, Is.True, $"pixel {x},{y} should be painted" );
+					}
+				}
+			}
+		}
+
+		[Test]
+		public void ClearWithTransparencyGrid_KeepsThePatternAnchoredToTheControlOrigin()
+		{
+			// Arrange: the same pixel must get the same color whether it was painted by a
+			// full repaint or by a partial repaint after scrolling
+			using( var full = new System.Drawing.Bitmap( 40, 40 ) )
+			using( var partial = new System.Drawing.Bitmap( 40, 40 ) )
+			{
+				using( var graphics = System.Drawing.Graphics.FromImage( full ) )
+				{
+					graphics.ClearWithTransparencyGrid();
+				}
+
+				// Act
+				using( var graphics = System.Drawing.Graphics.FromImage( partial ) )
+				{
+					graphics.SetClip( new System.Drawing.Rectangle( 15, 15, 25, 25 ) );
+					graphics.ClearWithTransparencyGrid();
+				}
+
+				// Assert
+				for( var y = 15; y < 40; y++ )
+				{
+					for( var x = 15; x < 40; x++ )
+					{
+						Assert.That( partial.GetPixel( x, y ).ToArgb(), Is.EqualTo( full.GetPixel( x, y ).ToArgb() ), $"pixel {x},{y}" );
+					}
+				}
+			}
+		}
+
 		private static void FillQuadrant( System.Drawing.Bitmap bitmap, int x, int y, System.Drawing.Color color )
 		{
 			for( var yy = y; yy < y + 4; yy++ )

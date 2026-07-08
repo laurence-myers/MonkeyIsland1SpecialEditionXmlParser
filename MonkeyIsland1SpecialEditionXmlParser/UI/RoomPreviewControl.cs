@@ -152,6 +152,17 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		}
 
 		/// <summary>
+		/// Gets or sets the HD position of the classic point (0, 0), used by the calibration
+		/// overlay. Non-zero for fullscreen rooms whose art has widescreen margins around the
+		/// centered classic view.
+		/// </summary>
+		public PointF HdOrigin
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Gets or sets the selected sprite; it is outlined and reported by hit-testing.
 		/// </summary>
 		public RoomPreviewControlSprite? SelectedSprite
@@ -372,21 +383,23 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			var width = this.Width;
 			var height = this.Height;
 
-			// grid every 8 classic pixels (one SCUMM strip)
+			// grid every 8 classic pixels (one SCUMM strip), anchored to the classic origin
 			using( var gridPen = new Pen( Color.FromArgb( 80, Color.White ) ) )
 			{
 				var stepX = 8 * this.HdScale.Width * this.zoom;
 				var stepY = 8 * this.HdScale.Height * this.zoom;
 				if( stepX >= 4 )
 				{
-					for( var x = 0.0f; x < width; x += stepX )
+					var originX = this.HdOrigin.X * this.zoom;
+					for( var x = originX - stepX * (float)Math.Floor( originX / stepX ); x < width; x += stepX )
 					{
 						graphics.DrawLine( gridPen, x, 0, x, height );
 					}
 				}
 				if( stepY >= 4 )
 				{
-					for( var y = 0.0f; y < height; y += stepY )
+					var originY = this.HdOrigin.Y * this.zoom;
+					for( var y = originY - stepY * (float)Math.Floor( originY / stepY ); y < height; y += stepY )
 					{
 						graphics.DrawLine( gridPen, 0, y, width, y );
 					}
@@ -406,8 +419,8 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 
 					graphics.DrawRectangle(
 						classicPen,
-						classicObject.X * this.HdScale.Width * this.zoom,
-						classicObject.Y * this.HdScale.Height * this.zoom,
+						( this.HdOrigin.X + classicObject.X * this.HdScale.Width ) * this.zoom,
+						( this.HdOrigin.Y + classicObject.Y * this.HdScale.Height ) * this.zoom,
 						classicObject.Width * this.HdScale.Width * this.zoom,
 						classicObject.Height * this.HdScale.Height * this.zoom
 					);

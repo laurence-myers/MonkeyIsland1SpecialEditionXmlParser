@@ -490,7 +490,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			//
 			// numericScaleX
 			//
-			this.numericScaleX.DecimalPlaces = 2;
+			this.numericScaleX.DecimalPlaces = 4;
 			this.numericScaleX.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleX.Location = new System.Drawing.Point(100, 196);
 			this.numericScaleX.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
@@ -511,7 +511,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			//
 			// numericScaleY
 			//
-			this.numericScaleY.DecimalPlaces = 2;
+			this.numericScaleY.DecimalPlaces = 4;
 			this.numericScaleY.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleY.Location = new System.Drawing.Point(100, 222);
 			this.numericScaleY.Maximum = new decimal(new int[] { 20, 0, 0, 0 });

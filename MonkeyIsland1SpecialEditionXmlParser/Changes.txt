@@ -1,4 +1,32 @@
-﻿[ 2026/07/07 ]
+﻿[ 2026/07/08 ]
+---------------------------------------------------------------
+- Object sprites are now placed with the room's own classic-to-HD
+  transform instead of the fixed 6.0 x 7.2 scale. The Y scale is
+  the SE room height over the classic RMHD height: every SE room
+  is 1037 px tall, but the usual game rooms show 144 classic lines
+  (1037/144 = 7.2014) while fullscreen rooms - the island maps
+  (monkey-1..5, melee, map), close-ups (cu-brush, cu-naviga,
+  cu-works), copy protection, logo - show all 200 lines and scale
+  by only 1037/200 = 5.185. The X scale is the Y scale divided by
+  the 1.2 VGA pixel aspect (6.0012 / 4.3208), and the classic 4:3
+  view is centered horizontally in the room: scrolling rooms are
+  authored exactly as wide as the classic art, but fullscreen
+  rooms carry ~268 px of extra widescreen scenery on each side.
+  Previously the dry river bed in monkey-3 hung off the bottom of
+  the map ~80 px left of the painted river bed; it (and monkey-4's
+  river/pond, cu-naviga's eyes, copycrap's dial) now sit
+  pixel-exact on the background art, verified by template-matching
+  the retail textures. The calibration overlay and actor origins
+  honor the new origin shift, and the room spritesheet editor
+  seeds its HD Scale fields (now 4 decimals) with the room's own
+  scale, recomputing the centering as they are edited
+- Fixed the transparency checkerboard in the texture/room/costume
+  views turning black or grey after scrolling: the partial repaint
+  only filled the grid up to the clip's width/height instead of its
+  right/bottom edge, and the pattern was keyed to the clip origin
+  instead of the control origin
+
+[ 2026/07/07 ]
 ---------------------------------------------------------------
 - Room viewer now shows costume actors (e.g. the pirate leaders in
   the bar) at the positions the game places them. The classic SCUMM
