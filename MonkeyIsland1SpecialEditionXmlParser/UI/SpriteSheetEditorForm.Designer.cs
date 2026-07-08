@@ -39,7 +39,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.label1 = new System.Windows.Forms.Label();
 			this.warningLabel = new System.Windows.Forms.Label();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
-			this.panelAtlas = new System.Windows.Forms.Panel();
+			this.panelAtlas = new MonkeyIsland1SpecialEditionXmlParser.UI.NonScrollingPanel();
 			this.atlasViewControl = new MonkeyIsland1SpecialEditionXmlParser.UI.AtlasViewControl();
 			this.comboBoxTextures = new System.Windows.Forms.ComboBox();
 			this.labelDiagnostics = new System.Windows.Forms.Label();
@@ -69,7 +69,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 			this.checkBoxCalibration = new System.Windows.Forms.CheckBox();
 			this.checkBoxForeground = new System.Windows.Forms.CheckBox();
 			this.labelHint = new System.Windows.Forms.Label();
-			this.panelPreview = new System.Windows.Forms.Panel();
+			this.panelPreview = new MonkeyIsland1SpecialEditionXmlParser.UI.NonScrollingPanel();
 			this.roomPreviewControl = new MonkeyIsland1SpecialEditionXmlParser.UI.RoomPreviewControl();
 			((System.ComponentModel.ISupportInitialize)(this.splitMain)).BeginInit();
 			this.splitMain.Panel1.SuspendLayout();
@@ -630,7 +630,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private System.Windows.Forms.Label warningLabel;
 		private System.Windows.Forms.SplitContainer splitMain;
 		private System.Windows.Forms.ComboBox comboBoxTextures;
-		private System.Windows.Forms.Panel panelAtlas;
+		private NonScrollingPanel panelAtlas;
 		private AtlasViewControl atlasViewControl;
 		private System.Windows.Forms.Label labelDiagnostics;
 		private System.Windows.Forms.ListBox listBoxDiagnostics;
@@ -659,7 +659,7 @@ namespace MonkeyIsland1SpecialEditionXmlParser.UI
 		private System.Windows.Forms.CheckBox checkBoxCalibration;
 		private System.Windows.Forms.CheckBox checkBoxForeground;
 		private System.Windows.Forms.Label labelHint;
-		private System.Windows.Forms.Panel panelPreview;
+		private NonScrollingPanel panelPreview;
 		private RoomPreviewControl roomPreviewControl;
 	}
 }

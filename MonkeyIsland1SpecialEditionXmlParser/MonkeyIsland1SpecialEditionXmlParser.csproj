@@ -200,6 +200,9 @@
     <Compile Include="UI\AtlasViewControl.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="UI\NonScrollingPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="UI\RoomPreviewControl.cs">
       <SubType>Component</SubType>
     </Compile>
