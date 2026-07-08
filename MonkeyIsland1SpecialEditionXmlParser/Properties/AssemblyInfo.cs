@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "Monkey Island SE Inspector" )]
+[assembly: AssemblyTitle( "Monkey Island SE Sprite Editor" )]
 [assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
-[assembly: AssemblyProduct( "Monkey Island SE Inspector" )]
+[assembly: AssemblyProduct( "Monkey Island SE Sprite Editor" )]
 [assembly: AssemblyCopyright( "Public Domain" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
