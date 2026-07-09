@@ -13,9 +13,9 @@
     <AssemblyTitle>Monkey Island SE Sprite Editor</AssemblyTitle>
     <Product>Monkey Island SE Sprite Editor</Product>
     <Copyright/>
-    <Version>2026.03.22.0</Version>
-    <AssemblyVersion>2026.03.22.0</AssemblyVersion>
-    <FileVersion>2026.03.22.0</FileVersion>
+    <Version>2026.07.09.0</Version>
+    <AssemblyVersion>2026.07.09.0</AssemblyVersion>
+    <FileVersion>2026.07.09.0</FileVersion>
     <!-- The SDK otherwise defaults Company to the assembly name; the app has never had one. -->
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
