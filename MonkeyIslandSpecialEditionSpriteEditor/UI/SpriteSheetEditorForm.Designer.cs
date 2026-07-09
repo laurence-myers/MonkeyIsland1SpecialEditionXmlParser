@@ -36,6 +36,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.importTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.importAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportXmlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportMergedPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label1 = new System.Windows.Forms.Label();
 			this.warningLabel = new System.Windows.Forms.Label();
 			this.splitMain = new System.Windows.Forms.SplitContainer();
@@ -46,7 +50,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.listBoxDiagnostics = new System.Windows.Forms.ListBox();
 			this.splitRight = new System.Windows.Forms.SplitContainer();
 			this.splitEdit = new System.Windows.Forms.SplitContainer();
+			this.splitTree = new System.Windows.Forms.SplitContainer();
 			this.treeViewSprites = new System.Windows.Forms.TreeView();
+			this.labelActors = new System.Windows.Forms.Label();
+			this.checkedListBoxActors = new System.Windows.Forms.CheckedListBox();
 			this.panelProperties = new System.Windows.Forms.Panel();
 			this.labelTextureX = new System.Windows.Forms.Label();
 			this.numericTextureX = new System.Windows.Forms.NumericUpDown();
@@ -84,6 +91,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitEdit.Panel1.SuspendLayout();
 			this.splitEdit.Panel2.SuspendLayout();
 			this.splitEdit.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.splitTree)).BeginInit();
+			this.splitTree.Panel1.SuspendLayout();
+			this.splitTree.Panel2.SuspendLayout();
+			this.splitTree.SuspendLayout();
 			this.panelProperties.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureX)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureY)).BeginInit();
@@ -117,7 +128,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
             this.exportTexturePngToolStripMenuItem,
             this.importTexturePngToolStripMenuItem,
             this.exportAllTexturesToolStripMenuItem,
-            this.importAllTexturesToolStripMenuItem});
+            this.importAllTexturesToolStripMenuItem,
+            this.exportToolStripMenuItem});
 			this.fileToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.MatchOnly;
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
 			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -177,6 +189,38 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.importAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
 			this.importAllTexturesToolStripMenuItem.Text = "Import all te&xtures from folder...";
 			this.importAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ImportAllTexturesPng);
+			//
+			// exportToolStripMenuItem
+			//
+			this.exportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exportXmlToolStripMenuItem,
+            this.exportPngToolStripMenuItem,
+            this.exportMergedPngToolStripMenuItem});
+			this.exportToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Replace;
+			this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
+			this.exportToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.exportToolStripMenuItem.Text = "&Export";
+			//
+			// exportXmlToolStripMenuItem
+			//
+			this.exportXmlToolStripMenuItem.Name = "exportXmlToolStripMenuItem";
+			this.exportXmlToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.exportXmlToolStripMenuItem.Text = "As &XML file...";
+			this.exportXmlToolStripMenuItem.Click += new System.EventHandler(this.ExportAsXml);
+			//
+			// exportPngToolStripMenuItem
+			//
+			this.exportPngToolStripMenuItem.Name = "exportPngToolStripMenuItem";
+			this.exportPngToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.exportPngToolStripMenuItem.Text = "As PNG files...";
+			this.exportPngToolStripMenuItem.Click += new System.EventHandler(this.ExportAsPng);
+			//
+			// exportMergedPngToolStripMenuItem
+			//
+			this.exportMergedPngToolStripMenuItem.Name = "exportMergedPngToolStripMenuItem";
+			this.exportMergedPngToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.exportMergedPngToolStripMenuItem.Text = "As merged PNG file...";
+			this.exportMergedPngToolStripMenuItem.Click += new System.EventHandler(this.ExportAsMergedPng);
 			//
 			// label1
 			//
@@ -304,7 +348,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// splitEdit.Panel1
 			//
-			this.splitEdit.Panel1.Controls.Add(this.treeViewSprites);
+			this.splitEdit.Panel1.Controls.Add(this.splitTree);
 			//
 			// splitEdit.Panel2
 			//
@@ -314,6 +358,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitEdit.SplitterDistance = 370;
 			this.splitEdit.TabIndex = 0;
 			//
+			// splitTree
+			//
+			this.splitTree.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.splitTree.Location = new System.Drawing.Point(0, 0);
+			this.splitTree.Name = "splitTree";
+			this.splitTree.Orientation = System.Windows.Forms.Orientation.Horizontal;
+			//
+			// splitTree.Panel1
+			//
+			this.splitTree.Panel1.Controls.Add(this.treeViewSprites);
+			//
+			// splitTree.Panel2
+			//
+			this.splitTree.Panel2.Controls.Add(this.checkedListBoxActors);
+			this.splitTree.Panel2.Controls.Add(this.labelActors);
+			this.splitTree.Size = new System.Drawing.Size(370, 280);
+			this.splitTree.SplitterDistance = 160;
+			this.splitTree.TabIndex = 0;
+			// stays collapsed until the classic scripts place an actor in the room
+			this.splitTree.Panel2Collapsed = true;
+			//
 			// treeViewSprites
 			//
 			this.treeViewSprites.CheckBoxes = true;
@@ -321,10 +386,33 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.treeViewSprites.HideSelection = false;
 			this.treeViewSprites.Location = new System.Drawing.Point(0, 0);
 			this.treeViewSprites.Name = "treeViewSprites";
-			this.treeViewSprites.Size = new System.Drawing.Size(370, 280);
+			this.treeViewSprites.Size = new System.Drawing.Size(370, 160);
 			this.treeViewSprites.TabIndex = 0;
 			this.treeViewSprites.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.HandleTreeAfterCheck);
 			this.treeViewSprites.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.HandleTreeAfterSelect);
+			//
+			// labelActors
+			//
+			this.labelActors.Dock = System.Windows.Forms.DockStyle.Top;
+			this.labelActors.Location = new System.Drawing.Point(0, 0);
+			this.labelActors.Name = "labelActors";
+			this.labelActors.Padding = new System.Windows.Forms.Padding(3, 3, 3, 0);
+			this.labelActors.Size = new System.Drawing.Size(370, 18);
+			this.labelActors.TabIndex = 0;
+			this.labelActors.Text = "Actors (from classic scripts)";
+			//
+			// checkedListBoxActors
+			//
+			this.checkedListBoxActors.CheckOnClick = true;
+			this.checkedListBoxActors.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.checkedListBoxActors.FormattingEnabled = true;
+			this.checkedListBoxActors.HorizontalScrollbar = true;
+			this.checkedListBoxActors.IntegralHeight = false;
+			this.checkedListBoxActors.Location = new System.Drawing.Point(0, 18);
+			this.checkedListBoxActors.Name = "checkedListBoxActors";
+			this.checkedListBoxActors.Size = new System.Drawing.Size(370, 98);
+			this.checkedListBoxActors.TabIndex = 1;
+			this.checkedListBoxActors.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.HandleActorItemCheck);
 			//
 			// panelProperties
 			//
@@ -598,6 +686,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitEdit.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitEdit)).EndInit();
 			this.splitEdit.ResumeLayout(false);
+			this.splitTree.Panel1.ResumeLayout(false);
+			this.splitTree.Panel2.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.splitTree)).EndInit();
+			this.splitTree.ResumeLayout(false);
 			this.panelProperties.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureX)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureY)).EndInit();
@@ -626,6 +718,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.ToolStripMenuItem importTexturePngToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportAllTexturesToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem importAllTexturesToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportXmlToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportPngToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportMergedPngToolStripMenuItem;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label warningLabel;
 		private System.Windows.Forms.SplitContainer splitMain;
@@ -636,7 +732,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.ListBox listBoxDiagnostics;
 		private System.Windows.Forms.SplitContainer splitRight;
 		private System.Windows.Forms.SplitContainer splitEdit;
+		private System.Windows.Forms.SplitContainer splitTree;
 		private System.Windows.Forms.TreeView treeViewSprites;
+		private System.Windows.Forms.Label labelActors;
+		private System.Windows.Forms.CheckedListBox checkedListBoxActors;
 		private System.Windows.Forms.Panel panelProperties;
 		private System.Windows.Forms.Label labelTextureX;
 		private System.Windows.Forms.NumericUpDown numericTextureX;

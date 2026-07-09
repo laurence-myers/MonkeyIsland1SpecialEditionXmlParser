@@ -38,7 +38,6 @@
 			this.overridesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.applyOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.openSpriteSheetEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openViewerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.importTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -82,7 +81,6 @@
 			// contextMenuStrip
 			// 
 			this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-	            this.openSpriteSheetEditorToolStripMenuItem,
 	            this.openViewerToolStripMenuItem,
 	            this.viewAsHEXToolStripMenuItem,
 	            this.saveAsToolStripMenuItem,
@@ -131,13 +129,6 @@
 			this.applyOverrideToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.applyOverrideToolStripMenuItem.Text = "Apply override";
 			this.applyOverrideToolStripMenuItem.Click += new System.EventHandler(this.ApplyOverride);
-			//
-			// openSpriteSheetEditorToolStripMenuItem
-			//
-			this.openSpriteSheetEditorToolStripMenuItem.Name = "openSpriteSheetEditorToolStripMenuItem";
-			this.openSpriteSheetEditorToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-			this.openSpriteSheetEditorToolStripMenuItem.Text = "Open in Spritesheet Editor";
-			this.openSpriteSheetEditorToolStripMenuItem.Click += new System.EventHandler(this.OpenInSpriteSheetEditor);
 			//
 			// openViewerToolStripMenuItem
 			//
@@ -235,7 +226,6 @@
 		private System.Windows.Forms.ToolStripMenuItem overridesToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem applyOverrideToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem openSpriteSheetEditorToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openViewerToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportTexturePngToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem importTexturePngToolStripMenuItem;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using MonkeyIslandSpecialEditionSpriteEditor.Commands;
 using MonkeyIslandSpecialEditionSpriteEditor.Formats.LPAK;
@@ -9,13 +10,28 @@ using MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms;
 using MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities;
 using MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm;
 using MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities;
+using Costume = MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes.Entities.Costume;
+using CostumeRenderer = MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes.Renderer;
 
 namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 {
+	/// <summary>
+	/// Views and edits a room: the preview composites it the way the game does - background,
+	/// object sprites at their resolved positions, the actors the classic scripts place, then
+	/// the static foreground - while the atlas edits each sprite's texture rectangle and the
+	/// numeric fields its offset, layer and the room's classic-to-HD scale.
+	/// </summary>
 	public partial class SpriteSheetEditorForm : Form
 	{
+		/// <summary>
+		/// Matches SE costume pak entries; the number prefix is the classic costume number.
+		/// </summary>
+		private static readonly Regex costumeFileNameRegex = new Regex(
+			@"^art/costumes/(\d+)_.*\.costume\.xml$", RegexOptions.IgnoreCase | RegexOptions.Compiled );
+
 		private static readonly List<SpriteSheetEditorForm> instances = new List<SpriteSheetEditorForm>();
 		private readonly Dictionary<string, Image?> textureCache = new Dictionary<string, Image?>();
+		private readonly Dictionary<int, Costume?> costumeCache = new Dictionary<int, Costume?>();
 		private ClassicData? classicData;
 		private ClassicRoom? classicRoom;
 		private Dictionary<int, ClassicObject>? classicObjects;
@@ -124,6 +140,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.PopulateTextureCombo();
 			this.PopulateSpriteTree();
 			this.PopulateDiagnostics();
+			this.BuildActorOverlays();
 			this.RefreshPlacements();
 			this.UpdateNumericEditors();
 		}
@@ -330,6 +347,161 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			var hdTransform = this.GetHdTransform();
 			this.roomPreviewControl.HdScale = hdTransform.Scale;
 			this.roomPreviewControl.HdOrigin = hdTransform.Origin;
+			this.UpdateActorPositions();
+		}
+
+		//-------------------------------------------
+		// actor overlays
+
+		/// <summary>
+		/// Builds a costume overlay for every actor placement the classic scripts make in
+		/// this room. The first placement of each actor (the room's initial setup) starts
+		/// visible; later placements (mostly cutscene positions) start hidden.
+		/// </summary>
+		private void BuildActorOverlays()
+		{
+			this.roomPreviewControl.Actors.Clear();
+
+			if( this.classicRoom != null )
+			{
+				var visibleActors = new HashSet<int>();
+				foreach( var placement in this.classicRoom.ActorPlacementList )
+				{
+					var overlay = this.BuildActorOverlay( placement );
+					overlay.Visible = overlay.Image != null && visibleActors.Add( placement.ActorNumber );
+
+					// the walkbox mask decides whether the game draws the actor in front of or
+					// behind the foreground props (tables, counters)
+					overlay.DrawAboveForeground = this.classicRoom.GetBoxMaskAt( placement.X, placement.Y ) == 0;
+					this.roomPreviewControl.Actors.Add( overlay );
+				}
+			}
+
+			this.UpdateActorPositions();
+			this.PopulateActorList();
+		}
+
+		private RoomPreviewControlActor BuildActorOverlay( ClassicActorPlacement placement )
+		{
+			Bitmap? image = null;
+			var origin = PointF.Empty;
+			var costumeName = placement.CostumeId != null
+				? string.Concat( "costume ", placement.CostumeId )
+				: "costume unknown";
+
+			if( placement.CostumeId != null )
+			{
+				var costume = this.LoadCostumeById( placement.CostumeId.Value );
+				if( costume != null )
+				{
+					costumeName = costume.Header.Name;
+					var classicCostume = this.classicData?.FindCostume( placement.CostumeId.Value );
+					image = CostumeRenderer.RenderStandingActor( costume, placement.DirectionName, this.LoadTexture, classicCostume, out origin );
+				}
+			}
+
+			var label = string.Concat(
+				"actor ", placement.ActorNumber, ": ", costumeName,
+				placement.CostumeInferred ? "?" : "",
+				" (", placement.X, ",", placement.Y, ") ",
+				placement.Source
+			);
+			return new RoomPreviewControlActor( placement, image, origin, label );
+		}
+
+		/// <summary>
+		/// Places every actor overlay with the current classic-to-HD transform, so the actors
+		/// keep following the object sprites as the HD scale is edited.
+		/// </summary>
+		private void UpdateActorPositions()
+		{
+			var hdTransform = this.GetHdTransform();
+			foreach( var actor in this.roomPreviewControl.Actors )
+			{
+				if( actor.Image == null )
+				{
+					continue;
+				}
+
+				// the actor origin is its feet: classic position scaled to HD, lifted by the
+				// elevation
+				var placement = actor.Placement;
+				var originX = hdTransform.Origin.X + placement.X * hdTransform.Scale.Width;
+				var originY = hdTransform.Origin.Y + ( placement.Y - ( placement.Elevation ?? 0 ) ) * hdTransform.Scale.Height;
+				actor.Position = new PointF( originX - actor.Origin.X, originY - actor.Origin.Y );
+			}
+		}
+
+		/// <summary>
+		/// Loads the SE costume whose file name prefix matches the classic costume number,
+		/// caching the result (including misses).
+		/// </summary>
+		private Costume? LoadCostumeById( int costumeId )
+		{
+			Costume? costume;
+			if( this.costumeCache.TryGetValue( costumeId, out costume ) )
+			{
+				return costume;
+			}
+
+			try
+			{
+				for( var index = 0; index < this.LPAKFile.PakFileNames.Length; index++ )
+				{
+					var fileName = this.LPAKFile.PakFileNames[index].FileName;
+					if( fileName == null )
+					{
+						continue;
+					}
+					var match = SpriteSheetEditorForm.costumeFileNameRegex.Match( fileName );
+					if( match.Success && int.Parse( match.Groups[1].Value ) == costumeId )
+					{
+						costume = this.LPAKFile.LoadCostume( index );
+						break;
+					}
+				}
+			}
+			catch( Exception )
+			{
+				costume = null;
+			}
+
+			this.costumeCache[costumeId] = costume;
+			return costume;
+		}
+
+		private void PopulateActorList()
+		{
+			// adding a pre-checked item raises ItemCheck, which would toggle the overlay back
+			this.suppressUiEvents = true;
+			try
+			{
+				this.checkedListBoxActors.Items.Clear();
+				foreach( var actor in this.roomPreviewControl.Actors )
+				{
+					this.checkedListBoxActors.Items.Add( actor.Label, actor.Visible );
+				}
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.splitTree.Panel2Collapsed = this.roomPreviewControl.Actors.Count == 0;
+		}
+
+		private void HandleActorItemCheck( object sender, ItemCheckEventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+
+			if( args.Index >= 0 && args.Index < this.roomPreviewControl.Actors.Count )
+			{
+				this.roomPreviewControl.Actors[args.Index].Visible = args.NewValue == CheckState.Checked;
+				this.roomPreviewControl.Invalidate();
+			}
 		}
 
 		//-------------------------------------------
@@ -895,6 +1067,36 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room, this.LoadTexture );
 			this.UpdateAtlas();
 			this.RefreshPlacements();
+		}
+
+		//-------------------------------------------
+		// room export
+
+		private void ExportAsXml( object sender, EventArgs args )
+		{
+			if( this.Room == null )
+			{
+				return;
+			}
+			new ExportToXmlCommand( this.Room, string.Concat( this.Room.Header.Identifier, "_", this.Room.Header.Name, ".xml" ) ).Execute();
+		}
+
+		private void ExportAsPng( object sender, EventArgs args )
+		{
+			if( this.Room == null )
+			{
+				return;
+			}
+			new ExportRoomToPngWithDialogCommand( this.LPAKFile, this.Room ).Execute();
+		}
+
+		private void ExportAsMergedPng( object sender, EventArgs args )
+		{
+			if( this.Room == null )
+			{
+				return;
+			}
+			new ExportRoomToMergedPngWithDialogCommand( this.LPAKFile, this.Room ).Execute();
 		}
 
 		//-------------------------------------------

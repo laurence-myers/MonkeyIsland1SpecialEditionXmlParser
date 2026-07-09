@@ -35,8 +35,15 @@
 			this.asPNGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.fromPNGToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.panelPreview = new MonkeyIslandSpecialEditionSpriteEditor.UI.NonScrollingPanel();
 			this.spriteSetPreviewControl = new MonkeyIslandSpecialEditionSpriteEditor.UI.SpriteSetPreviewControl();
+			this.panelZoom = new System.Windows.Forms.Panel();
+			this.trackBarZoom = new System.Windows.Forms.TrackBar();
+			this.labelZoom = new System.Windows.Forms.Label();
 			this.menuStrip1.SuspendLayout();
+			this.panelPreview.SuspendLayout();
+			this.panelZoom.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarZoom)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -106,31 +113,77 @@
 			this.fromPNGToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
 			this.fromPNGToolStripMenuItem.Text = "From PNG...";
 			this.fromPNGToolStripMenuItem.Click += new System.EventHandler(this.ImportFromPng);
-			// 
+			//
+			// panelPreview
+			//
+			this.panelPreview.AutoScroll = true;
+			this.panelPreview.Controls.Add(this.spriteSetPreviewControl);
+			this.panelPreview.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.panelPreview.Location = new System.Drawing.Point(0, 47);
+			this.panelPreview.Name = "panelPreview";
+			this.panelPreview.Size = new System.Drawing.Size(595, 390);
+			this.panelPreview.TabIndex = 10;
+			//
 			// spriteSetPreviewControl
-			// 
-			this.spriteSetPreviewControl.Dock = System.Windows.Forms.DockStyle.Fill;
+			//
 			this.spriteSetPreviewControl.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.spriteSetPreviewControl.Location = new System.Drawing.Point(0, 47);
+			this.spriteSetPreviewControl.Location = new System.Drawing.Point(0, 0);
 			this.spriteSetPreviewControl.Name = "spriteSetPreviewControl";
-			this.spriteSetPreviewControl.Size = new System.Drawing.Size(595, 428);
+			this.spriteSetPreviewControl.Size = new System.Drawing.Size(50, 50);
 			this.spriteSetPreviewControl.TabIndex = 8;
 			this.spriteSetPreviewControl.Text = "spriteSetPreviewControl1";
-			// 
+			//
+			// panelZoom
+			//
+			this.panelZoom.Controls.Add(this.labelZoom);
+			this.panelZoom.Controls.Add(this.trackBarZoom);
+			this.panelZoom.Dock = System.Windows.Forms.DockStyle.Bottom;
+			this.panelZoom.Location = new System.Drawing.Point(0, 437);
+			this.panelZoom.Name = "panelZoom";
+			this.panelZoom.Size = new System.Drawing.Size(595, 38);
+			this.panelZoom.TabIndex = 11;
+			//
+			// trackBarZoom
+			//
+			this.trackBarZoom.AutoSize = false;
+			this.trackBarZoom.LargeChange = 1;
+			this.trackBarZoom.Location = new System.Drawing.Point(4, 3);
+			this.trackBarZoom.Maximum = 5;
+			this.trackBarZoom.Name = "trackBarZoom";
+			this.trackBarZoom.Size = new System.Drawing.Size(240, 32);
+			this.trackBarZoom.TabIndex = 0;
+			this.trackBarZoom.TickStyle = System.Windows.Forms.TickStyle.BottomRight;
+			this.trackBarZoom.Value = 3;
+			//
+			// labelZoom
+			//
+			this.labelZoom.AutoSize = true;
+			this.labelZoom.Location = new System.Drawing.Point(252, 11);
+			this.labelZoom.Name = "labelZoom";
+			this.labelZoom.Size = new System.Drawing.Size(33, 13);
+			this.labelZoom.TabIndex = 1;
+			this.labelZoom.Text = "100%";
+			//
 			// ImageViewerForm
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(595, 475);
-			this.Controls.Add(this.spriteSetPreviewControl);
+			this.Controls.Add(this.panelPreview);
+			this.Controls.Add(this.panelZoom);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.menuStrip1);
 			this.MainMenuStrip = this.menuStrip1;
+			this.MinimumSize = new System.Drawing.Size(380, 220);
 			this.Name = "ImageViewerForm";
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
+			this.panelPreview.ResumeLayout(false);
+			this.panelZoom.ResumeLayout(false);
+			this.panelZoom.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.trackBarZoom)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -139,7 +192,11 @@
 		#endregion
 
 		private System.Windows.Forms.Label label1;
+		private NonScrollingPanel panelPreview;
 		private SpriteSetPreviewControl spriteSetPreviewControl;
+		private System.Windows.Forms.Panel panelZoom;
+		private System.Windows.Forms.TrackBar trackBarZoom;
+		private System.Windows.Forms.Label labelZoom;
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;

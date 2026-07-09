@@ -375,8 +375,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			var isKnownFormat = isCostume || isRoom || isShader || isTexture;
 
 			this.openViewerToolStripMenuItem.Visible = isKnownFormat;
-			// for costumes, the viewer IS the spritesheet editor, so hide the duplicate entry
-			this.openSpriteSheetEditorToolStripMenuItem.Visible = isRoom;
+			// for costumes and rooms, the viewer IS the spritesheet editor
+			this.openViewerToolStripMenuItem.Text = isCostume || isRoom
+				? "Open in Spritesheet Editor"
+				: "Open in Viewer";
 			this.viewAsHEXToolStripMenuItem.Visible = isResource && !isKnownFormat;
 			this.saveAsToolStripMenuItem.Visible = isResource;
 			this.overridesToolStripMenuItem.Visible = isCostume || isRoom;
@@ -443,7 +445,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					new OpenCostumeSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Rooms":
-					new OpenRoomFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
+					new OpenSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 					break;
 				case "Shaders":
 					new OpenShaderFormCommand( this.LPAKFile, fileName, fileIndex ).Execute();
@@ -565,36 +567,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				}
 
 				new ImportTexturePngCommand( this.LPAKFile, fileName, dialog.FileName ).Execute();
-			}
-		}
-
-		private void OpenInSpriteSheetEditor( object sender, EventArgs args )
-		{
-			var selectedNode = this.contextMenuStrip.Tag as TreeNode;
-			if( selectedNode == null )
-			{
-				return;
-			}
-
-			var fileIndex = (int)selectedNode.Tag;
-			if( fileIndex < 0 || fileIndex >= this.LPAKFile.PakFileNames.Length )
-			{
-				return;
-			}
-
-			var fileName = this.LPAKFile.PakFileNames[fileIndex].FileName;
-			if( string.IsNullOrWhiteSpace( fileName ) )
-			{
-				return;
-			}
-
-			if( fileName!.EndsWith( ".costume.xml" ) )
-			{
-				new OpenCostumeSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
-			}
-			else
-			{
-				new OpenSpriteSheetEditorCommand( this.LPAKFile, fileName, fileIndex ).Execute();
 			}
 		}
 

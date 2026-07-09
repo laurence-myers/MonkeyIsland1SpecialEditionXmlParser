@@ -26,11 +26,15 @@ HOW DO I FIX MISALIGNED ROOM SPRITES?
 ================================
 
 - Right-click a room in the explorer and choose "Open in Spritesheet Editor"
-  (or use File > Open in Spritesheet Editor from the room viewer)
+  (or just double-click the room)
 - The preview shows the room as the game composites it: each sprite is placed
   at its classic SCUMM object position scaled to HD (x6.0 / x7.2) plus the
   sprite's offset. The classic data is read from the pak itself
   (classic/en/monkey1.000/001) or a loose "classic" folder
+- Actors the classic scripts place in the room are drawn over it in their
+  standing pose; tick or untick them in the "Actors" list. Each actor's first
+  placement (the room's own setup) starts visible, later ones (mostly cutscene
+  positions) start hidden
 - Click a sprite in the atlas view or the preview to select it
   - Arrow keys in the atlas move the sprite's texture rectangle
   - Arrow keys in the preview nudge the sprite's offset
@@ -43,7 +47,7 @@ HOW DO I FIX MISALIGNED COSTUME SPRITES?
 ================================
 
 - Right-click a costume in the explorer and choose "Open in Spritesheet
-  Editor" (or use File > Open in Spritesheet Editor from the costume viewer)
+  Editor" (or just double-click the costume)
 - Pick an animation; the preview composites its sprites relative to the actor
   origin (the crosshair), exactly as positioned by each sprite's Screen X/Y.
   Use the frame stepper or "Play" to watch the animation

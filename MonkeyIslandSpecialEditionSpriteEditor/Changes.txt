@@ -1,5 +1,13 @@
 ﻿[ 2026/07/08 ]
 ---------------------------------------------------------------
+- The room viewer and the room spritesheet editor are now one
+  window. The editor draws the costume actors the viewer used to,
+  with an "Actors" checklist to show or hide each placement, and
+  it gained the viewer's Export menu (as XML, as PNG files, as a
+  merged PNG). Opening a room from the explorer - by double click
+  or from the context menu - now always opens the editor. Unlike
+  the old viewer, the actors are re-placed as the HD Scale fields
+  are edited, so they keep following the object sprites
 - Object sprites are now placed with the room's own classic-to-HD
   transform instead of the fixed 6.0 x 7.2 scale. The Y scale is
   the SE room height over the classic RMHD height: every SE room

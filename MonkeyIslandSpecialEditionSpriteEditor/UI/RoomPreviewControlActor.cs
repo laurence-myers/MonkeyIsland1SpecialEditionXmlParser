@@ -8,7 +8,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 	/// standing pose, positioned where the classic scripts place the actor. Actors are a
 	/// display-only overlay - they are not part of the SE room file.
 	/// </summary>
-	public class RoomPreviewControlActor( ClassicActorPlacement placement, Bitmap? image, PointF position, string label )
+	public class RoomPreviewControlActor( ClassicActorPlacement placement, Bitmap? image, PointF origin, string label )
 	{
 		/// <summary>
 		/// Gets or sets the placement the overlay was built from.
@@ -30,13 +30,24 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		} = image;
 
 		/// <summary>
+		/// Gets or sets the actor origin - its feet - within <see cref="Image"/>. The room's
+		/// classic-to-HD transform places the origin, which in turn gives <see cref="Position"/>;
+		/// keeping the two apart lets the actor be re-placed when the transform is edited.
+		/// </summary>
+		public PointF Origin
+		{
+			get;
+			set;
+		} = origin;
+
+		/// <summary>
 		/// Gets or sets the image's top left corner in HD room pixels.
 		/// </summary>
 		public PointF Position
 		{
 			get;
 			set;
-		} = position;
+		}
 
 		/// <summary>
 		/// Gets or sets the text shown for the actor in the actor list.
