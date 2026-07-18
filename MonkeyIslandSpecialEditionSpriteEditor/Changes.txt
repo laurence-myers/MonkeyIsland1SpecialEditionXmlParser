@@ -1,4 +1,24 @@
-﻿[ 2026/07/09 ]
+﻿[ 2026/07/18 ]
+---------------------------------------------------------------
+- Change the texture used by a sprite, room background or room
+  object: select any existing texture, or import a PNG as a
+  brand-new texture, from a "Change..." button in the editors
+  - Room editor: the sprite tree now has "Background" and
+    "Room objects" branches, so static sprites, room object
+    sprites and image chunks can be selected and retargeted
+  - Costume editor: retarget a sprite (a new texture is appended
+    to the costume's texture list) or clear it with "None"
+  - "Import PNG as new texture" writes a loose .dxt at a resource
+    path of your choice (DXT1/DXT5, auto-detected). NB: whether
+    the game loads textures that are not in the LPAK index is not
+    yet verified - test in game before shipping a mod
+- Sprite tree checkboxes: toggling a parent now toggles its whole
+  subtree, and right-clicking a node offers "Solo" (hide all but
+  the selected entity) and "Show all". The room editor hides the
+  checkboxes on the background and room object branches, since
+  those do not affect the preview
+
+[ 2026/07/09 ]
 ---------------------------------------------------------------
 - Added Costume Spritesheet Editor (right-click a costume / File
   menu in the costume viewer): animation preview with playback and

@@ -12,7 +12,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 		int y,
 		int width,
 		int height
-	)
+	) : ITextureReference
 	{
 		private RoomObjectSprite() : this(
 			textureFileNameAddress: 0,

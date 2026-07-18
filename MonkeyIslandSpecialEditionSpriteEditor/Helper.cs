@@ -566,6 +566,39 @@ namespace MonkeyIslandSpecialEditionSpriteEditor
 		}
 
 		/// <summary>
+		/// Picks the DXT format for a bitmap: "DXT5" when any pixel is not fully opaque (so its
+		/// alpha survives), otherwise the smaller "DXT1". Matches how the retail textures are
+		/// authored and gives the new-texture import a sensible default.
+		/// </summary>
+		/// <param name="bitmap">The image to inspect.</param>
+		/// <returns>"DXT1" or "DXT5".</returns>
+		public static string DetectDxtFourCC( Bitmap bitmap )
+		{
+			var width = bitmap.Width;
+			var height = bitmap.Height;
+
+			// read all pixels at once; GetPixel would be far too slow for 1024x1024 sheets
+			var pixels = new int[width * height];
+			var bitmapData = bitmap.LockBits(
+				new Rectangle( 0, 0, width, height ),
+				System.Drawing.Imaging.ImageLockMode.ReadOnly,
+				System.Drawing.Imaging.PixelFormat.Format32bppArgb
+			);
+			System.Runtime.InteropServices.Marshal.Copy( bitmapData.Scan0, pixels, 0, pixels.Length );
+			bitmap.UnlockBits( bitmapData );
+
+			foreach( var pixel in pixels )
+			{
+				// Format32bppArgb packs alpha in the high byte
+				if( ( ( pixel >> 24 ) & 0xFF ) != 0xFF )
+				{
+					return "DXT5";
+				}
+			}
+			return "DXT1";
+		}
+
+		/// <summary>
 		/// Encodes a bitmap into the game's .dxt wrapper format (12 byte header: fourCC,
 		/// width, height; followed by raw DXT blocks). The inverse of ImageFromDxtBytes.
 		/// DevIL.NET2 cannot control the DXT compression format on save, so the blocks are

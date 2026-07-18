@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes;
 using NUnit.Framework;
 using CostumePacker = MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes.Packer;
 using CostumeParser = MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes.Parser;
@@ -92,6 +93,46 @@ namespace Tests
 				Assert.That( roundTrippedCostume.AnimationList.Count, Is.EqualTo( costume.AnimationList.Count ) );
 				Assert.That( roundTrippedCostume.SpriteGroupList.Count, Is.EqualTo( costume.SpriteGroupList.Count ) );
 				Assert.That( roundTrippedCostume.PathPointList.Count, Is.EqualTo( costume.PathPointList.Count ) );
+			}
+			finally
+			{
+				if( File.Exists( tempDatPath ) )
+				{
+					File.Delete( tempDatPath );
+				}
+			}
+		}
+
+		/// <summary>
+		/// Retargeting a sprite to a brand-new texture appends a texture file name entry; the
+		/// packer must derive the texture count and paired headers from the grown list so the
+		/// change survives a round-trip and still passes the sanity check.
+		/// </summary>
+		[Test]
+		public void AppendTextureAndRetargetSprite_WriteAndReadBack_PreservesNewTexture()
+		{
+			var tempDatPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".dat" );
+
+			try
+			{
+				var costume = CostumeParser.ReadCostumeFromBinaryFile( FixturePath( "001 - guybrush-skin" ) );
+				var originalTextureCount = costume.TextureFileNameList.Count;
+				const string newTexture = "art/custom/test-skin.dxt";
+
+				// Act: point the first sprite at a brand-new texture (this appends a list entry)
+				var index = TextureAssignment.GetOrAddTextureIndex( costume, newTexture );
+				costume.SpriteGroupList[0].SpriteList[0].TextureNumber = index;
+
+				CostumeSanityChecker.Check( costume );
+				CostumePacker.WriteCostumeToBinaryFile( tempDatPath, costume );
+
+				var roundTripped = CostumeParser.ReadCostumeFromBinaryFile( tempDatPath );
+				CostumeSanityChecker.Check( roundTripped );
+
+				// Assert
+				Assert.That( roundTripped.TextureFileNameList.Count, Is.EqualTo( originalTextureCount + 1 ), "the appended texture survives" );
+				Assert.That( roundTripped.TextureFileNameList[index].Path, Is.EqualTo( newTexture ) );
+				Assert.That( roundTripped.SpriteGroupList[0].SpriteList[0].TextureNumber, Is.EqualTo( index ), "the sprite still points at the new texture" );
 			}
 			finally
 			{

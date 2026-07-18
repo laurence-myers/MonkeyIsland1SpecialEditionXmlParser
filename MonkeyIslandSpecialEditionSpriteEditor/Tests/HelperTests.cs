@@ -286,6 +286,27 @@ namespace Tests
 		}
 
 		[Test]
+		public void DetectDxtFourCC_FullyOpaque_ReturnsDxt1()
+		{
+			using( var bitmap = new System.Drawing.Bitmap( 4, 4 ) )
+			{
+				FillQuadrant( bitmap, 0, 0, System.Drawing.Color.FromArgb( 255, 10, 20, 30 ) );
+				Assert.That( Helper.DetectDxtFourCC( bitmap ), Is.EqualTo( "DXT1" ) );
+			}
+		}
+
+		[Test]
+		public void DetectDxtFourCC_AnyTranslucentPixel_ReturnsDxt5()
+		{
+			using( var bitmap = new System.Drawing.Bitmap( 4, 4 ) )
+			{
+				FillQuadrant( bitmap, 0, 0, System.Drawing.Color.FromArgb( 255, 10, 20, 30 ) );
+				bitmap.SetPixel( 2, 2, System.Drawing.Color.FromArgb( 128, 10, 20, 30 ) );
+				Assert.That( Helper.DetectDxtFourCC( bitmap ), Is.EqualTo( "DXT5" ) );
+			}
+		}
+
+		[Test]
 		public void ImageFromDxtBytes_Dxt1_DecodesSolidColorsWithCorrectChannels()
 		{
 			// Arrange: four opaque solid 4x4 quadrants. Primary colors survive RGB565

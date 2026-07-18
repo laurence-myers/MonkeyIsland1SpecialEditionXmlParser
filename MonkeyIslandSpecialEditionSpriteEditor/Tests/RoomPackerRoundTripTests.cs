@@ -247,6 +247,68 @@ namespace Tests
 			}
 		}
 
+		/// <summary>
+		/// Reassigning the texture of an object sprite, a background static sprite and (when the
+		/// fixture has one) a room object sprite must survive a pack/reparse. The file is not
+		/// byte-identical here - the shared string pool legitimately changes when names change -
+		/// so this asserts the values, not the bytes.
+		/// </summary>
+		[Test]
+		public void ChangeTextureReferences_WriteAndReadBack_PreservesNewNames()
+		{
+			var tempDatPath = Path.Combine( Path.GetTempPath(), Path.GetRandomFileName() + ".dat" );
+
+			try
+			{
+				var room = RoomParser.ReadRoomFromBinaryFile( FixtureDatPath );
+
+				const string newObjectTexture = "art/custom/new-object.dxt";
+				const string newBackgroundTexture = "art/custom/new-background.dxt";
+				room.SpriteGroupList[0].SpriteList[0].TextureFileName = newObjectTexture;
+
+				var staticSprite = FindFirstStaticSprite( room );
+				Assert.That( staticSprite, Is.Not.Null, "the bar fixture should have a background static sprite" );
+				staticSprite!.TextureFileName = newBackgroundTexture;
+
+				var roomObjectSprite = FindFirstRoomObjectSprite( room );
+				string? newRoomObjectTexture = null;
+				if( roomObjectSprite != null )
+				{
+					newRoomObjectTexture = "art/custom/new-roomobject.dxt";
+					roomObjectSprite.TextureFileName = newRoomObjectTexture;
+				}
+
+				RoomPacker.WriteRoomToBinaryFile( tempDatPath, room );
+				var roundTripped = RoomParser.ReadRoomFromBinaryFile( tempDatPath );
+
+				Assert.That( roundTripped.SpriteGroupList[0].SpriteList[0].TextureFileName, Is.EqualTo( newObjectTexture ) );
+				Assert.That( FindFirstStaticSprite( roundTripped )!.TextureFileName, Is.EqualTo( newBackgroundTexture ) );
+				if( newRoomObjectTexture != null )
+				{
+					Assert.That( FindFirstRoomObjectSprite( roundTripped )!.TextureFileName, Is.EqualTo( newRoomObjectTexture ) );
+				}
+			}
+			finally
+			{
+				if( File.Exists( tempDatPath ) )
+				{
+					File.Delete( tempDatPath );
+				}
+			}
+		}
+
+		private static StaticSprite? FindFirstStaticSprite( Room room )
+		{
+			foreach( var layer in room.StaticSpriteList )
+			{
+				if( layer.Count > 0 )
+				{
+					return layer[0];
+				}
+			}
+			return null;
+		}
+
 		private static RoomObjectSprite? FindFirstRoomObjectSprite( Room room )
 		{
 			foreach( var group in room.RoomObjectGroupList )

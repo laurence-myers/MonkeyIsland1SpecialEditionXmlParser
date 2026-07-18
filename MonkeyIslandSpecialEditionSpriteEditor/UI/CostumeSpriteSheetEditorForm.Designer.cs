@@ -65,6 +65,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericMoveX = new System.Windows.Forms.NumericUpDown();
 			this.labelMoveY = new System.Windows.Forms.Label();
 			this.numericMoveY = new System.Windows.Forms.NumericUpDown();
+			this.labelTexture = new System.Windows.Forms.Label();
+			this.textBoxTextureName = new System.Windows.Forms.TextBox();
+			this.buttonChangeTexture = new System.Windows.Forms.Button();
+			this.buttonClearTexture = new System.Windows.Forms.Button();
 			this.labelClassicDelta = new System.Windows.Forms.Label();
 			this.buttonAlignToClassic = new System.Windows.Forms.Button();
 			this.checkBoxCalibration = new System.Windows.Forms.CheckBox();
@@ -355,6 +359,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.numericMoveX);
 			this.panelProperties.Controls.Add(this.labelMoveY);
 			this.panelProperties.Controls.Add(this.numericMoveY);
+			this.panelProperties.Controls.Add(this.labelTexture);
+			this.panelProperties.Controls.Add(this.textBoxTextureName);
+			this.panelProperties.Controls.Add(this.buttonChangeTexture);
+			this.panelProperties.Controls.Add(this.buttonClearTexture);
 			this.panelProperties.Controls.Add(this.labelClassicDelta);
 			this.panelProperties.Controls.Add(this.buttonAlignToClassic);
 			this.panelProperties.Controls.Add(this.checkBoxCalibration);
@@ -509,10 +517,46 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericMoveY.TabIndex = 15;
 			this.numericMoveY.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
 			//
+			// labelTexture
+			//
+			this.labelTexture.Location = new System.Drawing.Point(6, 218);
+			this.labelTexture.Name = "labelTexture";
+			this.labelTexture.Size = new System.Drawing.Size(70, 16);
+			this.labelTexture.TabIndex = 20;
+			this.labelTexture.Text = "Texture";
+			//
+			// textBoxTextureName
+			//
+			this.textBoxTextureName.Location = new System.Drawing.Point(6, 236);
+			this.textBoxTextureName.Name = "textBoxTextureName";
+			this.textBoxTextureName.ReadOnly = true;
+			this.textBoxTextureName.Size = new System.Drawing.Size(216, 20);
+			this.textBoxTextureName.TabIndex = 21;
+			//
+			// buttonChangeTexture
+			//
+			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 260);
+			this.buttonChangeTexture.Name = "buttonChangeTexture";
+			this.buttonChangeTexture.Size = new System.Drawing.Size(95, 23);
+			this.buttonChangeTexture.TabIndex = 22;
+			this.buttonChangeTexture.Text = "Change...";
+			this.buttonChangeTexture.UseVisualStyleBackColor = true;
+			this.buttonChangeTexture.Click += new System.EventHandler(this.HandleChangeTextureClick);
+			//
+			// buttonClearTexture
+			//
+			this.buttonClearTexture.Location = new System.Drawing.Point(107, 260);
+			this.buttonClearTexture.Name = "buttonClearTexture";
+			this.buttonClearTexture.Size = new System.Drawing.Size(60, 23);
+			this.buttonClearTexture.TabIndex = 23;
+			this.buttonClearTexture.Text = "None";
+			this.buttonClearTexture.UseVisualStyleBackColor = true;
+			this.buttonClearTexture.Click += new System.EventHandler(this.HandleClearTextureClick);
+			//
 			// labelClassicDelta
 			//
 			this.labelClassicDelta.AutoEllipsis = true;
-			this.labelClassicDelta.Location = new System.Drawing.Point(6, 220);
+			this.labelClassicDelta.Location = new System.Drawing.Point(6, 290);
 			this.labelClassicDelta.Name = "labelClassicDelta";
 			this.labelClassicDelta.Size = new System.Drawing.Size(220, 18);
 			this.labelClassicDelta.TabIndex = 16;
@@ -520,7 +564,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// buttonAlignToClassic
 			//
-			this.buttonAlignToClassic.Location = new System.Drawing.Point(6, 242);
+			this.buttonAlignToClassic.Location = new System.Drawing.Point(6, 312);
 			this.buttonAlignToClassic.Name = "buttonAlignToClassic";
 			this.buttonAlignToClassic.Size = new System.Drawing.Size(164, 23);
 			this.buttonAlignToClassic.TabIndex = 17;
@@ -530,7 +574,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// checkBoxCalibration
 			//
-			this.checkBoxCalibration.Location = new System.Drawing.Point(6, 270);
+			this.checkBoxCalibration.Location = new System.Drawing.Point(6, 340);
 			this.checkBoxCalibration.Name = "checkBoxCalibration";
 			this.checkBoxCalibration.Size = new System.Drawing.Size(164, 20);
 			this.checkBoxCalibration.TabIndex = 18;
@@ -541,7 +585,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 294);
+			this.labelHint.Location = new System.Drawing.Point(6, 364);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(220, 72);
 			this.labelHint.TabIndex = 19;
@@ -722,6 +766,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.NumericUpDown numericMoveX;
 		private System.Windows.Forms.Label labelMoveY;
 		private System.Windows.Forms.NumericUpDown numericMoveY;
+		private System.Windows.Forms.Label labelTexture;
+		private System.Windows.Forms.TextBox textBoxTextureName;
+		private System.Windows.Forms.Button buttonChangeTexture;
+		private System.Windows.Forms.Button buttonClearTexture;
 		private System.Windows.Forms.Label labelClassicDelta;
 		private System.Windows.Forms.Button buttonAlignToClassic;
 		private System.Windows.Forms.CheckBox checkBoxCalibration;

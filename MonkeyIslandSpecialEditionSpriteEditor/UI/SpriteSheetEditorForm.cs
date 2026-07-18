@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using MonkeyIslandSpecialEditionSpriteEditor.Commands;
+using MonkeyIslandSpecialEditionSpriteEditor.Formats;
 using MonkeyIslandSpecialEditionSpriteEditor.Formats.LPAK;
 using MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms;
 using MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities;
@@ -37,6 +39,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Dictionary<int, ClassicObject>? classicObjects;
 		private readonly HashSet<Sprite> hiddenSprites = new HashSet<Sprite>();
 		private Sprite? selectedSprite;
+		// the entity whose texture the "Change..." button retargets; equals selectedSprite when
+		// an object sprite is selected, or a background / room-object entity from the tree
+		private ITextureReference? selectedTextureTarget;
+		// the two tree branches whose checkboxes are hidden (static sprites and room objects are
+		// not toggled in the preview); kept so the hidden state can be re-applied after edits
+		private TreeNode? backgroundTreeRoot;
+		private TreeNode? roomObjectsTreeRoot;
 		private bool suppressUiEvents;
 		private bool dirty;
 
@@ -85,6 +94,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.atlasViewControl.SpriteRectChanged += this.HandleAtlasSpriteRectChanged;
 			this.roomPreviewControl.SelectedSpriteChanged += this.HandlePreviewSelectionChanged;
 			this.roomPreviewControl.KeyDown += this.HandlePreviewKeyDown;
+
+			this.InitializeSpriteTreeContextMenu();
 		}
 
 		private void LoadRoom()
@@ -185,6 +196,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.treeViewSprites.BeginUpdate();
 				this.treeViewSprites.Nodes.Clear();
 
+				this.backgroundTreeRoot = this.AddBackgroundNodes();
+
 				for( var groupIndex = 0; groupIndex < this.Room!.SpriteHeaderList.Count && groupIndex < this.Room.SpriteGroupList.Count; groupIndex++ )
 				{
 					var spriteHeader = this.Room.SpriteHeaderList[groupIndex];
@@ -226,17 +239,147 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					this.treeViewSprites.Nodes.Add( groupNode );
 				}
 
+				this.roomObjectsTreeRoot = this.AddRoomObjectNodes();
+
 				this.treeViewSprites.EndUpdate();
 			}
 			finally
 			{
 				this.suppressUiEvents = false;
 			}
+
+			// static sprites and room objects are not toggled in the preview, so their checkboxes
+			// would do nothing; suppress them (after EndUpdate, when the node handles exist)
+			this.ReapplyHiddenCheckBoxes();
 		}
 
 		private static string DescribeSprite( int spriteIndex, Sprite sprite )
 		{
 			return string.Concat( "Frame ", spriteIndex, ": ", sprite.TextureWidth, "x", sprite.TextureHeight, " L", sprite.Layer );
+		}
+
+		/// <summary>
+		/// The last path segment of a texture name, for compact tree labels, or "(none)".
+		/// </summary>
+		private static string TextureTail( string? textureFileName )
+		{
+			if( string.IsNullOrEmpty( textureFileName ) )
+			{
+				return "(none)";
+			}
+			var slash = textureFileName!.LastIndexOf( '/' );
+			return slash >= 0 ? textureFileName.Substring( slash + 1 ) : textureFileName;
+		}
+
+		/// <summary>
+		/// Adds a "Background" root whose leaves are the room's static sprites, grouped by layer
+		/// (layer 0 is the background, later layers are foreground overlays). Selecting a leaf lets
+		/// the user retarget that static sprite's texture.
+		/// </summary>
+		private TreeNode? AddBackgroundNodes()
+		{
+			if( this.Room!.StaticSpriteList == null || this.Room.StaticSpriteList.All( layer => layer.Count == 0 ) )
+			{
+				return null;
+			}
+
+			var backgroundNode = new TreeNode { Text = "Background", Checked = true };
+
+			for( var layerIndex = 0; layerIndex < this.Room.StaticSpriteList.Count; layerIndex++ )
+			{
+				var layer = this.Room.StaticSpriteList[layerIndex];
+				if( layer.Count == 0 )
+				{
+					continue;
+				}
+
+				var layerNode = new TreeNode
+				{
+					Text = string.Concat( "Layer ", layerIndex, layerIndex == 0 ? " (background)" : " (foreground)" ),
+					Checked = true,
+				};
+
+				for( var staticIndex = 0; staticIndex < layer.Count; staticIndex++ )
+				{
+					var staticSprite = layer[staticIndex];
+					layerNode.Nodes.Add( new TreeNode
+					{
+						Text = string.Concat( "Static ", staticIndex, ": ", staticSprite.Width, "x", staticSprite.Height, " @ ", staticSprite.X, ";", staticSprite.Y, " - ", TextureTail( staticSprite.TextureFileName ) ),
+						Tag = staticSprite,
+						Checked = true,
+					} );
+				}
+
+				backgroundNode.Nodes.Add( layerNode );
+			}
+
+			this.treeViewSprites.Nodes.Add( backgroundNode );
+			return backgroundNode;
+		}
+
+		/// <summary>
+		/// Adds a "Room objects" root whose leaves are the named room objects: a sprite-variant
+		/// object is one leaf, an image-variant object is a node with one leaf per texture chunk.
+		/// Selecting a leaf lets the user retarget that object's texture.
+		/// </summary>
+		private TreeNode? AddRoomObjectNodes()
+		{
+			if( this.Room!.RoomObjectGroupList == null || this.Room.RoomObjectGroupList.Count == 0 )
+			{
+				return null;
+			}
+
+			var rootNode = new TreeNode { Text = "Room objects", Checked = true };
+
+			for( var groupIndex = 0; groupIndex < this.Room.RoomObjectGroupList.Count; groupIndex++ )
+			{
+				var group = this.Room.RoomObjectGroupList[groupIndex];
+				var header = groupIndex < this.Room.RoomObjectHeaderList.Count ? this.Room.RoomObjectHeaderList[groupIndex] : null;
+				var name = string.IsNullOrEmpty( header?.Name ) ? "?" : header!.Name!;
+
+				var groupNode = new TreeNode
+				{
+					Text = string.Concat( name, " (", group.RoomObjectList.Count, ")" ),
+					Checked = true,
+				};
+
+				foreach( var roomObject in group.RoomObjectList )
+				{
+					if( roomObject.Sprite != null )
+					{
+						groupNode.Nodes.Add( new TreeNode
+						{
+							Text = string.Concat( "[", name, "/", roomObject.Index, "] sprite ", roomObject.Sprite.Width, "x", roomObject.Sprite.Height, " - ", TextureTail( roomObject.Sprite.TextureFileName ) ),
+							Tag = roomObject.Sprite,
+							Checked = true,
+						} );
+					}
+					else if( roomObject.Image != null )
+					{
+						var imageNode = new TreeNode
+						{
+							Text = string.Concat( "[", name, "/", roomObject.Index, "] image (", roomObject.Image.ChunkList.Count, " chunks)" ),
+							Checked = true,
+						};
+						for( var chunkIndex = 0; chunkIndex < roomObject.Image.ChunkList.Count; chunkIndex++ )
+						{
+							var chunk = roomObject.Image.ChunkList[chunkIndex];
+							imageNode.Nodes.Add( new TreeNode
+							{
+								Text = string.Concat( "Chunk ", chunkIndex, ": ", chunk.Width, "x", chunk.Height, " @ ", chunk.X, ";", chunk.Y, " - ", TextureTail( chunk.TextureFileName ) ),
+								Tag = chunk,
+								Checked = true,
+							} );
+						}
+						groupNode.Nodes.Add( imageNode );
+					}
+				}
+
+				rootNode.Nodes.Add( groupNode );
+			}
+
+			this.treeViewSprites.Nodes.Add( rootNode );
+			return rootNode;
 		}
 
 		private void PopulateDiagnostics()
@@ -514,6 +657,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 			this.selectedSprite = sprite;
+			this.selectedTextureTarget = sprite;
 
 			this.suppressUiEvents = true;
 			try
@@ -556,6 +700,39 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.UpdateNumericEditors();
 		}
 
+		/// <summary>
+		/// Selects a non-sprite texture target (a static sprite, room object sprite or image chunk)
+		/// from the tree. These entities draw the whole texture into a screen-space rectangle, so
+		/// there is no atlas rect and the numeric editors stay disabled; only the Texture row applies.
+		/// </summary>
+		private void SetSelectedTextureTarget( ITextureReference? target )
+		{
+			if( this.selectedTextureTarget == target && this.selectedSprite == null )
+			{
+				return;
+			}
+
+			// clear any object-sprite selection first (this also nulls selectedTextureTarget and
+			// disables the numeric editors), then track the new target on its own
+			this.SetSelectedSprite( null );
+			this.selectedTextureTarget = target;
+
+			this.suppressUiEvents = true;
+			try
+			{
+				this.atlasViewControl.Texture = this.LoadTexture( target?.TextureFileName );
+				this.atlasViewControl.Sprites.Clear();
+				this.atlasViewControl.SelectedSprite = null;
+				this.atlasViewControl.RefreshContent();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.UpdateNumericEditors();
+		}
+
 		private TreeNode? FindSpriteNode( Sprite sprite )
 		{
 			foreach( TreeNode groupNode in this.treeViewSprites.Nodes )
@@ -577,10 +754,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			var sprite = args.Node?.Tag as Sprite;
-			if( sprite != null )
+			// Sprite implements ITextureReference too, so match it first: object sprites keep their
+			// full atlas-rect editor, the other targets get only the Texture row.
+			if( args.Node?.Tag is Sprite sprite )
 			{
 				this.SetSelectedSprite( sprite );
+			}
+			else if( args.Node?.Tag is ITextureReference target )
+			{
+				this.SetSelectedTextureTarget( target );
 			}
 		}
 
@@ -594,13 +776,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.suppressUiEvents = true;
 			try
 			{
-				// checking a group node toggles all of its frames
-				if( args.Node.Tag is int )
+				// checking a node toggles its whole subtree
+				foreach( TreeNode child in args.Node.Nodes )
 				{
-					foreach( TreeNode spriteNode in args.Node.Nodes )
-					{
-						spriteNode.Checked = args.Node.Checked;
-					}
+					SetCheckedRecursive( child, args.Node.Checked );
 				}
 			}
 			finally
@@ -609,6 +788,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.SyncVisibilityFromTree();
+			// a keyboard toggle can re-show a hidden checkbox (its state image is rewritten), so
+			// re-hide the non-functional branches
+			this.ReapplyHiddenCheckBoxes();
 		}
 
 		private void SyncVisibilityFromTree()
@@ -631,6 +813,159 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				previewSprite.Visible = !this.hiddenSprites.Contains( previewSprite.Placement.Sprite );
 			}
 			this.roomPreviewControl.Invalidate();
+		}
+
+		//-------------------------------------------
+		// solo / show all
+
+		private void InitializeSpriteTreeContextMenu()
+		{
+			var menu = new ContextMenuStrip();
+			var soloItem = new ToolStripMenuItem( "Solo (hide the rest)" );
+			soloItem.Click += delegate { this.SoloSelectedNode(); };
+			var showAllItem = new ToolStripMenuItem( "Show all" );
+			showAllItem.Click += delegate { this.ShowAllNodes(); };
+			menu.Items.Add( soloItem );
+			menu.Items.Add( showAllItem );
+			menu.Opening += delegate { soloItem.Enabled = this.treeViewSprites.SelectedNode != null; };
+
+			this.treeViewSprites.ContextMenuStrip = menu;
+			// a right-click does not move the tree selection on its own, so do it here to solo the
+			// node the user actually clicked
+			this.treeViewSprites.NodeMouseClick += this.HandleTreeNodeMouseClick;
+		}
+
+		private void HandleTreeNodeMouseClick( object? sender, TreeNodeMouseClickEventArgs args )
+		{
+			if( args.Button == MouseButtons.Right )
+			{
+				this.treeViewSprites.SelectedNode = args.Node;
+			}
+		}
+
+		/// <summary>
+		/// Unchecks every node except the selected one, its subtree and its ancestors, so the
+		/// preview shows only the selected entity.
+		/// </summary>
+		private void SoloSelectedNode()
+		{
+			var node = this.treeViewSprites.SelectedNode;
+			if( node == null )
+			{
+				return;
+			}
+
+			this.suppressUiEvents = true;
+			try
+			{
+				this.treeViewSprites.BeginUpdate();
+				foreach( TreeNode root in this.treeViewSprites.Nodes )
+				{
+					SetCheckedRecursive( root, false );
+				}
+				SetCheckedRecursive( node, true );
+				// keep ancestors checked so the soloed node stays visible
+				for( var ancestor = node.Parent; ancestor != null; ancestor = ancestor.Parent )
+				{
+					ancestor.Checked = true;
+				}
+				this.treeViewSprites.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
+			// re-checking nodes re-shows their state image, so re-hide the non-functional ones
+			this.ReapplyHiddenCheckBoxes();
+		}
+
+		private void ShowAllNodes()
+		{
+			this.suppressUiEvents = true;
+			try
+			{
+				this.treeViewSprites.BeginUpdate();
+				foreach( TreeNode root in this.treeViewSprites.Nodes )
+				{
+					SetCheckedRecursive( root, true );
+				}
+				this.treeViewSprites.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
+			this.ReapplyHiddenCheckBoxes();
+		}
+
+		private static void SetCheckedRecursive( TreeNode node, bool value )
+		{
+			node.Checked = value;
+			foreach( TreeNode child in node.Nodes )
+			{
+				SetCheckedRecursive( child, value );
+			}
+		}
+
+		//-------------------------------------------
+		// hiding checkboxes on non-functional nodes
+
+		// WinForms only exposes CheckBoxes tree-wide, so hiding the checkbox on individual nodes
+		// (the static sprite and room object branches, whose checkboxes would do nothing) is done
+		// through the Win32 tree-item state image: index 0 draws no checkbox.
+		private const int TvifState = 0x8;
+		private const int TvisStateImageMask = 0xF000;
+		private const int TvmSetItem = 0x1100 + 63;
+
+		[StructLayout( LayoutKind.Sequential, CharSet = CharSet.Auto )]
+		private struct TvItem
+		{
+			public int mask;
+			public IntPtr hItem;
+			public int state;
+			public int stateMask;
+			public IntPtr lpszText;
+			public int cchTextMax;
+			public int iImage;
+			public int iSelectedImage;
+			public int cChildren;
+			public IntPtr lParam;
+		}
+
+		[DllImport( "user32.dll", CharSet = CharSet.Auto )]
+		private static extern IntPtr SendMessage( IntPtr hWnd, int msg, IntPtr wParam, ref TvItem lParam );
+
+		private void ReapplyHiddenCheckBoxes()
+		{
+			if( this.backgroundTreeRoot != null )
+			{
+				HideCheckBoxesRecursive( this.treeViewSprites, this.backgroundTreeRoot );
+			}
+			if( this.roomObjectsTreeRoot != null )
+			{
+				HideCheckBoxesRecursive( this.treeViewSprites, this.roomObjectsTreeRoot );
+			}
+		}
+
+		private static void HideCheckBoxesRecursive( TreeView treeView, TreeNode node )
+		{
+			var item = new TvItem
+			{
+				hItem = node.Handle,
+				mask = TvifState,
+				stateMask = TvisStateImageMask,
+				state = 0,
+			};
+			SendMessage( treeView.Handle, TvmSetItem, IntPtr.Zero, ref item );
+
+			foreach( TreeNode child in node.Nodes )
+			{
+				HideCheckBoxesRecursive( treeView, child );
+			}
 		}
 
 		private void HandleAtlasSelectionChanged( object? sender, EventArgs args )
@@ -723,6 +1058,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					this.numericOffsetY.Value = Clamp( (decimal)sprite.OffsetY, this.numericOffsetY );
 					this.numericLayer.Value = Clamp( sprite.Layer, this.numericLayer );
 				}
+
+				// the Texture row follows the texture target, which may be a non-sprite entity whose
+				// screen-space rectangle keeps the numeric editors above disabled
+				this.textBoxTextureName.Text = this.selectedTextureTarget?.TextureFileName ?? "";
+				this.buttonChangeTexture.Enabled = this.selectedTextureTarget != null;
 			}
 			finally
 			{
@@ -841,6 +1181,92 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		//-------------------------------------------
+		// texture reassignment
+
+		private void HandleChangeTextureClick( object sender, EventArgs args )
+		{
+			if( this.selectedTextureTarget == null )
+			{
+				return;
+			}
+
+			using( var dialog = new TexturePickerDialog( this.LPAKFile, this.GetAllTextureNames(), this.selectedTextureTarget.TextureFileName ) )
+			{
+				if( dialog.ShowDialog( this ) != DialogResult.OK || dialog.SelectedResourcePath == null )
+				{
+					return;
+				}
+				this.ApplyTextureToTarget( this.selectedTextureTarget, dialog.SelectedResourcePath );
+			}
+		}
+
+		private void ApplyTextureToTarget( ITextureReference target, string resourcePath )
+		{
+			if( target.TextureFileName == resourcePath )
+			{
+				return;
+			}
+
+			target.TextureFileName = resourcePath;
+			this.MarkDirty();
+
+			// a brand-new texture may have been cached as a null miss before it existed on disk
+			this.textureCache.Clear();
+
+			if( target is StaticSprite )
+			{
+				// the background/foreground bitmaps bake in the static sprites, so rebuild them
+				this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room!, this.LoadTexture );
+				this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room!, this.LoadTexture );
+				this.checkBoxForeground.Enabled = this.roomPreviewControl.Foreground != null;
+			}
+			else if( target is Sprite sprite )
+			{
+				// the object sprite may now belong to a texture the combo did not list
+				this.PopulateTextureCombo();
+				var comboIndex = this.comboBoxTextures.Items.IndexOf( resourcePath );
+				if( comboIndex >= 0 )
+				{
+					this.comboBoxTextures.SelectedIndex = comboIndex;
+				}
+				this.UpdateAtlas();
+				this.atlasViewControl.SelectedSprite = this.atlasViewControl.Sprites.Contains( sprite ) ? sprite : null;
+				this.UpdateSelectedSpriteNodeText();
+			}
+
+			// object sprite placements resolve their own texture when re-rendered
+			this.RefreshPlacements();
+
+			if( !( target is Sprite ) )
+			{
+				// keep the atlas showing the newly assigned texture and refresh the tree label
+				this.atlasViewControl.Texture = this.LoadTexture( resourcePath );
+				this.atlasViewControl.RefreshContent();
+				this.UpdateSelectedTargetNodeText( resourcePath );
+			}
+
+			this.UpdateNumericEditors();
+		}
+
+		/// <summary>
+		/// Replaces the texture tail (the part after the last " - ") of the selected tree node; the
+		/// background and room object leaf labels all end with the texture name.
+		/// </summary>
+		private void UpdateSelectedTargetNodeText( string resourcePath )
+		{
+			var node = this.treeViewSprites.SelectedNode;
+			if( node == null )
+			{
+				return;
+			}
+			var dash = node.Text.LastIndexOf( " - ", StringComparison.Ordinal );
+			if( dash >= 0 )
+			{
+				node.Text = string.Concat( node.Text.Substring( 0, dash + 3 ), TextureTail( resourcePath ) );
+			}
+		}
+
+		//-------------------------------------------
 		// saving
 
 		private void SaveOverride( object sender, EventArgs args )
@@ -881,6 +1307,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.selectedSprite = null;
+			this.selectedTextureTarget = null;
 			this.hiddenSprites.Clear();
 			this.LoadRoom();
 		}

@@ -8,7 +8,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 		int width,
 		int height,
 		int textureFileNameAddress
-	)
+	) : ITextureReference
 	{
 		private StaticSprite() : this(
 			index: 0,

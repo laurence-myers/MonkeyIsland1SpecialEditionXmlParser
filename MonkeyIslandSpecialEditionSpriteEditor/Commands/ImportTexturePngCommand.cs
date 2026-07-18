@@ -74,7 +74,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 				}
 			}
 
-			// write the loose override next to the LPAK, the same location the game checks
+			return WriteTextureOverride( lpakFile, resourcePath!, dxtBytes );
+		}
+
+		/// <summary>
+		/// Writes the encoded .dxt bytes as a loose override next to the LPAK, the same location
+		/// the game checks before the packed archive. Shared with the new-texture import.
+		/// </summary>
+		internal static CommandResult WriteTextureOverride( LPAKFile lpakFile, string resourcePath, byte[] dxtBytes )
+		{
 			var lpakDirectory = Path.GetDirectoryName( lpakFile.FileNameOnDisk );
 			if( lpakDirectory == null )
 			{

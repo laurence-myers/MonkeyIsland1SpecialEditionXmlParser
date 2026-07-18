@@ -69,6 +69,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericOffsetY = new System.Windows.Forms.NumericUpDown();
 			this.labelLayer = new System.Windows.Forms.Label();
 			this.numericLayer = new System.Windows.Forms.NumericUpDown();
+			this.labelTexture = new System.Windows.Forms.Label();
+			this.textBoxTextureName = new System.Windows.Forms.TextBox();
+			this.buttonChangeTexture = new System.Windows.Forms.Button();
 			this.labelScaleX = new System.Windows.Forms.Label();
 			this.numericScaleX = new System.Windows.Forms.NumericUpDown();
 			this.labelScaleY = new System.Windows.Forms.Label();
@@ -431,6 +434,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.numericOffsetY);
 			this.panelProperties.Controls.Add(this.labelLayer);
 			this.panelProperties.Controls.Add(this.numericLayer);
+			this.panelProperties.Controls.Add(this.labelTexture);
+			this.panelProperties.Controls.Add(this.textBoxTextureName);
+			this.panelProperties.Controls.Add(this.buttonChangeTexture);
 			this.panelProperties.Controls.Add(this.labelScaleX);
 			this.panelProperties.Controls.Add(this.numericScaleX);
 			this.panelProperties.Controls.Add(this.labelScaleY);
@@ -568,9 +574,35 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericLayer.TabIndex = 13;
 			this.numericLayer.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
 			//
+			// labelTexture
+			//
+			this.labelTexture.Location = new System.Drawing.Point(6, 192);
+			this.labelTexture.Name = "labelTexture";
+			this.labelTexture.Size = new System.Drawing.Size(88, 16);
+			this.labelTexture.TabIndex = 21;
+			this.labelTexture.Text = "Texture";
+			//
+			// textBoxTextureName
+			//
+			this.textBoxTextureName.Location = new System.Drawing.Point(6, 210);
+			this.textBoxTextureName.Name = "textBoxTextureName";
+			this.textBoxTextureName.ReadOnly = true;
+			this.textBoxTextureName.Size = new System.Drawing.Size(196, 20);
+			this.textBoxTextureName.TabIndex = 22;
+			//
+			// buttonChangeTexture
+			//
+			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 234);
+			this.buttonChangeTexture.Name = "buttonChangeTexture";
+			this.buttonChangeTexture.Size = new System.Drawing.Size(95, 23);
+			this.buttonChangeTexture.TabIndex = 23;
+			this.buttonChangeTexture.Text = "Change...";
+			this.buttonChangeTexture.UseVisualStyleBackColor = true;
+			this.buttonChangeTexture.Click += new System.EventHandler(this.HandleChangeTextureClick);
+			//
 			// labelScaleX
 			//
-			this.labelScaleX.Location = new System.Drawing.Point(6, 198);
+			this.labelScaleX.Location = new System.Drawing.Point(6, 268);
 			this.labelScaleX.Name = "labelScaleX";
 			this.labelScaleX.Size = new System.Drawing.Size(88, 16);
 			this.labelScaleX.TabIndex = 14;
@@ -580,7 +612,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.numericScaleX.DecimalPlaces = 4;
 			this.numericScaleX.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-			this.numericScaleX.Location = new System.Drawing.Point(100, 196);
+			this.numericScaleX.Location = new System.Drawing.Point(100, 266);
 			this.numericScaleX.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
 			this.numericScaleX.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleX.Name = "numericScaleX";
@@ -591,7 +623,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// labelScaleY
 			//
-			this.labelScaleY.Location = new System.Drawing.Point(6, 224);
+			this.labelScaleY.Location = new System.Drawing.Point(6, 294);
 			this.labelScaleY.Name = "labelScaleY";
 			this.labelScaleY.Size = new System.Drawing.Size(88, 16);
 			this.labelScaleY.TabIndex = 16;
@@ -601,7 +633,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.numericScaleY.DecimalPlaces = 4;
 			this.numericScaleY.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-			this.numericScaleY.Location = new System.Drawing.Point(100, 222);
+			this.numericScaleY.Location = new System.Drawing.Point(100, 292);
 			this.numericScaleY.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
 			this.numericScaleY.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleY.Name = "numericScaleY";
@@ -612,7 +644,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// checkBoxCalibration
 			//
-			this.checkBoxCalibration.Location = new System.Drawing.Point(9, 248);
+			this.checkBoxCalibration.Location = new System.Drawing.Point(9, 318);
 			this.checkBoxCalibration.Name = "checkBoxCalibration";
 			this.checkBoxCalibration.Size = new System.Drawing.Size(181, 20);
 			this.checkBoxCalibration.TabIndex = 18;
@@ -623,7 +655,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.checkBoxForeground.Checked = true;
 			this.checkBoxForeground.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxForeground.Location = new System.Drawing.Point(9, 274);
+			this.checkBoxForeground.Location = new System.Drawing.Point(9, 344);
 			this.checkBoxForeground.Name = "checkBoxForeground";
 			this.checkBoxForeground.Size = new System.Drawing.Size(181, 20);
 			this.checkBoxForeground.TabIndex = 19;
@@ -633,7 +665,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 300);
+			this.labelHint.Location = new System.Drawing.Point(6, 370);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(196, 70);
 			this.labelHint.TabIndex = 20;
@@ -751,6 +783,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.NumericUpDown numericOffsetY;
 		private System.Windows.Forms.Label labelLayer;
 		private System.Windows.Forms.NumericUpDown numericLayer;
+		private System.Windows.Forms.Label labelTexture;
+		private System.Windows.Forms.TextBox textBoxTextureName;
+		private System.Windows.Forms.Button buttonChangeTexture;
 		private System.Windows.Forms.Label labelScaleX;
 		private System.Windows.Forms.NumericUpDown numericScaleX;
 		private System.Windows.Forms.Label labelScaleY;

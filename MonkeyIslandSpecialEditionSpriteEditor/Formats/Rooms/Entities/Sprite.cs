@@ -11,7 +11,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 		float offsetX,
 		float offsetY,
 		int layer
-	) : IAtlasSprite
+	) : IAtlasSprite, ITextureReference
 	{
 		private Sprite() : this(
 			index: 0,

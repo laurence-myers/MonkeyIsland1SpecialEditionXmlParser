@@ -76,6 +76,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.costumePreviewControl.SelectedSpriteChanged += this.HandlePreviewSelectionChanged;
 			this.costumePreviewControl.KeyDown += this.HandlePreviewKeyDown;
 			this.timerPlayback.Tick += this.HandlePlaybackTick;
+
+			this.InitializeSpriteTreeContextMenu();
 		}
 
 		private void LoadCostume()
@@ -480,13 +482,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.suppressUiEvents = true;
 			try
 			{
-				// checking a group node toggles all of its sprites
-				if( args.Node.Tag is SpriteGroup )
+				// checking a node toggles its whole subtree
+				foreach( TreeNode child in args.Node.Nodes )
 				{
-					foreach( TreeNode spriteNode in args.Node.Nodes )
-					{
-						spriteNode.Checked = args.Node.Checked;
-					}
+					SetCheckedRecursive( child, args.Node.Checked );
 				}
 			}
 			finally
@@ -529,6 +528,98 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			return !this.hiddenGroups.Contains( placement.SpriteGroup )
 				&& !this.hiddenSprites.Contains( placement.Sprite );
+		}
+
+		//-------------------------------------------
+		// solo / show all
+
+		private void InitializeSpriteTreeContextMenu()
+		{
+			var menu = new ContextMenuStrip();
+			var soloItem = new ToolStripMenuItem( "Solo (hide the rest)" );
+			soloItem.Click += delegate { this.SoloSelectedNode(); };
+			var showAllItem = new ToolStripMenuItem( "Show all" );
+			showAllItem.Click += delegate { this.ShowAllNodes(); };
+			menu.Items.Add( soloItem );
+			menu.Items.Add( showAllItem );
+			menu.Opening += delegate { soloItem.Enabled = this.treeViewSprites.SelectedNode != null; };
+
+			this.treeViewSprites.ContextMenuStrip = menu;
+			// a right-click does not move the tree selection on its own, so do it here to solo the
+			// node the user actually clicked
+			this.treeViewSprites.NodeMouseClick += this.HandleTreeNodeMouseClick;
+		}
+
+		private void HandleTreeNodeMouseClick( object? sender, TreeNodeMouseClickEventArgs args )
+		{
+			if( args.Button == MouseButtons.Right )
+			{
+				this.treeViewSprites.SelectedNode = args.Node;
+			}
+		}
+
+		/// <summary>
+		/// Unchecks every node except the selected one, its subtree and its ancestors (a costume
+		/// sprite is hidden when its group is unchecked), so the preview shows only that entity.
+		/// </summary>
+		private void SoloSelectedNode()
+		{
+			var node = this.treeViewSprites.SelectedNode;
+			if( node == null )
+			{
+				return;
+			}
+
+			this.suppressUiEvents = true;
+			try
+			{
+				this.treeViewSprites.BeginUpdate();
+				foreach( TreeNode root in this.treeViewSprites.Nodes )
+				{
+					SetCheckedRecursive( root, false );
+				}
+				SetCheckedRecursive( node, true );
+				for( var ancestor = node.Parent; ancestor != null; ancestor = ancestor.Parent )
+				{
+					ancestor.Checked = true;
+				}
+				this.treeViewSprites.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
+		}
+
+		private void ShowAllNodes()
+		{
+			this.suppressUiEvents = true;
+			try
+			{
+				this.treeViewSprites.BeginUpdate();
+				foreach( TreeNode root in this.treeViewSprites.Nodes )
+				{
+					SetCheckedRecursive( root, true );
+				}
+				this.treeViewSprites.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
+		}
+
+		private static void SetCheckedRecursive( TreeNode node, bool value )
+		{
+			node.Checked = value;
+			foreach( TreeNode child in node.Nodes )
+			{
+				SetCheckedRecursive( child, value );
+			}
 		}
 
 		private void HandleAtlasSelectionChanged( object? sender, EventArgs args )
@@ -633,6 +724,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					this.numericMoveX.Value = Clamp( (decimal)sprite.MoveX, this.numericMoveX );
 					this.numericMoveY.Value = Clamp( (decimal)sprite.MoveY, this.numericMoveY );
 				}
+
+				// costume sprites reference a texture by index; -1 shows as "(none)"
+				this.textBoxTextureName.Text = sprite == null ? "" : ( this.GetTextureFileName( sprite.TextureNumber ) ?? "(none)" );
+				this.buttonChangeTexture.Enabled = enabled;
+				this.buttonClearTexture.Enabled = enabled;
 
 				this.UpdateClassicDeltaLabel();
 			}
@@ -852,6 +948,56 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.atlasViewControl.SelectedSprite = null;
 			}
 			this.atlasViewControl.RefreshContent();
+		}
+
+		//-------------------------------------------
+		// texture reassignment
+
+		private void HandleChangeTextureClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null )
+			{
+				return;
+			}
+
+			using( var dialog = new TexturePickerDialog( this.LPAKFile, this.GetAllTextureNames(), this.GetTextureFileName( this.selectedSprite.TextureNumber ) ) )
+			{
+				if( dialog.ShowDialog( this ) != DialogResult.OK || dialog.SelectedResourcePath == null )
+				{
+					return;
+				}
+
+				// reuse the costume's existing texture entry, or append one for a texture it does
+				// not list yet, then point the sprite at that index
+				var index = TextureAssignment.GetOrAddTextureIndex( this.Costume!, dialog.SelectedResourcePath );
+				this.selectedSprite.TextureNumber = index;
+				this.MarkDirty();
+
+				// a brand-new texture may have been cached as a null miss before it existed on disk
+				this.textureCache.Clear();
+
+				// the combo index is the TextureNumber; an appended texture lands at the end
+				this.PopulateTextureCombo();
+				this.comboBoxTextures.SelectedIndex = index;
+				this.atlasViewControl.SelectedSprite = this.atlasViewControl.Sprites.Contains( this.selectedSprite ) ? this.selectedSprite : null;
+				this.RefreshPlacements();
+				this.UpdateNumericEditors();
+			}
+		}
+
+		private void HandleClearTextureClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null )
+			{
+				return;
+			}
+
+			// -1 is a valid "no texture" sprite; the packer ignores it and the sanity check allows it
+			this.selectedSprite.TextureNumber = -1;
+			this.MarkDirty();
+			this.UpdateAtlas();
+			this.RefreshPlacements();
+			this.UpdateNumericEditors();
 		}
 
 		//-------------------------------------------
