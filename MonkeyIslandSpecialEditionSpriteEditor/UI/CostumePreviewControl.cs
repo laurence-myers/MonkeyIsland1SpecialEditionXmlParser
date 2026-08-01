@@ -21,6 +21,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private const int CanvasMargin = 32;
 
+		private readonly CanvasMouseNavigation mouseNavigation;
 		private float zoom = 1.0f;
 		private CostumePreviewControlSprite? selectedSprite;
 		private RectangleF contentBounds = new RectangleF( -100, -200, 200, 232 );
@@ -38,6 +39,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.SetStyle( ControlStyles.Selectable, true );
 
 			this.Sprites = new List<CostumePreviewControlSprite>();
+			this.mouseNavigation = new CanvasMouseNavigation( this );
 		}
 
 		/// <summary>
@@ -176,10 +178,26 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			base.OnMouseDown( args );
 			this.Focus();
+			if( this.mouseNavigation.HandleMouseDown( args ) )
+			{
+				return;
+			}
 			if( args.Button == MouseButtons.Left )
 			{
 				this.SelectedSprite = this.HitTest( args.Location );
 			}
+		}
+
+		protected override void OnMouseMove( MouseEventArgs args )
+		{
+			base.OnMouseMove( args );
+			this.mouseNavigation.HandleMouseMove();
+		}
+
+		protected override void OnMouseUp( MouseEventArgs args )
+		{
+			base.OnMouseUp( args );
+			this.mouseNavigation.HandleMouseUp( args );
 		}
 
 		protected override void OnMouseWheel( MouseEventArgs args )
@@ -192,7 +210,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				handledArgs.Handled = true;
 			}
 
-			this.Zoom = args.Delta > 0 ? this.zoom * 1.25f : this.zoom / 1.25f;
+			this.mouseNavigation.ZoomAtAnchor( args.Location, this.zoom, () =>
+			{
+				this.Zoom = args.Delta > 0 ? this.zoom * 1.25f : this.zoom / 1.25f;
+				return this.zoom;
+			} );
 		}
 
 		protected override bool IsInputKey( Keys keyData )

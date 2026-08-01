@@ -16,6 +16,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 	/// </summary>
 	public class RoomPreviewControl : Control
 	{
+		private readonly CanvasMouseNavigation mouseNavigation;
 		private float zoom = 0.5f;
 		private Bitmap? background;
 		private Bitmap? foreground;
@@ -35,6 +36,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.Sprites = new List<RoomPreviewControlSprite>();
 			this.Actors = new List<RoomPreviewControlActor>();
 			this.HdScale = Renderer.DefaultHdScale;
+			this.mouseNavigation = new CanvasMouseNavigation( this );
 		}
 
 		/// <summary>
@@ -214,10 +216,26 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			base.OnMouseDown( args );
 			this.Focus();
+			if( this.mouseNavigation.HandleMouseDown( args ) )
+			{
+				return;
+			}
 			if( args.Button == MouseButtons.Left )
 			{
 				this.SelectedSprite = this.HitTest( args.Location );
 			}
+		}
+
+		protected override void OnMouseMove( MouseEventArgs args )
+		{
+			base.OnMouseMove( args );
+			this.mouseNavigation.HandleMouseMove();
+		}
+
+		protected override void OnMouseUp( MouseEventArgs args )
+		{
+			base.OnMouseUp( args );
+			this.mouseNavigation.HandleMouseUp( args );
 		}
 
 		protected override void OnMouseWheel( MouseEventArgs args )
@@ -230,7 +248,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				handledArgs.Handled = true;
 			}
 
-			this.Zoom = args.Delta > 0 ? this.zoom * 1.25f : this.zoom / 1.25f;
+			this.mouseNavigation.ZoomAtAnchor( args.Location, this.zoom, () =>
+			{
+				this.Zoom = args.Delta > 0 ? this.zoom * 1.25f : this.zoom / 1.25f;
+				return this.zoom;
+			} );
 		}
 
 		protected override void OnPaint( PaintEventArgs args )

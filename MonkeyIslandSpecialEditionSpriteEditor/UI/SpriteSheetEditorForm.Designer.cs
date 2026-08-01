@@ -67,6 +67,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericOffsetX = new System.Windows.Forms.NumericUpDown();
 			this.labelOffsetY = new System.Windows.Forms.Label();
 			this.numericOffsetY = new System.Windows.Forms.NumericUpDown();
+			this.labelFrameBox = new System.Windows.Forms.Label();
+			this.buttonCopyFrameBox = new System.Windows.Forms.Button();
+			this.buttonPasteFrameBox = new System.Windows.Forms.Button();
 			this.labelLayer = new System.Windows.Forms.Label();
 			this.numericLayer = new System.Windows.Forms.NumericUpDown();
 			this.labelTexture = new System.Windows.Forms.Label();
@@ -432,6 +435,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.numericOffsetX);
 			this.panelProperties.Controls.Add(this.labelOffsetY);
 			this.panelProperties.Controls.Add(this.numericOffsetY);
+			this.panelProperties.Controls.Add(this.labelFrameBox);
+			this.panelProperties.Controls.Add(this.buttonCopyFrameBox);
+			this.panelProperties.Controls.Add(this.buttonPasteFrameBox);
 			this.panelProperties.Controls.Add(this.labelLayer);
 			this.panelProperties.Controls.Add(this.numericLayer);
 			this.panelProperties.Controls.Add(this.labelTexture);
@@ -556,9 +562,37 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericOffsetY.TabIndex = 11;
 			this.numericOffsetY.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
 			//
+			// labelFrameBox
+			//
+			this.labelFrameBox.Location = new System.Drawing.Point(6, 166);
+			this.labelFrameBox.Name = "labelFrameBox";
+			this.labelFrameBox.Size = new System.Drawing.Size(88, 16);
+			this.labelFrameBox.TabIndex = 24;
+			this.labelFrameBox.Text = "Size + offsets";
+			//
+			// buttonCopyFrameBox
+			//
+			this.buttonCopyFrameBox.Location = new System.Drawing.Point(100, 162);
+			this.buttonCopyFrameBox.Name = "buttonCopyFrameBox";
+			this.buttonCopyFrameBox.Size = new System.Drawing.Size(43, 22);
+			this.buttonCopyFrameBox.TabIndex = 25;
+			this.buttonCopyFrameBox.Text = "Copy";
+			this.buttonCopyFrameBox.UseVisualStyleBackColor = true;
+			this.buttonCopyFrameBox.Click += new System.EventHandler(this.HandleCopyFrameBoxClick);
+			//
+			// buttonPasteFrameBox
+			//
+			this.buttonPasteFrameBox.Location = new System.Drawing.Point(147, 162);
+			this.buttonPasteFrameBox.Name = "buttonPasteFrameBox";
+			this.buttonPasteFrameBox.Size = new System.Drawing.Size(43, 22);
+			this.buttonPasteFrameBox.TabIndex = 26;
+			this.buttonPasteFrameBox.Text = "Paste";
+			this.buttonPasteFrameBox.UseVisualStyleBackColor = true;
+			this.buttonPasteFrameBox.Click += new System.EventHandler(this.HandlePasteFrameBoxClick);
+			//
 			// labelLayer
 			//
-			this.labelLayer.Location = new System.Drawing.Point(6, 166);
+			this.labelLayer.Location = new System.Drawing.Point(6, 192);
 			this.labelLayer.Name = "labelLayer";
 			this.labelLayer.Size = new System.Drawing.Size(88, 16);
 			this.labelLayer.TabIndex = 12;
@@ -566,7 +600,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// numericLayer
 			//
-			this.numericLayer.Location = new System.Drawing.Point(100, 164);
+			this.numericLayer.Location = new System.Drawing.Point(100, 190);
 			this.numericLayer.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
 			this.numericLayer.Minimum = new decimal(new int[] { 1000, 0, 0, -2147483648 });
 			this.numericLayer.Name = "numericLayer";
@@ -576,7 +610,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// labelTexture
 			//
-			this.labelTexture.Location = new System.Drawing.Point(6, 192);
+			this.labelTexture.Location = new System.Drawing.Point(6, 218);
 			this.labelTexture.Name = "labelTexture";
 			this.labelTexture.Size = new System.Drawing.Size(88, 16);
 			this.labelTexture.TabIndex = 21;
@@ -584,7 +618,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// textBoxTextureName
 			//
-			this.textBoxTextureName.Location = new System.Drawing.Point(6, 210);
+			this.textBoxTextureName.Location = new System.Drawing.Point(6, 236);
 			this.textBoxTextureName.Name = "textBoxTextureName";
 			this.textBoxTextureName.ReadOnly = true;
 			this.textBoxTextureName.Size = new System.Drawing.Size(196, 20);
@@ -592,7 +626,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// buttonChangeTexture
 			//
-			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 234);
+			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 260);
 			this.buttonChangeTexture.Name = "buttonChangeTexture";
 			this.buttonChangeTexture.Size = new System.Drawing.Size(95, 23);
 			this.buttonChangeTexture.TabIndex = 23;
@@ -602,7 +636,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// labelScaleX
 			//
-			this.labelScaleX.Location = new System.Drawing.Point(6, 268);
+			this.labelScaleX.Location = new System.Drawing.Point(6, 294);
 			this.labelScaleX.Name = "labelScaleX";
 			this.labelScaleX.Size = new System.Drawing.Size(88, 16);
 			this.labelScaleX.TabIndex = 14;
@@ -612,7 +646,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.numericScaleX.DecimalPlaces = 4;
 			this.numericScaleX.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-			this.numericScaleX.Location = new System.Drawing.Point(100, 266);
+			this.numericScaleX.Location = new System.Drawing.Point(100, 292);
 			this.numericScaleX.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
 			this.numericScaleX.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleX.Name = "numericScaleX";
@@ -623,7 +657,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// labelScaleY
 			//
-			this.labelScaleY.Location = new System.Drawing.Point(6, 294);
+			this.labelScaleY.Location = new System.Drawing.Point(6, 320);
 			this.labelScaleY.Name = "labelScaleY";
 			this.labelScaleY.Size = new System.Drawing.Size(88, 16);
 			this.labelScaleY.TabIndex = 16;
@@ -633,7 +667,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.numericScaleY.DecimalPlaces = 4;
 			this.numericScaleY.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-			this.numericScaleY.Location = new System.Drawing.Point(100, 292);
+			this.numericScaleY.Location = new System.Drawing.Point(100, 318);
 			this.numericScaleY.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
 			this.numericScaleY.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleY.Name = "numericScaleY";
@@ -644,7 +678,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// checkBoxCalibration
 			//
-			this.checkBoxCalibration.Location = new System.Drawing.Point(9, 318);
+			this.checkBoxCalibration.Location = new System.Drawing.Point(9, 344);
 			this.checkBoxCalibration.Name = "checkBoxCalibration";
 			this.checkBoxCalibration.Size = new System.Drawing.Size(181, 20);
 			this.checkBoxCalibration.TabIndex = 18;
@@ -655,7 +689,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.checkBoxForeground.Checked = true;
 			this.checkBoxForeground.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxForeground.Location = new System.Drawing.Point(9, 344);
+			this.checkBoxForeground.Location = new System.Drawing.Point(9, 370);
 			this.checkBoxForeground.Name = "checkBoxForeground";
 			this.checkBoxForeground.Size = new System.Drawing.Size(181, 20);
 			this.checkBoxForeground.TabIndex = 19;
@@ -665,12 +699,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 370);
+			this.labelHint.Location = new System.Drawing.Point(6, 396);
 			this.labelHint.Name = "labelHint";
-			this.labelHint.Size = new System.Drawing.Size(196, 70);
+			this.labelHint.Size = new System.Drawing.Size(196, 84);
 			this.labelHint.TabIndex = 20;
 			this.labelHint.Text = "Arrow keys nudge the selection:\r\natlas = texture rect, preview = offset.\r\nHold S" +
-				"hift for steps of 10.\r\nMouse wheel zooms.";
+				"hift for steps of 10.\r\nMouse wheel zooms at the cursor.\r\nMiddle mouse drags to " +
+				"pan.";
 			//
 			// panelPreview
 			//
@@ -781,6 +816,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.NumericUpDown numericOffsetX;
 		private System.Windows.Forms.Label labelOffsetY;
 		private System.Windows.Forms.NumericUpDown numericOffsetY;
+		private System.Windows.Forms.Label labelFrameBox;
+		private System.Windows.Forms.Button buttonCopyFrameBox;
+		private System.Windows.Forms.Button buttonPasteFrameBox;
 		private System.Windows.Forms.Label labelLayer;
 		private System.Windows.Forms.NumericUpDown numericLayer;
 		private System.Windows.Forms.Label labelTexture;

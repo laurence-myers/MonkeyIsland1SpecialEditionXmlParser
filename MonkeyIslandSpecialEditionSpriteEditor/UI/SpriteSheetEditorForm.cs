@@ -48,6 +48,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private TreeNode? roomObjectsTreeRoot;
 		private bool suppressUiEvents;
 		private bool dirty;
+		private CopiedFrameBox? copiedFrameBox;
 
 		public Room? Room
 		{
@@ -1059,6 +1060,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					this.numericLayer.Value = Clamp( sprite.Layer, this.numericLayer );
 				}
 
+				this.buttonCopyFrameBox.Enabled = enabled;
+				this.buttonPasteFrameBox.Enabled = enabled && this.copiedFrameBox != null;
+
 				// the Texture row follows the texture target, which may be a non-sprite entity whose
 				// screen-space rectangle keeps the numeric editors above disabled
 				this.textBoxTextureName.Text = this.selectedTextureTarget?.TextureFileName ?? "";
@@ -1130,6 +1134,61 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				spriteNode.Text = DescribeSprite( spriteNode.Index, this.selectedSprite );
 			}
+		}
+
+		/// <summary>
+		/// The values captured by the "Size + offsets" Copy button: the texture rect size plus
+		/// the screen offset, but not the texture rect position - animation frames sample
+		/// different atlas regions yet must share size and placement to line up on screen.
+		/// </summary>
+		private class CopiedFrameBox(
+			int textureWidth,
+			int textureHeight,
+			float offsetX,
+			float offsetY
+		)
+		{
+			public int TextureWidth = textureWidth;
+			public int TextureHeight = textureHeight;
+			public float OffsetX = offsetX;
+			public float OffsetY = offsetY;
+		}
+
+		private void HandleCopyFrameBoxClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null )
+			{
+				return;
+			}
+
+			this.copiedFrameBox = new CopiedFrameBox(
+				textureWidth: this.selectedSprite.TextureWidth,
+				textureHeight: this.selectedSprite.TextureHeight,
+				offsetX: this.selectedSprite.OffsetX,
+				offsetY: this.selectedSprite.OffsetY
+			);
+
+			// enables the Paste button
+			this.UpdateNumericEditors();
+		}
+
+		private void HandlePasteFrameBoxClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null || this.copiedFrameBox == null )
+			{
+				return;
+			}
+
+			this.selectedSprite.TextureWidth = this.copiedFrameBox.TextureWidth;
+			this.selectedSprite.TextureHeight = this.copiedFrameBox.TextureHeight;
+			this.selectedSprite.OffsetX = this.copiedFrameBox.OffsetX;
+			this.selectedSprite.OffsetY = this.copiedFrameBox.OffsetY;
+
+			this.MarkDirty();
+			this.UpdateNumericEditors();
+			this.UpdateSelectedSpriteNodeText();
+			this.atlasViewControl.Invalidate();
+			this.RefreshPlacements();
 		}
 
 		private void HandleScaleChanged( object sender, EventArgs args )

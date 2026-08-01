@@ -27,6 +27,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		// shown when there is nothing to draw, so the control still needs a usable size
 		private const int EmptyContentSize = 50;
 
+		private readonly CanvasMouseNavigation mouseNavigation;
 		private int zoomLevelIndex = SpriteSetPreviewControl.DefaultZoomLevelIndex;
 
 		/// <summary>
@@ -48,6 +49,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.SetStyle( ControlStyles.Selectable, true );
 
 			this.Sprites = new List<SpriteSetPreviewControlSprite>();
+			this.mouseNavigation = new CanvasMouseNavigation( this );
 		}
 
 		/// <summary>
@@ -113,29 +115,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
-			var oldZoom = this.Zoom;
-			this.zoomLevelIndex = clamped;
-			var newZoom = this.Zoom;
-
-			// where the anchor sits in the scroll panel, and which content pixel is under it;
-			// the control's own origin moves as the panel scrolls, so read it before resizing
-			var scrollPanel = this.Parent as ScrollableControl;
-			var anchorInPanel = new Point( anchor.X + this.Left, anchor.Y + this.Top );
-			var contentX = anchor.X / oldZoom;
-			var contentY = anchor.Y / oldZoom;
-
-			this.UpdateContentSize();
-			this.Invalidate();
-
-			// put that same content pixel back under the anchor; the setter takes a positive
-			// offset and clamps itself to the scroll range the resized control just established
-			if( scrollPanel != null )
+			this.mouseNavigation.ZoomAtAnchor( anchor, this.Zoom, () =>
 			{
-				scrollPanel.AutoScrollPosition = new Point(
-					(int)Math.Round( contentX * newZoom - anchorInPanel.X ),
-					(int)Math.Round( contentY * newZoom - anchorInPanel.Y )
-				);
-			}
+				this.zoomLevelIndex = clamped;
+				this.UpdateContentSize();
+				this.Invalidate();
+				return this.Zoom;
+			} );
 
 			this.ZoomChanged?.Invoke( this, EventArgs.Empty );
 		}
@@ -146,6 +132,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			// the wheel only reaches the focused control
 			this.Focus();
+			this.mouseNavigation.HandleMouseDown( args );
+		}
+
+		protected override void OnMouseMove( MouseEventArgs args )
+		{
+			base.OnMouseMove( args );
+			this.mouseNavigation.HandleMouseMove();
+		}
+
+		protected override void OnMouseUp( MouseEventArgs args )
+		{
+			base.OnMouseUp( args );
+			this.mouseNavigation.HandleMouseUp( args );
 		}
 
 		protected override void OnMouseWheel( MouseEventArgs args )

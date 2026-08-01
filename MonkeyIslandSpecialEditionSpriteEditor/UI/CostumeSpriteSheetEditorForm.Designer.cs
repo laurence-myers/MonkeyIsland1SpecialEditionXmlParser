@@ -587,9 +587,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
 			this.labelHint.Location = new System.Drawing.Point(6, 364);
 			this.labelHint.Name = "labelHint";
-			this.labelHint.Size = new System.Drawing.Size(220, 72);
+			this.labelHint.Size = new System.Drawing.Size(220, 86);
 			this.labelHint.TabIndex = 19;
-			this.labelHint.Text = "Arrows nudge the selection: texture rect in the atlas, screen position in the preview (Shift = 10). Mouse wheel zooms.";
+			this.labelHint.Text = "Arrows nudge the selection: texture rect in the atlas, screen position in the preview (Shift = 10). Mouse wheel zooms at the cursor; middle mouse drags to pan.";
 			//
 			// panelPreviewHost
 			//
