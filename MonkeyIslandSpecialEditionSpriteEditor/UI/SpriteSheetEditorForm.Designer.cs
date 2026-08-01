@@ -433,20 +433,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.numericTextureX);
 			this.panelProperties.Controls.Add(this.labelTextureY);
 			this.panelProperties.Controls.Add(this.numericTextureY);
+			this.panelProperties.Controls.Add(this.labelCopyTextureXY);
+			this.panelProperties.Controls.Add(this.buttonCopyTextureXY);
+			this.panelProperties.Controls.Add(this.buttonPasteTextureXY);
 			this.panelProperties.Controls.Add(this.labelTextureWidth);
 			this.panelProperties.Controls.Add(this.numericTextureWidth);
 			this.panelProperties.Controls.Add(this.labelTextureHeight);
 			this.panelProperties.Controls.Add(this.numericTextureHeight);
+			this.panelProperties.Controls.Add(this.labelCopyTextureSize);
+			this.panelProperties.Controls.Add(this.buttonCopyTextureSize);
+			this.panelProperties.Controls.Add(this.buttonPasteTextureSize);
 			this.panelProperties.Controls.Add(this.labelOffsetX);
 			this.panelProperties.Controls.Add(this.numericOffsetX);
 			this.panelProperties.Controls.Add(this.labelOffsetY);
 			this.panelProperties.Controls.Add(this.numericOffsetY);
-			this.panelProperties.Controls.Add(this.labelCopyTextureXY);
-			this.panelProperties.Controls.Add(this.buttonCopyTextureXY);
-			this.panelProperties.Controls.Add(this.buttonPasteTextureXY);
-			this.panelProperties.Controls.Add(this.labelCopyTextureSize);
-			this.panelProperties.Controls.Add(this.buttonCopyTextureSize);
-			this.panelProperties.Controls.Add(this.buttonPasteTextureSize);
 			this.panelProperties.Controls.Add(this.labelCopyOffsets);
 			this.panelProperties.Controls.Add(this.buttonCopyOffsets);
 			this.panelProperties.Controls.Add(this.buttonPasteOffsets);
@@ -502,140 +502,140 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericTextureY.TabIndex = 3;
 			this.numericTextureY.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
 			//
-			// labelTextureWidth
-			//
-			this.labelTextureWidth.Location = new System.Drawing.Point(6, 62);
-			this.labelTextureWidth.Name = "labelTextureWidth";
-			this.labelTextureWidth.Size = new System.Drawing.Size(88, 16);
-			this.labelTextureWidth.TabIndex = 4;
-			this.labelTextureWidth.Text = "Texture Width";
-			//
-			// numericTextureWidth
-			//
-			this.numericTextureWidth.Location = new System.Drawing.Point(100, 60);
-			this.numericTextureWidth.Maximum = new decimal(new int[] { 16384, 0, 0, 0 });
-			this.numericTextureWidth.Name = "numericTextureWidth";
-			this.numericTextureWidth.Size = new System.Drawing.Size(90, 20);
-			this.numericTextureWidth.TabIndex = 5;
-			this.numericTextureWidth.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
-			//
-			// labelTextureHeight
-			//
-			this.labelTextureHeight.Location = new System.Drawing.Point(6, 88);
-			this.labelTextureHeight.Name = "labelTextureHeight";
-			this.labelTextureHeight.Size = new System.Drawing.Size(88, 16);
-			this.labelTextureHeight.TabIndex = 6;
-			this.labelTextureHeight.Text = "Texture Height";
-			//
-			// numericTextureHeight
-			//
-			this.numericTextureHeight.Location = new System.Drawing.Point(100, 86);
-			this.numericTextureHeight.Maximum = new decimal(new int[] { 16384, 0, 0, 0 });
-			this.numericTextureHeight.Name = "numericTextureHeight";
-			this.numericTextureHeight.Size = new System.Drawing.Size(90, 20);
-			this.numericTextureHeight.TabIndex = 7;
-			this.numericTextureHeight.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
-			//
-			// labelOffsetX
-			//
-			this.labelOffsetX.Location = new System.Drawing.Point(6, 114);
-			this.labelOffsetX.Name = "labelOffsetX";
-			this.labelOffsetX.Size = new System.Drawing.Size(88, 16);
-			this.labelOffsetX.TabIndex = 8;
-			this.labelOffsetX.Text = "Offset X";
-			//
-			// numericOffsetX
-			//
-			this.numericOffsetX.DecimalPlaces = 3;
-			this.numericOffsetX.Location = new System.Drawing.Point(100, 112);
-			this.numericOffsetX.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
-			this.numericOffsetX.Minimum = new decimal(new int[] { 100000, 0, 0, -2147483648 });
-			this.numericOffsetX.Name = "numericOffsetX";
-			this.numericOffsetX.Size = new System.Drawing.Size(90, 20);
-			this.numericOffsetX.TabIndex = 9;
-			this.numericOffsetX.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
-			//
-			// labelOffsetY
-			//
-			this.labelOffsetY.Location = new System.Drawing.Point(6, 140);
-			this.labelOffsetY.Name = "labelOffsetY";
-			this.labelOffsetY.Size = new System.Drawing.Size(88, 16);
-			this.labelOffsetY.TabIndex = 10;
-			this.labelOffsetY.Text = "Offset Y";
-			//
-			// numericOffsetY
-			//
-			this.numericOffsetY.DecimalPlaces = 3;
-			this.numericOffsetY.Location = new System.Drawing.Point(100, 138);
-			this.numericOffsetY.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
-			this.numericOffsetY.Minimum = new decimal(new int[] { 100000, 0, 0, -2147483648 });
-			this.numericOffsetY.Name = "numericOffsetY";
-			this.numericOffsetY.Size = new System.Drawing.Size(90, 20);
-			this.numericOffsetY.TabIndex = 11;
-			this.numericOffsetY.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
-			//
 			// labelCopyTextureXY
 			//
-			this.labelCopyTextureXY.Location = new System.Drawing.Point(6, 166);
+			this.labelCopyTextureXY.Location = new System.Drawing.Point(6, 62);
 			this.labelCopyTextureXY.Name = "labelCopyTextureXY";
 			this.labelCopyTextureXY.Size = new System.Drawing.Size(88, 16);
-			this.labelCopyTextureXY.TabIndex = 24;
+			this.labelCopyTextureXY.TabIndex = 4;
 			this.labelCopyTextureXY.Text = "Texture X/Y";
 			//
 			// buttonCopyTextureXY
 			//
-			this.buttonCopyTextureXY.Location = new System.Drawing.Point(100, 162);
+			this.buttonCopyTextureXY.Location = new System.Drawing.Point(100, 58);
 			this.buttonCopyTextureXY.Name = "buttonCopyTextureXY";
 			this.buttonCopyTextureXY.Size = new System.Drawing.Size(43, 22);
-			this.buttonCopyTextureXY.TabIndex = 25;
+			this.buttonCopyTextureXY.TabIndex = 5;
 			this.buttonCopyTextureXY.Text = "Copy";
 			this.buttonCopyTextureXY.UseVisualStyleBackColor = true;
 			this.buttonCopyTextureXY.Click += new System.EventHandler(this.HandleCopyTextureXYClick);
 			//
 			// buttonPasteTextureXY
 			//
-			this.buttonPasteTextureXY.Location = new System.Drawing.Point(147, 162);
+			this.buttonPasteTextureXY.Location = new System.Drawing.Point(147, 58);
 			this.buttonPasteTextureXY.Name = "buttonPasteTextureXY";
 			this.buttonPasteTextureXY.Size = new System.Drawing.Size(43, 22);
-			this.buttonPasteTextureXY.TabIndex = 26;
+			this.buttonPasteTextureXY.TabIndex = 6;
 			this.buttonPasteTextureXY.Text = "Paste";
 			this.buttonPasteTextureXY.UseVisualStyleBackColor = true;
 			this.buttonPasteTextureXY.Click += new System.EventHandler(this.HandlePasteTextureXYClick);
 			//
+			// labelTextureWidth
+			//
+			this.labelTextureWidth.Location = new System.Drawing.Point(6, 88);
+			this.labelTextureWidth.Name = "labelTextureWidth";
+			this.labelTextureWidth.Size = new System.Drawing.Size(88, 16);
+			this.labelTextureWidth.TabIndex = 7;
+			this.labelTextureWidth.Text = "Texture Width";
+			//
+			// numericTextureWidth
+			//
+			this.numericTextureWidth.Location = new System.Drawing.Point(100, 86);
+			this.numericTextureWidth.Maximum = new decimal(new int[] { 16384, 0, 0, 0 });
+			this.numericTextureWidth.Name = "numericTextureWidth";
+			this.numericTextureWidth.Size = new System.Drawing.Size(90, 20);
+			this.numericTextureWidth.TabIndex = 8;
+			this.numericTextureWidth.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
+			//
+			// labelTextureHeight
+			//
+			this.labelTextureHeight.Location = new System.Drawing.Point(6, 114);
+			this.labelTextureHeight.Name = "labelTextureHeight";
+			this.labelTextureHeight.Size = new System.Drawing.Size(88, 16);
+			this.labelTextureHeight.TabIndex = 9;
+			this.labelTextureHeight.Text = "Texture Height";
+			//
+			// numericTextureHeight
+			//
+			this.numericTextureHeight.Location = new System.Drawing.Point(100, 112);
+			this.numericTextureHeight.Maximum = new decimal(new int[] { 16384, 0, 0, 0 });
+			this.numericTextureHeight.Name = "numericTextureHeight";
+			this.numericTextureHeight.Size = new System.Drawing.Size(90, 20);
+			this.numericTextureHeight.TabIndex = 10;
+			this.numericTextureHeight.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
+			//
 			// labelCopyTextureSize
 			//
-			this.labelCopyTextureSize.Location = new System.Drawing.Point(6, 192);
+			this.labelCopyTextureSize.Location = new System.Drawing.Point(6, 140);
 			this.labelCopyTextureSize.Name = "labelCopyTextureSize";
 			this.labelCopyTextureSize.Size = new System.Drawing.Size(88, 16);
-			this.labelCopyTextureSize.TabIndex = 27;
+			this.labelCopyTextureSize.TabIndex = 11;
 			this.labelCopyTextureSize.Text = "Texture W/H";
 			//
 			// buttonCopyTextureSize
 			//
-			this.buttonCopyTextureSize.Location = new System.Drawing.Point(100, 188);
+			this.buttonCopyTextureSize.Location = new System.Drawing.Point(100, 136);
 			this.buttonCopyTextureSize.Name = "buttonCopyTextureSize";
 			this.buttonCopyTextureSize.Size = new System.Drawing.Size(43, 22);
-			this.buttonCopyTextureSize.TabIndex = 28;
+			this.buttonCopyTextureSize.TabIndex = 12;
 			this.buttonCopyTextureSize.Text = "Copy";
 			this.buttonCopyTextureSize.UseVisualStyleBackColor = true;
 			this.buttonCopyTextureSize.Click += new System.EventHandler(this.HandleCopyTextureSizeClick);
 			//
 			// buttonPasteTextureSize
 			//
-			this.buttonPasteTextureSize.Location = new System.Drawing.Point(147, 188);
+			this.buttonPasteTextureSize.Location = new System.Drawing.Point(147, 136);
 			this.buttonPasteTextureSize.Name = "buttonPasteTextureSize";
 			this.buttonPasteTextureSize.Size = new System.Drawing.Size(43, 22);
-			this.buttonPasteTextureSize.TabIndex = 29;
+			this.buttonPasteTextureSize.TabIndex = 13;
 			this.buttonPasteTextureSize.Text = "Paste";
 			this.buttonPasteTextureSize.UseVisualStyleBackColor = true;
 			this.buttonPasteTextureSize.Click += new System.EventHandler(this.HandlePasteTextureSizeClick);
+			//
+			// labelOffsetX
+			//
+			this.labelOffsetX.Location = new System.Drawing.Point(6, 166);
+			this.labelOffsetX.Name = "labelOffsetX";
+			this.labelOffsetX.Size = new System.Drawing.Size(88, 16);
+			this.labelOffsetX.TabIndex = 14;
+			this.labelOffsetX.Text = "Offset X";
+			//
+			// numericOffsetX
+			//
+			this.numericOffsetX.DecimalPlaces = 3;
+			this.numericOffsetX.Location = new System.Drawing.Point(100, 164);
+			this.numericOffsetX.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
+			this.numericOffsetX.Minimum = new decimal(new int[] { 100000, 0, 0, -2147483648 });
+			this.numericOffsetX.Name = "numericOffsetX";
+			this.numericOffsetX.Size = new System.Drawing.Size(90, 20);
+			this.numericOffsetX.TabIndex = 15;
+			this.numericOffsetX.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
+			//
+			// labelOffsetY
+			//
+			this.labelOffsetY.Location = new System.Drawing.Point(6, 192);
+			this.labelOffsetY.Name = "labelOffsetY";
+			this.labelOffsetY.Size = new System.Drawing.Size(88, 16);
+			this.labelOffsetY.TabIndex = 16;
+			this.labelOffsetY.Text = "Offset Y";
+			//
+			// numericOffsetY
+			//
+			this.numericOffsetY.DecimalPlaces = 3;
+			this.numericOffsetY.Location = new System.Drawing.Point(100, 190);
+			this.numericOffsetY.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
+			this.numericOffsetY.Minimum = new decimal(new int[] { 100000, 0, 0, -2147483648 });
+			this.numericOffsetY.Name = "numericOffsetY";
+			this.numericOffsetY.Size = new System.Drawing.Size(90, 20);
+			this.numericOffsetY.TabIndex = 17;
+			this.numericOffsetY.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
 			//
 			// labelCopyOffsets
 			//
 			this.labelCopyOffsets.Location = new System.Drawing.Point(6, 218);
 			this.labelCopyOffsets.Name = "labelCopyOffsets";
 			this.labelCopyOffsets.Size = new System.Drawing.Size(88, 16);
-			this.labelCopyOffsets.TabIndex = 30;
+			this.labelCopyOffsets.TabIndex = 18;
 			this.labelCopyOffsets.Text = "Offset X/Y";
 			//
 			// buttonCopyOffsets
@@ -643,7 +643,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.buttonCopyOffsets.Location = new System.Drawing.Point(100, 214);
 			this.buttonCopyOffsets.Name = "buttonCopyOffsets";
 			this.buttonCopyOffsets.Size = new System.Drawing.Size(43, 22);
-			this.buttonCopyOffsets.TabIndex = 31;
+			this.buttonCopyOffsets.TabIndex = 19;
 			this.buttonCopyOffsets.Text = "Copy";
 			this.buttonCopyOffsets.UseVisualStyleBackColor = true;
 			this.buttonCopyOffsets.Click += new System.EventHandler(this.HandleCopyOffsetsClick);
@@ -653,7 +653,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.buttonPasteOffsets.Location = new System.Drawing.Point(147, 214);
 			this.buttonPasteOffsets.Name = "buttonPasteOffsets";
 			this.buttonPasteOffsets.Size = new System.Drawing.Size(43, 22);
-			this.buttonPasteOffsets.TabIndex = 32;
+			this.buttonPasteOffsets.TabIndex = 20;
 			this.buttonPasteOffsets.Text = "Paste";
 			this.buttonPasteOffsets.UseVisualStyleBackColor = true;
 			this.buttonPasteOffsets.Click += new System.EventHandler(this.HandlePasteOffsetsClick);
@@ -663,7 +663,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelLayer.Location = new System.Drawing.Point(6, 244);
 			this.labelLayer.Name = "labelLayer";
 			this.labelLayer.Size = new System.Drawing.Size(88, 16);
-			this.labelLayer.TabIndex = 12;
+			this.labelLayer.TabIndex = 21;
 			this.labelLayer.Text = "Layer";
 			//
 			// numericLayer
@@ -673,7 +673,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericLayer.Minimum = new decimal(new int[] { 1000, 0, 0, -2147483648 });
 			this.numericLayer.Name = "numericLayer";
 			this.numericLayer.Size = new System.Drawing.Size(90, 20);
-			this.numericLayer.TabIndex = 13;
+			this.numericLayer.TabIndex = 22;
 			this.numericLayer.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
 			//
 			// labelTexture
@@ -681,7 +681,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelTexture.Location = new System.Drawing.Point(6, 270);
 			this.labelTexture.Name = "labelTexture";
 			this.labelTexture.Size = new System.Drawing.Size(88, 16);
-			this.labelTexture.TabIndex = 21;
+			this.labelTexture.TabIndex = 23;
 			this.labelTexture.Text = "Texture";
 			//
 			// textBoxTextureName
@@ -690,14 +690,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.textBoxTextureName.Name = "textBoxTextureName";
 			this.textBoxTextureName.ReadOnly = true;
 			this.textBoxTextureName.Size = new System.Drawing.Size(196, 20);
-			this.textBoxTextureName.TabIndex = 22;
+			this.textBoxTextureName.TabIndex = 24;
 			//
 			// buttonChangeTexture
 			//
 			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 312);
 			this.buttonChangeTexture.Name = "buttonChangeTexture";
 			this.buttonChangeTexture.Size = new System.Drawing.Size(95, 23);
-			this.buttonChangeTexture.TabIndex = 23;
+			this.buttonChangeTexture.TabIndex = 25;
 			this.buttonChangeTexture.Text = "Change...";
 			this.buttonChangeTexture.UseVisualStyleBackColor = true;
 			this.buttonChangeTexture.Click += new System.EventHandler(this.HandleChangeTextureClick);
@@ -707,7 +707,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelScaleX.Location = new System.Drawing.Point(6, 346);
 			this.labelScaleX.Name = "labelScaleX";
 			this.labelScaleX.Size = new System.Drawing.Size(88, 16);
-			this.labelScaleX.TabIndex = 14;
+			this.labelScaleX.TabIndex = 26;
 			this.labelScaleX.Text = "HD Scale X";
 			//
 			// numericScaleX
@@ -719,7 +719,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericScaleX.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleX.Name = "numericScaleX";
 			this.numericScaleX.Size = new System.Drawing.Size(90, 20);
-			this.numericScaleX.TabIndex = 15;
+			this.numericScaleX.TabIndex = 27;
 			this.numericScaleX.Value = new decimal(new int[] { 6, 0, 0, 0 });
 			this.numericScaleX.ValueChanged += new System.EventHandler(this.HandleScaleChanged);
 			//
@@ -728,7 +728,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelScaleY.Location = new System.Drawing.Point(6, 372);
 			this.labelScaleY.Name = "labelScaleY";
 			this.labelScaleY.Size = new System.Drawing.Size(88, 16);
-			this.labelScaleY.TabIndex = 16;
+			this.labelScaleY.TabIndex = 28;
 			this.labelScaleY.Text = "HD Scale Y";
 			//
 			// numericScaleY
@@ -740,7 +740,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericScaleY.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleY.Name = "numericScaleY";
 			this.numericScaleY.Size = new System.Drawing.Size(90, 20);
-			this.numericScaleY.TabIndex = 17;
+			this.numericScaleY.TabIndex = 29;
 			this.numericScaleY.Value = new decimal(new int[] { 72, 0, 0, 65536 });
 			this.numericScaleY.ValueChanged += new System.EventHandler(this.HandleScaleChanged);
 			//
@@ -749,7 +749,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.checkBoxCalibration.Location = new System.Drawing.Point(9, 396);
 			this.checkBoxCalibration.Name = "checkBoxCalibration";
 			this.checkBoxCalibration.Size = new System.Drawing.Size(181, 20);
-			this.checkBoxCalibration.TabIndex = 18;
+			this.checkBoxCalibration.TabIndex = 30;
 			this.checkBoxCalibration.Text = "Calibration overlay";
 			this.checkBoxCalibration.CheckedChanged += new System.EventHandler(this.HandleCalibrationCheckedChanged);
 			//
@@ -760,7 +760,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.checkBoxForeground.Location = new System.Drawing.Point(9, 422);
 			this.checkBoxForeground.Name = "checkBoxForeground";
 			this.checkBoxForeground.Size = new System.Drawing.Size(181, 20);
-			this.checkBoxForeground.TabIndex = 19;
+			this.checkBoxForeground.TabIndex = 31;
 			this.checkBoxForeground.Text = "Show foreground layer";
 			this.checkBoxForeground.CheckedChanged += new System.EventHandler(this.HandleForegroundCheckedChanged);
 			//
@@ -770,7 +770,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelHint.Location = new System.Drawing.Point(6, 448);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(196, 98);
-			this.labelHint.TabIndex = 20;
+			this.labelHint.TabIndex = 32;
 			this.labelHint.Text = "Arrow keys nudge the selection:\r\natlas = texture rect, preview = offset.\r\nHold S" +
 				"hift for steps of 10.\r\nMouse wheel zooms at the cursor.\r\nMiddle mouse drags to " +
 				"pan.\r\nRoom object checkboxes show overlays.";
