@@ -189,6 +189,59 @@ namespace Tests
 		}
 
 		[Test]
+		public void RenderBackground_PaddedChunkTexture_DrawsTheRectSizedRegionUnscaled()
+		{
+			// Arrange: a 10x10 placement rect backed by a 20x20 power-of-two padded
+			// texture whose top-left 10x10 is red and whose padding is blue, the way the
+			// game stores its chunk textures (e.g. room 41's right column: a 1024 px wide
+			// texture placed at 896). The padding must never show; scaling the whole
+			// texture into the rect would squeeze the blue half into view.
+			var room = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
+			room.StaticSpriteHeaderList.Add( new StaticSpriteHeader( index: 0, identifier: 0, sourceWidth: 0, sourceHeight: 0, staticSpriteCount: 1, staticSpriteAddress: 0 ) );
+			room.StaticSpriteList.Add( new List<StaticSprite>
+			{
+				new StaticSprite( index: 0, x: 0, y: 0, width: 10, height: 10, textureFileNameAddress: 0 ) { TextureFileName = "padded.dxt" },
+			} );
+
+			var texture = new Bitmap( 20, 20 );
+			using( var graphics = Graphics.FromImage( texture ) )
+			{
+				graphics.Clear( Color.Blue );
+				graphics.FillRectangle( Brushes.Red, 0, 0, 10, 10 );
+			}
+
+			// Act
+			var background = Renderer.RenderBackground( room, fileName => texture );
+
+			// Assert: every pixel of the rect comes from the texture's top-left region
+			Assert.That( background, Is.Not.Null );
+			Assert.That( background!.Width, Is.EqualTo( 10 ) );
+			Assert.That( background.GetPixel( 1, 1 ).ToArgb(), Is.EqualTo( Color.Red.ToArgb() ) );
+			Assert.That( background.GetPixel( 8, 8 ).ToArgb(), Is.EqualTo( Color.Red.ToArgb() ) );
+		}
+
+		[Test]
+		public void RenderBackground_TextureSmallerThanRect_DrawsItUnscaledAndLeavesTheRestEmpty()
+		{
+			// Arrange: a 30x30 rect backed by only a 10x10 texture; it must not stretch
+			var room = MakeRoom( new SpriteHeader[0], new SpriteGroup[0] );
+			room.StaticSpriteHeaderList.Add( new StaticSpriteHeader( index: 0, identifier: 0, sourceWidth: 0, sourceHeight: 0, staticSpriteCount: 1, staticSpriteAddress: 0 ) );
+			room.StaticSpriteList.Add( new List<StaticSprite>
+			{
+				new StaticSprite( index: 0, x: 0, y: 0, width: 30, height: 30, textureFileNameAddress: 0 ) { TextureFileName = "red.dxt" },
+			} );
+
+			// Act
+			var background = Renderer.RenderBackground( room, fileName => MakeSolidBitmap( Color.Red ) );
+
+			// Assert
+			Assert.That( background, Is.Not.Null );
+			Assert.That( background!.Width, Is.EqualTo( 30 ) );
+			Assert.That( background.GetPixel( 5, 5 ).ToArgb(), Is.EqualTo( Color.Red.ToArgb() ) );
+			Assert.That( background.GetPixel( 20, 20 ).A, Is.EqualTo( 0 ) );
+		}
+
+		[Test]
 		public void RenderBackground_WithoutStaticSprites_ReturnsNull()
 		{
 			// Arrange

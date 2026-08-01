@@ -241,8 +241,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms
 							continue;
 						}
 
-						var destRect = new RectangleF( staticSprite.X, staticSprite.Y, staticSprite.Width, staticSprite.Height );
-						var srcRect = new RectangleF( 0.0f, 0.0f, texture.Width, texture.Height );
+						// chunk textures are power-of-two padded (e.g. 1024x1024 for the
+						// 896-wide right column of a 1920 px room, 1024x32 for its 13-line
+						// bottom strip); the placement rect is a 1:1 clip, not a scale
+						// target, so sample the rect-sized region and leave the padding out
+						var width = Math.Min( staticSprite.Width, texture.Width );
+						var height = Math.Min( staticSprite.Height, texture.Height );
+						var destRect = new RectangleF( staticSprite.X, staticSprite.Y, width, height );
+						var srcRect = new RectangleF( 0.0f, 0.0f, width, height );
 						graphics.DrawImage( texture, destRect, srcRect, GraphicsUnit.Pixel );
 					}
 				}

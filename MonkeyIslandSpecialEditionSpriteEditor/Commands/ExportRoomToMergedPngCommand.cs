@@ -42,8 +42,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 						continue;
 					}
 
-					var destRect = new RectangleF( staticSprite.X, staticSprite.Y, staticSprite.Width, staticSprite.Height );
-					var srcRect = new RectangleF( 0.0f, 0.0f, texture.Width, texture.Height );
+					// chunk textures are power-of-two padded; the placement rect is a 1:1
+					// clip, not a scale target (see Formats.Rooms.Renderer.RenderStaticLayers)
+					var chunkWidth = System.Math.Min( staticSprite.Width, texture.Width );
+					var chunkHeight = System.Math.Min( staticSprite.Height, texture.Height );
+					var destRect = new RectangleF( staticSprite.X, staticSprite.Y, chunkWidth, chunkHeight );
+					var srcRect = new RectangleF( 0.0f, 0.0f, chunkWidth, chunkHeight );
 					graphics.DrawImage( texture, destRect, srcRect, GraphicsUnit.Pixel );
 				}
 			}
