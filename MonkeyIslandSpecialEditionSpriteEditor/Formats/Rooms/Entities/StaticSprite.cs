@@ -1,6 +1,13 @@
 ﻿
 namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 {
+	/// <summary>
+	/// One chunk of a static background/foreground layer: a room-space rectangle plus the
+	/// texture file that fills it. The rectangle is a 1:1 clip, not a scale target: chunk
+	/// textures are power-of-two padded (e.g. a 1024 px wide texture for the 896 px right
+	/// column of a 1920 px room, 1024x32 for its 13 line bottom strip) and only the
+	/// rect-sized top-left region is ever shown.
+	/// </summary>
 	public class StaticSprite(
 		int index,
 		int x,

@@ -3,8 +3,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 {
 	/// <summary>
 	/// One chunk of a <see cref="RoomObjectImage"/>: a screen-space rectangle plus the
-	/// texture file that fills it (e.g. "extra_lava_f0_chunk_1024_0.dxt"). Same shape as
-	/// <see cref="StaticSprite"/>.
+	/// texture file that fills it (e.g. "extra_lava_f0_chunk_1024_0.dxt"). Same shape and
+	/// semantics as <see cref="StaticSprite"/>: the rectangle is a 1:1 clip of a
+	/// power-of-two padded texture, not a scale target (207 of the 266 retail image
+	/// chunks are padded).
 	/// </summary>
 	public class RoomObjectImageChunk(
 		int index,
