@@ -29,6 +29,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Sprite? selectedSprite;
 		private bool suppressUiEvents;
 		private bool dirty;
+		private CopiedFrameBox? copiedFrameBox;
 
 		public Costume? Costume
 		{
@@ -725,6 +726,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					this.numericMoveY.Value = Clamp( (decimal)sprite.MoveY, this.numericMoveY );
 				}
 
+				this.buttonCopyFrameBox.Enabled = enabled;
+				this.buttonPasteFrameBox.Enabled = enabled && this.copiedFrameBox != null;
+
 				// costume sprites reference a texture by index; -1 shows as "(none)"
 				this.textBoxTextureName.Text = sprite == null ? "" : ( this.GetTextureFileName( sprite.TextureNumber ) ?? "(none)" );
 				this.buttonChangeTexture.Enabled = enabled;
@@ -803,6 +807,62 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				spriteNode.Text = DescribeSprite( spriteNode.Index, this.selectedSprite );
 			}
+		}
+
+		/// <summary>
+		/// The values captured by the "Size + screen" Copy button: the texture rect size plus
+		/// the screen position, but not the texture rect position or the move deltas - animation
+		/// cels sample different atlas regions and keep their own movement, yet must share size
+		/// and placement to line up on screen.
+		/// </summary>
+		private class CopiedFrameBox(
+			int textureWidth,
+			int textureHeight,
+			float screenX,
+			float screenY
+		)
+		{
+			public int TextureWidth = textureWidth;
+			public int TextureHeight = textureHeight;
+			public float ScreenX = screenX;
+			public float ScreenY = screenY;
+		}
+
+		private void HandleCopyFrameBoxClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null )
+			{
+				return;
+			}
+
+			this.copiedFrameBox = new CopiedFrameBox(
+				textureWidth: this.selectedSprite.TextureWidth,
+				textureHeight: this.selectedSprite.TextureHeight,
+				screenX: this.selectedSprite.ScreenX,
+				screenY: this.selectedSprite.ScreenY
+			);
+
+			// enables the Paste button
+			this.UpdateNumericEditors();
+		}
+
+		private void HandlePasteFrameBoxClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null || this.copiedFrameBox == null )
+			{
+				return;
+			}
+
+			this.selectedSprite.TextureWidth = this.copiedFrameBox.TextureWidth;
+			this.selectedSprite.TextureHeight = this.copiedFrameBox.TextureHeight;
+			this.selectedSprite.ScreenX = this.copiedFrameBox.ScreenX;
+			this.selectedSprite.ScreenY = this.copiedFrameBox.ScreenY;
+
+			this.MarkDirty();
+			this.UpdateNumericEditors();
+			this.UpdateSelectedSpriteNodeText();
+			this.atlasViewControl.Invalidate();
+			this.RefreshPlacements();
 		}
 
 		//-------------------------------------------

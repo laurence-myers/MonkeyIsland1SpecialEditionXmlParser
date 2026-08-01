@@ -65,6 +65,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericMoveX = new System.Windows.Forms.NumericUpDown();
 			this.labelMoveY = new System.Windows.Forms.Label();
 			this.numericMoveY = new System.Windows.Forms.NumericUpDown();
+			this.labelFrameBox = new System.Windows.Forms.Label();
+			this.buttonCopyFrameBox = new System.Windows.Forms.Button();
+			this.buttonPasteFrameBox = new System.Windows.Forms.Button();
 			this.labelTexture = new System.Windows.Forms.Label();
 			this.textBoxTextureName = new System.Windows.Forms.TextBox();
 			this.buttonChangeTexture = new System.Windows.Forms.Button();
@@ -359,6 +362,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.numericMoveX);
 			this.panelProperties.Controls.Add(this.labelMoveY);
 			this.panelProperties.Controls.Add(this.numericMoveY);
+			this.panelProperties.Controls.Add(this.labelFrameBox);
+			this.panelProperties.Controls.Add(this.buttonCopyFrameBox);
+			this.panelProperties.Controls.Add(this.buttonPasteFrameBox);
 			this.panelProperties.Controls.Add(this.labelTexture);
 			this.panelProperties.Controls.Add(this.textBoxTextureName);
 			this.panelProperties.Controls.Add(this.buttonChangeTexture);
@@ -517,9 +523,37 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericMoveY.TabIndex = 15;
 			this.numericMoveY.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
 			//
+			// labelFrameBox
+			//
+			this.labelFrameBox.Location = new System.Drawing.Point(6, 222);
+			this.labelFrameBox.Name = "labelFrameBox";
+			this.labelFrameBox.Size = new System.Drawing.Size(74, 18);
+			this.labelFrameBox.TabIndex = 24;
+			this.labelFrameBox.Text = "Size + screen";
+			//
+			// buttonCopyFrameBox
+			//
+			this.buttonCopyFrameBox.Location = new System.Drawing.Point(80, 218);
+			this.buttonCopyFrameBox.Name = "buttonCopyFrameBox";
+			this.buttonCopyFrameBox.Size = new System.Drawing.Size(43, 22);
+			this.buttonCopyFrameBox.TabIndex = 25;
+			this.buttonCopyFrameBox.Text = "Copy";
+			this.buttonCopyFrameBox.UseVisualStyleBackColor = true;
+			this.buttonCopyFrameBox.Click += new System.EventHandler(this.HandleCopyFrameBoxClick);
+			//
+			// buttonPasteFrameBox
+			//
+			this.buttonPasteFrameBox.Location = new System.Drawing.Point(127, 218);
+			this.buttonPasteFrameBox.Name = "buttonPasteFrameBox";
+			this.buttonPasteFrameBox.Size = new System.Drawing.Size(43, 22);
+			this.buttonPasteFrameBox.TabIndex = 26;
+			this.buttonPasteFrameBox.Text = "Paste";
+			this.buttonPasteFrameBox.UseVisualStyleBackColor = true;
+			this.buttonPasteFrameBox.Click += new System.EventHandler(this.HandlePasteFrameBoxClick);
+			//
 			// labelTexture
 			//
-			this.labelTexture.Location = new System.Drawing.Point(6, 218);
+			this.labelTexture.Location = new System.Drawing.Point(6, 244);
 			this.labelTexture.Name = "labelTexture";
 			this.labelTexture.Size = new System.Drawing.Size(70, 16);
 			this.labelTexture.TabIndex = 20;
@@ -527,7 +561,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// textBoxTextureName
 			//
-			this.textBoxTextureName.Location = new System.Drawing.Point(6, 236);
+			this.textBoxTextureName.Location = new System.Drawing.Point(6, 262);
 			this.textBoxTextureName.Name = "textBoxTextureName";
 			this.textBoxTextureName.ReadOnly = true;
 			this.textBoxTextureName.Size = new System.Drawing.Size(216, 20);
@@ -535,7 +569,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// buttonChangeTexture
 			//
-			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 260);
+			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 286);
 			this.buttonChangeTexture.Name = "buttonChangeTexture";
 			this.buttonChangeTexture.Size = new System.Drawing.Size(95, 23);
 			this.buttonChangeTexture.TabIndex = 22;
@@ -545,7 +579,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// buttonClearTexture
 			//
-			this.buttonClearTexture.Location = new System.Drawing.Point(107, 260);
+			this.buttonClearTexture.Location = new System.Drawing.Point(107, 286);
 			this.buttonClearTexture.Name = "buttonClearTexture";
 			this.buttonClearTexture.Size = new System.Drawing.Size(60, 23);
 			this.buttonClearTexture.TabIndex = 23;
@@ -556,7 +590,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// labelClassicDelta
 			//
 			this.labelClassicDelta.AutoEllipsis = true;
-			this.labelClassicDelta.Location = new System.Drawing.Point(6, 290);
+			this.labelClassicDelta.Location = new System.Drawing.Point(6, 316);
 			this.labelClassicDelta.Name = "labelClassicDelta";
 			this.labelClassicDelta.Size = new System.Drawing.Size(220, 18);
 			this.labelClassicDelta.TabIndex = 16;
@@ -564,7 +598,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// buttonAlignToClassic
 			//
-			this.buttonAlignToClassic.Location = new System.Drawing.Point(6, 312);
+			this.buttonAlignToClassic.Location = new System.Drawing.Point(6, 338);
 			this.buttonAlignToClassic.Name = "buttonAlignToClassic";
 			this.buttonAlignToClassic.Size = new System.Drawing.Size(164, 23);
 			this.buttonAlignToClassic.TabIndex = 17;
@@ -574,7 +608,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// checkBoxCalibration
 			//
-			this.checkBoxCalibration.Location = new System.Drawing.Point(6, 340);
+			this.checkBoxCalibration.Location = new System.Drawing.Point(6, 366);
 			this.checkBoxCalibration.Name = "checkBoxCalibration";
 			this.checkBoxCalibration.Size = new System.Drawing.Size(164, 20);
 			this.checkBoxCalibration.TabIndex = 18;
@@ -585,7 +619,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 364);
+			this.labelHint.Location = new System.Drawing.Point(6, 390);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(220, 86);
 			this.labelHint.TabIndex = 19;
@@ -766,6 +800,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.NumericUpDown numericMoveX;
 		private System.Windows.Forms.Label labelMoveY;
 		private System.Windows.Forms.NumericUpDown numericMoveY;
+		private System.Windows.Forms.Label labelFrameBox;
+		private System.Windows.Forms.Button buttonCopyFrameBox;
+		private System.Windows.Forms.Button buttonPasteFrameBox;
 		private System.Windows.Forms.Label labelTexture;
 		private System.Windows.Forms.TextBox textBoxTextureName;
 		private System.Windows.Forms.Button buttonChangeTexture;
