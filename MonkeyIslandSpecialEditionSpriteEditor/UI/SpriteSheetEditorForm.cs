@@ -51,7 +51,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private TreeNode? roomObjectsTreeRoot;
 		private bool suppressUiEvents;
 		private bool dirty;
-		private CopiedFrameBox? copiedFrameBox;
+		// the three copy/paste slots: atlas rect position, atlas rect size, screen offset;
+		// each pair copies both of its numbers at once so animation frames line up exactly
+		private Point? copiedTextureXY;
+		private Size? copiedTextureSize;
+		private PointF? copiedOffsets;
 
 		public Room? Room
 		{
@@ -1334,8 +1338,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					this.numericOffsetY.Value = Clamp( (decimal)this.selectedRoomObject.OffsetY, this.numericOffsetY );
 				}
 
-				this.buttonCopyFrameBox.Enabled = sprite != null;
-				this.buttonPasteFrameBox.Enabled = sprite != null && this.copiedFrameBox != null;
+				this.buttonCopyTextureXY.Enabled = atlasEnabled;
+				this.buttonPasteTextureXY.Enabled = atlasEnabled && this.copiedTextureXY != null;
+				this.buttonCopyTextureSize.Enabled = atlasEnabled;
+				this.buttonPasteTextureSize.Enabled = atlasEnabled && this.copiedTextureSize != null;
+				this.buttonCopyOffsets.Enabled = this.numericOffsetX.Enabled;
+				this.buttonPasteOffsets.Enabled = this.numericOffsetX.Enabled && this.copiedOffsets != null;
 
 				// the Texture row follows the texture target, which may be a non-sprite entity
 				this.textBoxTextureName.Text = this.selectedTextureTarget?.TextureFileName ?? "";
@@ -1478,59 +1486,128 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 		}
 
+		//-------------------------------------------
+		// copy/paste of field pairs (each pair copies both numbers at once, so the frames
+		// of an animation can be sized and placed identically)
+
 		/// <summary>
-		/// The values captured by the "Size + offsets" Copy button: the texture rect size plus
-		/// the screen offset, but not the texture rect position - animation frames sample
-		/// different atlas regions yet must share size and placement to line up on screen.
+		/// The atlas rect the Texture X/Y and Texture W/H pairs read and write: the selected
+		/// object sprite, or the selected room object's sprite record.
 		/// </summary>
-		private class CopiedFrameBox(
-			int textureWidth,
-			int textureHeight,
-			float offsetX,
-			float offsetY
-		)
+		private IAtlasSprite? GetSelectedAtlasSprite()
 		{
-			public int TextureWidth = textureWidth;
-			public int TextureHeight = textureHeight;
-			public float OffsetX = offsetX;
-			public float OffsetY = offsetY;
+			return (IAtlasSprite?)this.selectedSprite ?? this.selectedRoomObject?.Sprite;
 		}
 
-		private void HandleCopyFrameBoxClick( object sender, EventArgs args )
+		/// <summary>
+		/// Refreshes everything that shows the selected atlas rect after both of a pair's
+		/// fields were written (the same work <see cref="HandleNumericValueChanged"/> does).
+		/// </summary>
+		private void RefreshAfterAtlasRectEdit()
 		{
-			if( this.selectedSprite == null )
+			this.MarkDirty();
+			this.UpdateNumericEditors();
+			this.atlasViewControl.Invalidate();
+			if( this.selectedSprite != null )
+			{
+				this.UpdateSelectedSpriteNodeText();
+				this.RefreshPlacements();
+			}
+			else if( this.selectedRoomObject != null )
+			{
+				this.UpdateSelectedRoomObjectNodeText();
+				this.RefreshRoomObjectPreviews();
+			}
+		}
+
+		private void HandleCopyTextureXYClick( object sender, EventArgs args )
+		{
+			var atlasSprite = this.GetSelectedAtlasSprite();
+			if( atlasSprite == null )
 			{
 				return;
 			}
-
-			this.copiedFrameBox = new CopiedFrameBox(
-				textureWidth: this.selectedSprite.TextureWidth,
-				textureHeight: this.selectedSprite.TextureHeight,
-				offsetX: this.selectedSprite.OffsetX,
-				offsetY: this.selectedSprite.OffsetY
-			);
+			this.copiedTextureXY = new Point( atlasSprite.TextureX, atlasSprite.TextureY );
 
 			// enables the Paste button
 			this.UpdateNumericEditors();
 		}
 
-		private void HandlePasteFrameBoxClick( object sender, EventArgs args )
+		private void HandlePasteTextureXYClick( object sender, EventArgs args )
 		{
-			if( this.selectedSprite == null || this.copiedFrameBox == null )
+			var atlasSprite = this.GetSelectedAtlasSprite();
+			if( atlasSprite == null || this.copiedTextureXY == null )
+			{
+				return;
+			}
+			atlasSprite.TextureX = this.copiedTextureXY.Value.X;
+			atlasSprite.TextureY = this.copiedTextureXY.Value.Y;
+			this.RefreshAfterAtlasRectEdit();
+		}
+
+		private void HandleCopyTextureSizeClick( object sender, EventArgs args )
+		{
+			var atlasSprite = this.GetSelectedAtlasSprite();
+			if( atlasSprite == null )
+			{
+				return;
+			}
+			this.copiedTextureSize = new Size( atlasSprite.TextureWidth, atlasSprite.TextureHeight );
+			this.UpdateNumericEditors();
+		}
+
+		private void HandlePasteTextureSizeClick( object sender, EventArgs args )
+		{
+			var atlasSprite = this.GetSelectedAtlasSprite();
+			if( atlasSprite == null || this.copiedTextureSize == null )
+			{
+				return;
+			}
+			atlasSprite.TextureWidth = this.copiedTextureSize.Value.Width;
+			atlasSprite.TextureHeight = this.copiedTextureSize.Value.Height;
+			this.RefreshAfterAtlasRectEdit();
+		}
+
+		private void HandleCopyOffsetsClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite != null )
+			{
+				this.copiedOffsets = new PointF( this.selectedSprite.OffsetX, this.selectedSprite.OffsetY );
+			}
+			else if( this.selectedRoomObject != null )
+			{
+				this.copiedOffsets = new PointF( this.selectedRoomObject.OffsetX, this.selectedRoomObject.OffsetY );
+			}
+			else
+			{
+				return;
+			}
+			this.UpdateNumericEditors();
+		}
+
+		private void HandlePasteOffsetsClick( object sender, EventArgs args )
+		{
+			if( this.copiedOffsets == null )
 			{
 				return;
 			}
 
-			this.selectedSprite.TextureWidth = this.copiedFrameBox.TextureWidth;
-			this.selectedSprite.TextureHeight = this.copiedFrameBox.TextureHeight;
-			this.selectedSprite.OffsetX = this.copiedFrameBox.OffsetX;
-			this.selectedSprite.OffsetY = this.copiedFrameBox.OffsetY;
-
-			this.MarkDirty();
-			this.UpdateNumericEditors();
-			this.UpdateSelectedSpriteNodeText();
-			this.atlasViewControl.Invalidate();
-			this.RefreshPlacements();
+			if( this.selectedSprite != null )
+			{
+				this.selectedSprite.OffsetX = this.copiedOffsets.Value.X;
+				this.selectedSprite.OffsetY = this.copiedOffsets.Value.Y;
+				this.MarkDirty();
+				this.UpdateNumericEditors();
+				this.RefreshPlacements();
+			}
+			else if( this.selectedRoomObject != null )
+			{
+				this.selectedRoomObject.OffsetX = this.copiedOffsets.Value.X;
+				this.selectedRoomObject.OffsetY = this.copiedOffsets.Value.Y;
+				this.MarkDirty();
+				this.UpdateNumericEditors();
+				this.roomPreviewControl.RefreshContent();
+			}
 		}
 
 		private void HandleScaleChanged( object sender, EventArgs args )

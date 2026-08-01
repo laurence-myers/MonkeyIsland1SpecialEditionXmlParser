@@ -29,7 +29,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Sprite? selectedSprite;
 		private bool suppressUiEvents;
 		private bool dirty;
-		private CopiedFrameBox? copiedFrameBox;
+		// the three copy/paste slots: atlas rect position, atlas rect size, screen position;
+		// each pair copies both of its numbers at once so animation cels line up exactly
+		private Point? copiedTextureXY;
+		private Size? copiedTextureSize;
+		private PointF? copiedScreen;
 
 		public Costume? Costume
 		{
@@ -726,8 +730,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					this.numericMoveY.Value = Clamp( (decimal)sprite.MoveY, this.numericMoveY );
 				}
 
-				this.buttonCopyFrameBox.Enabled = enabled;
-				this.buttonPasteFrameBox.Enabled = enabled && this.copiedFrameBox != null;
+				this.buttonCopyTextureXY.Enabled = enabled;
+				this.buttonPasteTextureXY.Enabled = enabled && this.copiedTextureXY != null;
+				this.buttonCopyTextureSize.Enabled = enabled;
+				this.buttonPasteTextureSize.Enabled = enabled && this.copiedTextureSize != null;
+				this.buttonCopyScreen.Enabled = enabled;
+				this.buttonPasteScreen.Enabled = enabled && this.copiedScreen != null;
 
 				// costume sprites reference a texture by index; -1 shows as "(none)"
 				this.textBoxTextureName.Text = sprite == null ? "" : ( this.GetTextureFileName( sprite.TextureNumber ) ?? "(none)" );
@@ -809,60 +817,86 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 		}
 
+		//-------------------------------------------
+		// copy/paste of field pairs (each pair copies both numbers at once, so the cels
+		// of an animation can be sized and placed identically)
+
 		/// <summary>
-		/// The values captured by the "Size + screen" Copy button: the texture rect size plus
-		/// the screen position, but not the texture rect position or the move deltas - animation
-		/// cels sample different atlas regions and keep their own movement, yet must share size
-		/// and placement to line up on screen.
+		/// Runs the refreshes both paste buttons need after writing a pair of fields (the
+		/// same work <see cref="HandleNumericValueChanged"/> does).
 		/// </summary>
-		private class CopiedFrameBox(
-			int textureWidth,
-			int textureHeight,
-			float screenX,
-			float screenY
-		)
+		private void RefreshAfterPaste()
 		{
-			public int TextureWidth = textureWidth;
-			public int TextureHeight = textureHeight;
-			public float ScreenX = screenX;
-			public float ScreenY = screenY;
-		}
-
-		private void HandleCopyFrameBoxClick( object sender, EventArgs args )
-		{
-			if( this.selectedSprite == null )
-			{
-				return;
-			}
-
-			this.copiedFrameBox = new CopiedFrameBox(
-				textureWidth: this.selectedSprite.TextureWidth,
-				textureHeight: this.selectedSprite.TextureHeight,
-				screenX: this.selectedSprite.ScreenX,
-				screenY: this.selectedSprite.ScreenY
-			);
-
-			// enables the Paste button
-			this.UpdateNumericEditors();
-		}
-
-		private void HandlePasteFrameBoxClick( object sender, EventArgs args )
-		{
-			if( this.selectedSprite == null || this.copiedFrameBox == null )
-			{
-				return;
-			}
-
-			this.selectedSprite.TextureWidth = this.copiedFrameBox.TextureWidth;
-			this.selectedSprite.TextureHeight = this.copiedFrameBox.TextureHeight;
-			this.selectedSprite.ScreenX = this.copiedFrameBox.ScreenX;
-			this.selectedSprite.ScreenY = this.copiedFrameBox.ScreenY;
-
 			this.MarkDirty();
 			this.UpdateNumericEditors();
 			this.UpdateSelectedSpriteNodeText();
 			this.atlasViewControl.Invalidate();
 			this.RefreshPlacements();
+		}
+
+		private void HandleCopyTextureXYClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null )
+			{
+				return;
+			}
+			this.copiedTextureXY = new Point( this.selectedSprite.TextureX, this.selectedSprite.TextureY );
+
+			// enables the Paste button
+			this.UpdateNumericEditors();
+		}
+
+		private void HandlePasteTextureXYClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null || this.copiedTextureXY == null )
+			{
+				return;
+			}
+			this.selectedSprite.TextureX = this.copiedTextureXY.Value.X;
+			this.selectedSprite.TextureY = this.copiedTextureXY.Value.Y;
+			this.RefreshAfterPaste();
+		}
+
+		private void HandleCopyTextureSizeClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null )
+			{
+				return;
+			}
+			this.copiedTextureSize = new Size( this.selectedSprite.TextureWidth, this.selectedSprite.TextureHeight );
+			this.UpdateNumericEditors();
+		}
+
+		private void HandlePasteTextureSizeClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null || this.copiedTextureSize == null )
+			{
+				return;
+			}
+			this.selectedSprite.TextureWidth = this.copiedTextureSize.Value.Width;
+			this.selectedSprite.TextureHeight = this.copiedTextureSize.Value.Height;
+			this.RefreshAfterPaste();
+		}
+
+		private void HandleCopyScreenClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null )
+			{
+				return;
+			}
+			this.copiedScreen = new PointF( this.selectedSprite.ScreenX, this.selectedSprite.ScreenY );
+			this.UpdateNumericEditors();
+		}
+
+		private void HandlePasteScreenClick( object sender, EventArgs args )
+		{
+			if( this.selectedSprite == null || this.copiedScreen == null )
+			{
+				return;
+			}
+			this.selectedSprite.ScreenX = this.copiedScreen.Value.X;
+			this.selectedSprite.ScreenY = this.copiedScreen.Value.Y;
+			this.RefreshAfterPaste();
 		}
 
 		//-------------------------------------------

@@ -67,9 +67,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericOffsetX = new System.Windows.Forms.NumericUpDown();
 			this.labelOffsetY = new System.Windows.Forms.Label();
 			this.numericOffsetY = new System.Windows.Forms.NumericUpDown();
-			this.labelFrameBox = new System.Windows.Forms.Label();
-			this.buttonCopyFrameBox = new System.Windows.Forms.Button();
-			this.buttonPasteFrameBox = new System.Windows.Forms.Button();
+			this.labelCopyTextureXY = new System.Windows.Forms.Label();
+			this.buttonCopyTextureXY = new System.Windows.Forms.Button();
+			this.buttonPasteTextureXY = new System.Windows.Forms.Button();
+			this.labelCopyTextureSize = new System.Windows.Forms.Label();
+			this.buttonCopyTextureSize = new System.Windows.Forms.Button();
+			this.buttonPasteTextureSize = new System.Windows.Forms.Button();
+			this.labelCopyOffsets = new System.Windows.Forms.Label();
+			this.buttonCopyOffsets = new System.Windows.Forms.Button();
+			this.buttonPasteOffsets = new System.Windows.Forms.Button();
 			this.labelLayer = new System.Windows.Forms.Label();
 			this.numericLayer = new System.Windows.Forms.NumericUpDown();
 			this.labelTexture = new System.Windows.Forms.Label();
@@ -435,9 +441,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.numericOffsetX);
 			this.panelProperties.Controls.Add(this.labelOffsetY);
 			this.panelProperties.Controls.Add(this.numericOffsetY);
-			this.panelProperties.Controls.Add(this.labelFrameBox);
-			this.panelProperties.Controls.Add(this.buttonCopyFrameBox);
-			this.panelProperties.Controls.Add(this.buttonPasteFrameBox);
+			this.panelProperties.Controls.Add(this.labelCopyTextureXY);
+			this.panelProperties.Controls.Add(this.buttonCopyTextureXY);
+			this.panelProperties.Controls.Add(this.buttonPasteTextureXY);
+			this.panelProperties.Controls.Add(this.labelCopyTextureSize);
+			this.panelProperties.Controls.Add(this.buttonCopyTextureSize);
+			this.panelProperties.Controls.Add(this.buttonPasteTextureSize);
+			this.panelProperties.Controls.Add(this.labelCopyOffsets);
+			this.panelProperties.Controls.Add(this.buttonCopyOffsets);
+			this.panelProperties.Controls.Add(this.buttonPasteOffsets);
 			this.panelProperties.Controls.Add(this.labelLayer);
 			this.panelProperties.Controls.Add(this.numericLayer);
 			this.panelProperties.Controls.Add(this.labelTexture);
@@ -562,37 +574,93 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericOffsetY.TabIndex = 11;
 			this.numericOffsetY.ValueChanged += new System.EventHandler(this.HandleNumericValueChanged);
 			//
-			// labelFrameBox
+			// labelCopyTextureXY
 			//
-			this.labelFrameBox.Location = new System.Drawing.Point(6, 166);
-			this.labelFrameBox.Name = "labelFrameBox";
-			this.labelFrameBox.Size = new System.Drawing.Size(88, 16);
-			this.labelFrameBox.TabIndex = 24;
-			this.labelFrameBox.Text = "Size + offsets";
+			this.labelCopyTextureXY.Location = new System.Drawing.Point(6, 166);
+			this.labelCopyTextureXY.Name = "labelCopyTextureXY";
+			this.labelCopyTextureXY.Size = new System.Drawing.Size(88, 16);
+			this.labelCopyTextureXY.TabIndex = 24;
+			this.labelCopyTextureXY.Text = "Texture X/Y";
 			//
-			// buttonCopyFrameBox
+			// buttonCopyTextureXY
 			//
-			this.buttonCopyFrameBox.Location = new System.Drawing.Point(100, 162);
-			this.buttonCopyFrameBox.Name = "buttonCopyFrameBox";
-			this.buttonCopyFrameBox.Size = new System.Drawing.Size(43, 22);
-			this.buttonCopyFrameBox.TabIndex = 25;
-			this.buttonCopyFrameBox.Text = "Copy";
-			this.buttonCopyFrameBox.UseVisualStyleBackColor = true;
-			this.buttonCopyFrameBox.Click += new System.EventHandler(this.HandleCopyFrameBoxClick);
+			this.buttonCopyTextureXY.Location = new System.Drawing.Point(100, 162);
+			this.buttonCopyTextureXY.Name = "buttonCopyTextureXY";
+			this.buttonCopyTextureXY.Size = new System.Drawing.Size(43, 22);
+			this.buttonCopyTextureXY.TabIndex = 25;
+			this.buttonCopyTextureXY.Text = "Copy";
+			this.buttonCopyTextureXY.UseVisualStyleBackColor = true;
+			this.buttonCopyTextureXY.Click += new System.EventHandler(this.HandleCopyTextureXYClick);
 			//
-			// buttonPasteFrameBox
+			// buttonPasteTextureXY
 			//
-			this.buttonPasteFrameBox.Location = new System.Drawing.Point(147, 162);
-			this.buttonPasteFrameBox.Name = "buttonPasteFrameBox";
-			this.buttonPasteFrameBox.Size = new System.Drawing.Size(43, 22);
-			this.buttonPasteFrameBox.TabIndex = 26;
-			this.buttonPasteFrameBox.Text = "Paste";
-			this.buttonPasteFrameBox.UseVisualStyleBackColor = true;
-			this.buttonPasteFrameBox.Click += new System.EventHandler(this.HandlePasteFrameBoxClick);
+			this.buttonPasteTextureXY.Location = new System.Drawing.Point(147, 162);
+			this.buttonPasteTextureXY.Name = "buttonPasteTextureXY";
+			this.buttonPasteTextureXY.Size = new System.Drawing.Size(43, 22);
+			this.buttonPasteTextureXY.TabIndex = 26;
+			this.buttonPasteTextureXY.Text = "Paste";
+			this.buttonPasteTextureXY.UseVisualStyleBackColor = true;
+			this.buttonPasteTextureXY.Click += new System.EventHandler(this.HandlePasteTextureXYClick);
+			//
+			// labelCopyTextureSize
+			//
+			this.labelCopyTextureSize.Location = new System.Drawing.Point(6, 192);
+			this.labelCopyTextureSize.Name = "labelCopyTextureSize";
+			this.labelCopyTextureSize.Size = new System.Drawing.Size(88, 16);
+			this.labelCopyTextureSize.TabIndex = 27;
+			this.labelCopyTextureSize.Text = "Texture W/H";
+			//
+			// buttonCopyTextureSize
+			//
+			this.buttonCopyTextureSize.Location = new System.Drawing.Point(100, 188);
+			this.buttonCopyTextureSize.Name = "buttonCopyTextureSize";
+			this.buttonCopyTextureSize.Size = new System.Drawing.Size(43, 22);
+			this.buttonCopyTextureSize.TabIndex = 28;
+			this.buttonCopyTextureSize.Text = "Copy";
+			this.buttonCopyTextureSize.UseVisualStyleBackColor = true;
+			this.buttonCopyTextureSize.Click += new System.EventHandler(this.HandleCopyTextureSizeClick);
+			//
+			// buttonPasteTextureSize
+			//
+			this.buttonPasteTextureSize.Location = new System.Drawing.Point(147, 188);
+			this.buttonPasteTextureSize.Name = "buttonPasteTextureSize";
+			this.buttonPasteTextureSize.Size = new System.Drawing.Size(43, 22);
+			this.buttonPasteTextureSize.TabIndex = 29;
+			this.buttonPasteTextureSize.Text = "Paste";
+			this.buttonPasteTextureSize.UseVisualStyleBackColor = true;
+			this.buttonPasteTextureSize.Click += new System.EventHandler(this.HandlePasteTextureSizeClick);
+			//
+			// labelCopyOffsets
+			//
+			this.labelCopyOffsets.Location = new System.Drawing.Point(6, 218);
+			this.labelCopyOffsets.Name = "labelCopyOffsets";
+			this.labelCopyOffsets.Size = new System.Drawing.Size(88, 16);
+			this.labelCopyOffsets.TabIndex = 30;
+			this.labelCopyOffsets.Text = "Offset X/Y";
+			//
+			// buttonCopyOffsets
+			//
+			this.buttonCopyOffsets.Location = new System.Drawing.Point(100, 214);
+			this.buttonCopyOffsets.Name = "buttonCopyOffsets";
+			this.buttonCopyOffsets.Size = new System.Drawing.Size(43, 22);
+			this.buttonCopyOffsets.TabIndex = 31;
+			this.buttonCopyOffsets.Text = "Copy";
+			this.buttonCopyOffsets.UseVisualStyleBackColor = true;
+			this.buttonCopyOffsets.Click += new System.EventHandler(this.HandleCopyOffsetsClick);
+			//
+			// buttonPasteOffsets
+			//
+			this.buttonPasteOffsets.Location = new System.Drawing.Point(147, 214);
+			this.buttonPasteOffsets.Name = "buttonPasteOffsets";
+			this.buttonPasteOffsets.Size = new System.Drawing.Size(43, 22);
+			this.buttonPasteOffsets.TabIndex = 32;
+			this.buttonPasteOffsets.Text = "Paste";
+			this.buttonPasteOffsets.UseVisualStyleBackColor = true;
+			this.buttonPasteOffsets.Click += new System.EventHandler(this.HandlePasteOffsetsClick);
 			//
 			// labelLayer
 			//
-			this.labelLayer.Location = new System.Drawing.Point(6, 192);
+			this.labelLayer.Location = new System.Drawing.Point(6, 244);
 			this.labelLayer.Name = "labelLayer";
 			this.labelLayer.Size = new System.Drawing.Size(88, 16);
 			this.labelLayer.TabIndex = 12;
@@ -600,7 +668,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// numericLayer
 			//
-			this.numericLayer.Location = new System.Drawing.Point(100, 190);
+			this.numericLayer.Location = new System.Drawing.Point(100, 242);
 			this.numericLayer.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
 			this.numericLayer.Minimum = new decimal(new int[] { 1000, 0, 0, -2147483648 });
 			this.numericLayer.Name = "numericLayer";
@@ -610,7 +678,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// labelTexture
 			//
-			this.labelTexture.Location = new System.Drawing.Point(6, 218);
+			this.labelTexture.Location = new System.Drawing.Point(6, 270);
 			this.labelTexture.Name = "labelTexture";
 			this.labelTexture.Size = new System.Drawing.Size(88, 16);
 			this.labelTexture.TabIndex = 21;
@@ -618,7 +686,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// textBoxTextureName
 			//
-			this.textBoxTextureName.Location = new System.Drawing.Point(6, 236);
+			this.textBoxTextureName.Location = new System.Drawing.Point(6, 288);
 			this.textBoxTextureName.Name = "textBoxTextureName";
 			this.textBoxTextureName.ReadOnly = true;
 			this.textBoxTextureName.Size = new System.Drawing.Size(196, 20);
@@ -626,7 +694,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// buttonChangeTexture
 			//
-			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 260);
+			this.buttonChangeTexture.Location = new System.Drawing.Point(6, 312);
 			this.buttonChangeTexture.Name = "buttonChangeTexture";
 			this.buttonChangeTexture.Size = new System.Drawing.Size(95, 23);
 			this.buttonChangeTexture.TabIndex = 23;
@@ -636,7 +704,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// labelScaleX
 			//
-			this.labelScaleX.Location = new System.Drawing.Point(6, 294);
+			this.labelScaleX.Location = new System.Drawing.Point(6, 346);
 			this.labelScaleX.Name = "labelScaleX";
 			this.labelScaleX.Size = new System.Drawing.Size(88, 16);
 			this.labelScaleX.TabIndex = 14;
@@ -646,7 +714,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.numericScaleX.DecimalPlaces = 4;
 			this.numericScaleX.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-			this.numericScaleX.Location = new System.Drawing.Point(100, 292);
+			this.numericScaleX.Location = new System.Drawing.Point(100, 344);
 			this.numericScaleX.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
 			this.numericScaleX.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleX.Name = "numericScaleX";
@@ -657,7 +725,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// labelScaleY
 			//
-			this.labelScaleY.Location = new System.Drawing.Point(6, 320);
+			this.labelScaleY.Location = new System.Drawing.Point(6, 372);
 			this.labelScaleY.Name = "labelScaleY";
 			this.labelScaleY.Size = new System.Drawing.Size(88, 16);
 			this.labelScaleY.TabIndex = 16;
@@ -667,7 +735,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.numericScaleY.DecimalPlaces = 4;
 			this.numericScaleY.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-			this.numericScaleY.Location = new System.Drawing.Point(100, 318);
+			this.numericScaleY.Location = new System.Drawing.Point(100, 370);
 			this.numericScaleY.Maximum = new decimal(new int[] { 20, 0, 0, 0 });
 			this.numericScaleY.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
 			this.numericScaleY.Name = "numericScaleY";
@@ -678,7 +746,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// checkBoxCalibration
 			//
-			this.checkBoxCalibration.Location = new System.Drawing.Point(9, 344);
+			this.checkBoxCalibration.Location = new System.Drawing.Point(9, 396);
 			this.checkBoxCalibration.Name = "checkBoxCalibration";
 			this.checkBoxCalibration.Size = new System.Drawing.Size(181, 20);
 			this.checkBoxCalibration.TabIndex = 18;
@@ -689,7 +757,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			this.checkBoxForeground.Checked = true;
 			this.checkBoxForeground.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.checkBoxForeground.Location = new System.Drawing.Point(9, 370);
+			this.checkBoxForeground.Location = new System.Drawing.Point(9, 422);
 			this.checkBoxForeground.Name = "checkBoxForeground";
 			this.checkBoxForeground.Size = new System.Drawing.Size(181, 20);
 			this.checkBoxForeground.TabIndex = 19;
@@ -699,7 +767,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 396);
+			this.labelHint.Location = new System.Drawing.Point(6, 448);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(196, 98);
 			this.labelHint.TabIndex = 20;
@@ -816,9 +884,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.NumericUpDown numericOffsetX;
 		private System.Windows.Forms.Label labelOffsetY;
 		private System.Windows.Forms.NumericUpDown numericOffsetY;
-		private System.Windows.Forms.Label labelFrameBox;
-		private System.Windows.Forms.Button buttonCopyFrameBox;
-		private System.Windows.Forms.Button buttonPasteFrameBox;
+		private System.Windows.Forms.Label labelCopyTextureXY;
+		private System.Windows.Forms.Button buttonCopyTextureXY;
+		private System.Windows.Forms.Button buttonPasteTextureXY;
+		private System.Windows.Forms.Label labelCopyTextureSize;
+		private System.Windows.Forms.Button buttonCopyTextureSize;
+		private System.Windows.Forms.Button buttonPasteTextureSize;
+		private System.Windows.Forms.Label labelCopyOffsets;
+		private System.Windows.Forms.Button buttonCopyOffsets;
+		private System.Windows.Forms.Button buttonPasteOffsets;
 		private System.Windows.Forms.Label labelLayer;
 		private System.Windows.Forms.NumericUpDown numericLayer;
 		private System.Windows.Forms.Label labelTexture;
