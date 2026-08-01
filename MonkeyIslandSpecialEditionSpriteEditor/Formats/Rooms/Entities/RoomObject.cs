@@ -47,8 +47,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 		} = imageAddress;
 
 		/// <summary>
-		/// Gets or sets the X component of the offset. NB: meaning inferred from the
-		/// analogous float pair on <see cref="Sprite"/>; not verified in-game.
+		/// Gets or sets the X component of the overlay's screen position (HD room pixels,
+		/// the top-left of the sprite cut-out or of the image's chunk grid). Verified
+		/// against the retail art: the bar Chandelier hangs on the painted ceiling chain
+		/// and the kitchen Water matches the painted horizon at these positions.
 		/// </summary>
 		public float OffsetX
 		{
@@ -57,8 +59,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 		} = offsetX;
 
 		/// <summary>
-		/// Gets or sets the Y component of the offset. NB: meaning inferred from the
-		/// analogous float pair on <see cref="Sprite"/>; not verified in-game.
+		/// Gets or sets the Y component of the overlay's screen position (HD room pixels).
 		/// </summary>
 		public float OffsetY
 		{

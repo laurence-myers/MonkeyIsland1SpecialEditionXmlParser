@@ -701,11 +701,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
 			this.labelHint.Location = new System.Drawing.Point(6, 396);
 			this.labelHint.Name = "labelHint";
-			this.labelHint.Size = new System.Drawing.Size(196, 84);
+			this.labelHint.Size = new System.Drawing.Size(196, 98);
 			this.labelHint.TabIndex = 20;
 			this.labelHint.Text = "Arrow keys nudge the selection:\r\natlas = texture rect, preview = offset.\r\nHold S" +
 				"hift for steps of 10.\r\nMouse wheel zooms at the cursor.\r\nMiddle mouse drags to " +
-				"pan.";
+				"pan.\r\nRoom object checkboxes show overlays.";
 			//
 			// panelPreview
 			//

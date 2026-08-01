@@ -1,10 +1,14 @@
 ﻿
+using System.Xml.Serialization;
+
 namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 {
 	/// <summary>
 	/// A room object drawn as a cut-out from an objects texture (e.g. "objects_a2.dxt").
-	/// The rectangle is in screen space (e.g. the "Sky" object of a room spans the full
-	/// room width/height).
+	/// The rectangle is the source rectangle within that texture; the cut-out is drawn at
+	/// the owning <see cref="RoomObject"/>'s screen offset (verified against the retail
+	/// art: the bar's Chandelier rect sits at 292;0 in its atlas but hangs at x 939 on
+	/// the painted ceiling chain).
 	/// </summary>
 	public class RoomObjectSprite(
 		int textureFileNameAddress,
@@ -12,7 +16,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 		int y,
 		int width,
 		int height
-	) : ITextureReference
+	) : IAtlasSprite, ITextureReference
 	{
 		private RoomObjectSprite() : this(
 			textureFileNameAddress: 0,
@@ -77,6 +81,71 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms.Entities
 			get;
 			set;
 		} = height;
+
+		/// <summary>
+		/// Gets or sets <see cref="X"/> under its <see cref="IAtlasSprite"/> name, so the
+		/// atlas view can edit the rectangle. Not serialized: X is.
+		/// </summary>
+		[XmlIgnore]
+		public int TextureX
+		{
+			get
+			{
+				return this.X;
+			}
+			set
+			{
+				this.X = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets <see cref="Y"/> under its <see cref="IAtlasSprite"/> name. Not serialized.
+		/// </summary>
+		[XmlIgnore]
+		public int TextureY
+		{
+			get
+			{
+				return this.Y;
+			}
+			set
+			{
+				this.Y = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets <see cref="Width"/> under its <see cref="IAtlasSprite"/> name. Not serialized.
+		/// </summary>
+		[XmlIgnore]
+		public int TextureWidth
+		{
+			get
+			{
+				return this.Width;
+			}
+			set
+			{
+				this.Width = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets <see cref="Height"/> under its <see cref="IAtlasSprite"/> name. Not serialized.
+		/// </summary>
+		[XmlIgnore]
+		public int TextureHeight
+		{
+			get
+			{
+				return this.Height;
+			}
+			set
+			{
+				this.Height = value;
+			}
+		}
 
 		public override string ToString()
 		{

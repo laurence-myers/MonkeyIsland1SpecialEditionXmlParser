@@ -9,10 +9,11 @@ using MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms;
 namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 {
 	/// <summary>
-	/// Draws a room the way the game composites it: the static background, every object
-	/// sprite at its resolved screen position ordered by layer, then the static foreground
-	/// on top. Supports mouse wheel zoom, click selection with hit-testing and a calibration
-	/// overlay that outlines the classic object rectangles the placements were derived from.
+	/// Draws a room the way the game composites it: the static background, the room object
+	/// overlays, every object sprite at its resolved screen position ordered by layer, then
+	/// the static foreground on top. Supports mouse wheel zoom, click selection with
+	/// hit-testing and a calibration overlay that outlines the classic object rectangles
+	/// the placements were derived from.
 	/// </summary>
 	public class RoomPreviewControl : Control
 	{
@@ -22,8 +23,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Bitmap? foreground;
 		private bool showForeground = true;
 		private RoomPreviewControlSprite? selectedSprite;
+		private RoomPreviewControlRoomObject? selectedRoomObject;
 
 		public event EventHandler? SelectedSpriteChanged;
+		public event EventHandler? SelectedRoomObjectChanged;
 		public event EventHandler? ZoomChanged;
 
 		public RoomPreviewControl()
@@ -34,6 +37,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.SetStyle( ControlStyles.Selectable, true );
 
 			this.Sprites = new List<RoomPreviewControlSprite>();
+			this.RoomObjects = new List<RoomPreviewControlRoomObject>();
 			this.Actors = new List<RoomPreviewControlActor>();
 			this.HdScale = Renderer.DefaultHdScale;
 			this.mouseNavigation = new CanvasMouseNavigation( this );
@@ -95,6 +99,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// or any sprite's placement.
 		/// </summary>
 		public List<RoomPreviewControlSprite> Sprites
+		{
+			get;
+			private set;
+		}
+
+		/// <summary>
+		/// Gets the room object overlays, drawn between the background and the object
+		/// sprites (where the game shows its Water and cover overlays). Call
+		/// <see cref="RefreshContent"/> after changing the list.
+		/// </summary>
+		public List<RoomPreviewControlRoomObject> RoomObjects
 		{
 			get;
 			private set;
@@ -186,6 +201,28 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
+		/// Gets or sets the selected room object overlay; it is outlined (even while
+		/// hidden, so an unchecked overlay can still be located and nudged).
+		/// </summary>
+		public RoomPreviewControlRoomObject? SelectedRoomObject
+		{
+			get
+			{
+				return this.selectedRoomObject;
+			}
+			set
+			{
+				if( this.selectedRoomObject == value )
+				{
+					return;
+				}
+				this.selectedRoomObject = value;
+				this.Invalidate();
+				this.SelectedRoomObjectChanged?.Invoke( this, EventArgs.Empty );
+			}
+		}
+
+		/// <summary>
 		/// Recomputes the control size from the current content and repaints.
 		/// </summary>
 		public void RefreshContent()
@@ -212,6 +249,24 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			return null;
 		}
 
+		/// <summary>
+		/// Returns the topmost visible room object overlay at the given client point, or null.
+		/// </summary>
+		public RoomPreviewControlRoomObject? HitTestRoomObject( Point clientPoint )
+		{
+			var roomPoint = new PointF( clientPoint.X / this.zoom, clientPoint.Y / this.zoom );
+
+			for( var index = this.RoomObjects.Count - 1; index >= 0; index-- )
+			{
+				var roomObject = this.RoomObjects[index];
+				if( roomObject.Visible && roomObject.ScreenRect.Contains( roomPoint ) )
+				{
+					return roomObject;
+				}
+			}
+			return null;
+		}
+
 		protected override void OnMouseDown( MouseEventArgs args )
 		{
 			base.OnMouseDown( args );
@@ -222,7 +277,18 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 			if( args.Button == MouseButtons.Left )
 			{
-				this.SelectedSprite = this.HitTest( args.Location );
+				// sprites draw above the room object overlays, so they get first pick
+				var sprite = this.HitTest( args.Location );
+				if( sprite != null )
+				{
+					this.SelectedRoomObject = null;
+					this.SelectedSprite = sprite;
+				}
+				else
+				{
+					this.SelectedRoomObject = this.HitTestRoomObject( args.Location );
+					this.SelectedSprite = null;
+				}
 			}
 		}
 
@@ -273,6 +339,31 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				graphics.DrawImage( this.background, destRect, srcRect, GraphicsUnit.Pixel );
 			}
 
+			// room object overlays sit between the background and the object sprites (the
+			// kitchen's Water lies behind the plank); their real order is per-name engine
+			// logic, so this is the closest static approximation
+			foreach( var roomObject in this.RoomObjects )
+			{
+				if( !roomObject.Visible )
+				{
+					continue;
+				}
+				foreach( var draw in roomObject.Draws )
+				{
+					if( !draw.Visible || draw.Texture == null )
+					{
+						continue;
+					}
+					var destRect = new RectangleF(
+						( roomObject.RoomObject.OffsetX + draw.RelativeRect.X ) * this.zoom,
+						( roomObject.RoomObject.OffsetY + draw.RelativeRect.Y ) * this.zoom,
+						draw.RelativeRect.Width * this.zoom,
+						draw.RelativeRect.Height * this.zoom
+					);
+					graphics.DrawImage( draw.Texture, destRect, draw.SourceRect, GraphicsUnit.Pixel );
+				}
+			}
+
 			foreach( var sprite in this.GetDrawOrder() )
 			{
 				if( !sprite.Visible || sprite.Texture == null )
@@ -312,6 +403,21 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			if( this.selectedSprite != null )
 			{
 				var screenRect = this.selectedSprite.Placement.ScreenRect;
+				using( var pen = new Pen( Color.Red, 2 ) )
+				{
+					graphics.DrawRectangle(
+						pen,
+						screenRect.X * this.zoom,
+						screenRect.Y * this.zoom,
+						screenRect.Width * this.zoom,
+						screenRect.Height * this.zoom
+					);
+				}
+			}
+
+			if( this.selectedRoomObject != null )
+			{
+				var screenRect = this.selectedRoomObject.ScreenRect;
 				using( var pen = new Pen( Color.Red, 2 ) )
 				{
 					graphics.DrawRectangle(
@@ -379,6 +485,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			foreach( var sprite in this.Sprites )
 			{
 				var screenRect = sprite.Placement.ScreenRect;
+				width = Math.Max( width, (int)Math.Ceiling( screenRect.Right ) );
+				height = Math.Max( height, (int)Math.Ceiling( screenRect.Bottom ) );
+			}
+
+			foreach( var roomObject in this.RoomObjects )
+			{
+				if( !roomObject.Visible )
+				{
+					continue;
+				}
+				var screenRect = roomObject.ScreenRect;
 				width = Math.Max( width, (int)Math.Ceiling( screenRect.Right ) );
 				height = Math.Max( height, (int)Math.Ceiling( screenRect.Bottom ) );
 			}

@@ -39,6 +39,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Dictionary<int, ClassicObject>? classicObjects;
 		private readonly HashSet<Sprite> hiddenSprites = new HashSet<Sprite>();
 		private Sprite? selectedSprite;
+		// the room object instance whose screen offset the numeric editors apply to; set for
+		// sprite-variant leaves, image-variant instance nodes and chunk leaves alike
+		private RoomObject? selectedRoomObject;
 		// the entity whose texture the "Change..." button retargets; equals selectedSprite when
 		// an object sprite is selected, or a background / room-object entity from the tree
 		private ITextureReference? selectedTextureTarget;
@@ -94,6 +97,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.atlasViewControl.SelectedSpriteChanged += this.HandleAtlasSelectionChanged;
 			this.atlasViewControl.SpriteRectChanged += this.HandleAtlasSpriteRectChanged;
 			this.roomPreviewControl.SelectedSpriteChanged += this.HandlePreviewSelectionChanged;
+			this.roomPreviewControl.SelectedRoomObjectChanged += this.HandlePreviewRoomObjectSelectionChanged;
 			this.roomPreviewControl.KeyDown += this.HandlePreviewKeyDown;
 
 			this.InitializeSpriteTreeContextMenu();
@@ -154,6 +158,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.PopulateDiagnostics();
 			this.BuildActorOverlays();
 			this.RefreshPlacements();
+			this.RefreshRoomObjectPreviews();
 			this.UpdateNumericEditors();
 		}
 
@@ -249,8 +254,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.suppressUiEvents = false;
 			}
 
-			// static sprites and room objects are not toggled in the preview, so their checkboxes
-			// would do nothing; suppress them (after EndUpdate, when the node handles exist)
+			// static sprites are baked into the background/foreground bitmaps, so their
+			// checkboxes would do nothing; suppress them (after EndUpdate, when the node
+			// handles exist). Room object checkboxes stay: they toggle the preview overlays.
 			this.ReapplyHiddenCheckBoxes();
 		}
 
@@ -320,8 +326,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		/// <summary>
 		/// Adds a "Room objects" root whose leaves are the named room objects: a sprite-variant
-		/// object is one leaf, an image-variant object is a node with one leaf per texture chunk.
-		/// Selecting a leaf lets the user retarget that object's texture.
+		/// object is one leaf, an image-variant object is a node (tagged with the object, so
+		/// selecting it edits the offset) with one leaf per texture chunk. Selecting a leaf lets
+		/// the user retarget that texture and edit the owning object's screen offset. The
+		/// checkboxes toggle the preview overlays and start unchecked: the game composes these
+		/// with per-name logic (animation, scripted states) the preview can only approximate.
 		/// </summary>
 		private TreeNode? AddRoomObjectNodes()
 		{
@@ -330,7 +339,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return null;
 			}
 
-			var rootNode = new TreeNode { Text = "Room objects", Checked = true };
+			var rootNode = new TreeNode { Text = "Room objects", Checked = false };
 
 			for( var groupIndex = 0; groupIndex < this.Room.RoomObjectGroupList.Count; groupIndex++ )
 			{
@@ -341,7 +350,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				var groupNode = new TreeNode
 				{
 					Text = string.Concat( name, " (", group.RoomObjectList.Count, ")" ),
-					Checked = true,
+					Checked = false,
 				};
 
 				foreach( var roomObject in group.RoomObjectList )
@@ -352,7 +361,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 						{
 							Text = string.Concat( "[", name, "/", roomObject.Index, "] sprite ", roomObject.Sprite.Width, "x", roomObject.Sprite.Height, " - ", TextureTail( roomObject.Sprite.TextureFileName ) ),
 							Tag = roomObject.Sprite,
-							Checked = true,
+							Checked = false,
 						} );
 					}
 					else if( roomObject.Image != null )
@@ -360,7 +369,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 						var imageNode = new TreeNode
 						{
 							Text = string.Concat( "[", name, "/", roomObject.Index, "] image (", roomObject.Image.ChunkList.Count, " chunks)" ),
-							Checked = true,
+							Tag = roomObject,
+							Checked = false,
 						};
 						for( var chunkIndex = 0; chunkIndex < roomObject.Image.ChunkList.Count; chunkIndex++ )
 						{
@@ -369,7 +379,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 							{
 								Text = string.Concat( "Chunk ", chunkIndex, ": ", chunk.Width, "x", chunk.Height, " @ ", chunk.X, ";", chunk.Y, " - ", TextureTail( chunk.TextureFileName ) ),
 								Tag = chunk,
-								Checked = true,
+								Checked = false,
 							} );
 						}
 						groupNode.Nodes.Add( imageNode );
@@ -465,6 +475,71 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.roomPreviewControl.RefreshContent();
+		}
+
+		/// <summary>
+		/// Rebuilds the preview's room object overlays from the room data: one draw for a
+		/// sprite-variant object, one per chunk (1:1, texture padding clipped the way the
+		/// game shows it) for an image-variant one. The overlays sit between the background
+		/// and the object sprites; visibility is re-applied from the tree checkboxes.
+		/// </summary>
+		private void RefreshRoomObjectPreviews()
+		{
+			this.roomPreviewControl.RoomObjects.Clear();
+			if( this.Room?.RoomObjectGroupList != null )
+			{
+				for( var groupIndex = 0; groupIndex < this.Room.RoomObjectGroupList.Count; groupIndex++ )
+				{
+					var group = this.Room.RoomObjectGroupList[groupIndex];
+					var header = groupIndex < this.Room.RoomObjectHeaderList.Count ? this.Room.RoomObjectHeaderList[groupIndex] : null;
+					var name = string.IsNullOrEmpty( header?.Name ) ? "?" : header!.Name!;
+
+					foreach( var roomObject in group.RoomObjectList )
+					{
+						var entry = new RoomPreviewControlRoomObject( roomObject, name );
+						if( roomObject.Sprite != null )
+						{
+							var sprite = roomObject.Sprite;
+							entry.Draws.Add( new RoomPreviewControlRoomObjectDraw(
+								texture: this.LoadTexture( sprite.TextureFileName ),
+								sourceRect: new RectangleF( sprite.X, sprite.Y, sprite.Width, sprite.Height ),
+								relativeRect: new RectangleF( 0, 0, sprite.Width, sprite.Height )
+							) );
+						}
+						else if( roomObject.Image != null )
+						{
+							foreach( var chunk in roomObject.Image.ChunkList )
+							{
+								var texture = this.LoadTexture( chunk.TextureFileName );
+
+								// chunk textures are power-of-two padded; draw the rect-sized
+								// region 1:1 (see Renderer.RenderStaticLayers)
+								var width = texture == null ? chunk.Width : Math.Min( chunk.Width, texture.Width );
+								var height = texture == null ? chunk.Height : Math.Min( chunk.Height, texture.Height );
+								entry.Draws.Add( new RoomPreviewControlRoomObjectDraw(
+									texture: texture,
+									sourceRect: new RectangleF( 0, 0, width, height ),
+									relativeRect: new RectangleF( chunk.X, chunk.Y, width, height )
+								) );
+							}
+						}
+						this.roomPreviewControl.RoomObjects.Add( entry );
+					}
+				}
+			}
+
+			// keep the selection pointing at the same entity across the rebuild
+			this.suppressUiEvents = true;
+			try
+			{
+				this.roomPreviewControl.SelectedRoomObject = this.FindRoomObjectPreviewEntry( this.selectedRoomObject );
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
 		}
 
 		/// <summary>
@@ -660,9 +735,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.selectedSprite = sprite;
 			this.selectedTextureTarget = sprite;
 
+			// picking an object sprite ends any room object selection; clearing the sprite
+			// (null) leaves it alone, so selecting a room object can first drop the sprite
+			if( sprite != null )
+			{
+				this.selectedRoomObject = null;
+			}
+
 			this.suppressUiEvents = true;
 			try
 			{
+				if( sprite != null )
+				{
+					this.roomPreviewControl.SelectedRoomObject = null;
+				}
 				// atlas: switch to the sprite's texture and select it
 				if( sprite != null && sprite.TextureFileName != null && (string?)this.comboBoxTextures.SelectedItem != sprite.TextureFileName )
 				{
@@ -703,8 +789,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		/// <summary>
 		/// Selects a non-sprite texture target (a static sprite, room object sprite or image chunk)
-		/// from the tree. These entities draw the whole texture into a screen-space rectangle, so
-		/// there is no atlas rect and the numeric editors stay disabled; only the Texture row applies.
+		/// from the tree. A room object sprite gets its atlas rectangle in the atlas view and the
+		/// offset editors apply to its owning object; a static sprite only gets the Texture row.
 		/// </summary>
 		private void SetSelectedTextureTarget( ITextureReference? target )
 		{
@@ -717,14 +803,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// disables the numeric editors), then track the new target on its own
 			this.SetSelectedSprite( null );
 			this.selectedTextureTarget = target;
+			this.selectedRoomObject = target == null ? null : this.FindRoomObjectOwning( target );
 
 			this.suppressUiEvents = true;
 			try
 			{
 				this.atlasViewControl.Texture = this.LoadTexture( target?.TextureFileName );
 				this.atlasViewControl.Sprites.Clear();
-				this.atlasViewControl.SelectedSprite = null;
+
+				// a sprite-variant room object edits its atlas rectangle like an object sprite
+				if( target is RoomObjectSprite roomObjectSprite )
+				{
+					this.atlasViewControl.Sprites.Add( roomObjectSprite );
+					this.atlasViewControl.SelectedSprite = roomObjectSprite;
+				}
+				else
+				{
+					this.atlasViewControl.SelectedSprite = null;
+				}
 				this.atlasViewControl.RefreshContent();
+
+				this.roomPreviewControl.SelectedRoomObject = this.FindRoomObjectPreviewEntry( this.selectedRoomObject );
 			}
 			finally
 			{
@@ -732,6 +831,82 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.UpdateNumericEditors();
+		}
+
+		/// <summary>
+		/// Selects an image-variant room object from its instance node: the offset editors
+		/// apply to the whole overlay while the Texture row stays with the individual chunks.
+		/// </summary>
+		private void SetSelectedRoomObjectInstance( RoomObject roomObject )
+		{
+			this.SetSelectedSprite( null );
+			this.selectedTextureTarget = null;
+			this.selectedRoomObject = roomObject;
+
+			this.suppressUiEvents = true;
+			try
+			{
+				this.atlasViewControl.Sprites.Clear();
+				this.atlasViewControl.SelectedSprite = null;
+				this.atlasViewControl.RefreshContent();
+				this.roomPreviewControl.SelectedRoomObject = this.FindRoomObjectPreviewEntry( roomObject );
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.UpdateNumericEditors();
+		}
+
+		/// <summary>
+		/// Finds the room object whose sprite record or image chunk is the given target, so
+		/// selecting either edits that object's screen offset.
+		/// </summary>
+		private RoomObject? FindRoomObjectOwning( ITextureReference target )
+		{
+			if( this.Room?.RoomObjectGroupList == null )
+			{
+				return null;
+			}
+			foreach( var group in this.Room.RoomObjectGroupList )
+			{
+				foreach( var roomObject in group.RoomObjectList )
+				{
+					if( roomObject.Sprite == target
+						|| ( target is RoomObjectImageChunk chunk && roomObject.Image?.ChunkList.Contains( chunk ) == true ) )
+					{
+						return roomObject;
+					}
+				}
+			}
+			return null;
+		}
+
+		private RoomPreviewControlRoomObject? FindRoomObjectPreviewEntry( RoomObject? roomObject )
+		{
+			return roomObject == null
+				? null
+				: this.roomPreviewControl.RoomObjects.FirstOrDefault( entry => entry.RoomObject == roomObject );
+		}
+
+		private TreeNode? FindRoomObjectInstanceNode( RoomObject roomObject )
+		{
+			if( this.roomObjectsTreeRoot == null )
+			{
+				return null;
+			}
+			foreach( TreeNode groupNode in this.roomObjectsTreeRoot.Nodes )
+			{
+				foreach( TreeNode instanceNode in groupNode.Nodes )
+				{
+					if( instanceNode.Tag == roomObject || ( roomObject.Sprite != null && instanceNode.Tag == roomObject.Sprite ) )
+					{
+						return instanceNode;
+					}
+				}
+			}
+			return null;
 		}
 
 		private TreeNode? FindSpriteNode( Sprite sprite )
@@ -755,11 +930,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			// Sprite implements ITextureReference too, so match it first: object sprites keep their
-			// full atlas-rect editor, the other targets get only the Texture row.
+			// Sprite implements ITextureReference too, so match it first: object sprites keep
+			// their full atlas-rect editor. A room object instance node carries the object
+			// itself (offset editing); the remaining targets get the Texture row.
 			if( args.Node?.Tag is Sprite sprite )
 			{
 				this.SetSelectedSprite( sprite );
+			}
+			else if( args.Node?.Tag is RoomObject roomObject )
+			{
+				this.SetSelectedRoomObjectInstance( roomObject );
 			}
 			else if( args.Node?.Tag is ITextureReference target )
 			{
@@ -813,7 +993,33 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				previewSprite.Visible = !this.hiddenSprites.Contains( previewSprite.Placement.Sprite );
 			}
-			this.roomPreviewControl.Invalidate();
+
+			// room object overlays follow their instance checkbox, image chunks their own
+			if( this.roomObjectsTreeRoot != null )
+			{
+				foreach( TreeNode groupNode in this.roomObjectsTreeRoot.Nodes )
+				{
+					foreach( TreeNode instanceNode in groupNode.Nodes )
+					{
+						var entry = instanceNode.Tag is RoomObject roomObject
+							? this.FindRoomObjectPreviewEntry( roomObject )
+							: this.roomPreviewControl.RoomObjects.FirstOrDefault( e => e.RoomObject.Sprite != null && e.RoomObject.Sprite == instanceNode.Tag );
+						if( entry == null )
+						{
+							continue;
+						}
+
+						entry.Visible = instanceNode.Checked;
+						for( var chunkIndex = 0; chunkIndex < instanceNode.Nodes.Count && chunkIndex < entry.Draws.Count; chunkIndex++ )
+						{
+							entry.Draws[chunkIndex].Visible = instanceNode.Nodes[chunkIndex].Checked;
+						}
+					}
+				}
+			}
+
+			// visibility changes the content bounds when overlays extend past the background
+			this.roomPreviewControl.RefreshContent();
 		}
 
 		//-------------------------------------------
@@ -946,10 +1152,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				HideCheckBoxesRecursive( this.treeViewSprites, this.backgroundTreeRoot );
 			}
-			if( this.roomObjectsTreeRoot != null )
-			{
-				HideCheckBoxesRecursive( this.treeViewSprites, this.roomObjectsTreeRoot );
-			}
 		}
 
 		private static void HideCheckBoxesRecursive( TreeView treeView, TreeNode node )
@@ -987,6 +1189,46 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.SetSelectedSprite( this.roomPreviewControl.SelectedSprite?.Placement.Sprite );
 		}
 
+		private void HandlePreviewRoomObjectSelectionChanged( object? sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+
+			var entry = this.roomPreviewControl.SelectedRoomObject;
+			if( entry == null )
+			{
+				this.selectedRoomObject = null;
+				this.UpdateNumericEditors();
+				return;
+			}
+
+			// land on the same tree node a manual click would use, then run its selection
+			var node = this.FindRoomObjectInstanceNode( entry.RoomObject );
+			if( node != null )
+			{
+				this.suppressUiEvents = true;
+				try
+				{
+					this.treeViewSprites.SelectedNode = node;
+					node.EnsureVisible();
+				}
+				finally
+				{
+					this.suppressUiEvents = false;
+				}
+			}
+			if( entry.RoomObject.Sprite != null )
+			{
+				this.SetSelectedTextureTarget( entry.RoomObject.Sprite );
+			}
+			else
+			{
+				this.SetSelectedRoomObjectInstance( entry.RoomObject );
+			}
+		}
+
 		//-------------------------------------------
 		// editing
 
@@ -994,13 +1236,22 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			this.MarkDirty();
 			this.UpdateNumericEditors();
-			this.UpdateSelectedSpriteNodeText();
-			this.RefreshPlacements();
+			if( this.selectedSprite != null )
+			{
+				this.UpdateSelectedSpriteNodeText();
+				this.RefreshPlacements();
+			}
+			else if( this.selectedRoomObject != null )
+			{
+				// the atlas rect belongs to a sprite-variant room object
+				this.UpdateSelectedRoomObjectNodeText();
+				this.RefreshRoomObjectPreviews();
+			}
 		}
 
 		private void HandlePreviewKeyDown( object? sender, KeyEventArgs args )
 		{
-			if( this.selectedSprite == null )
+			if( this.selectedSprite == null && this.selectedRoomObject == null )
 			{
 				return;
 			}
@@ -1027,11 +1278,22 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			args.Handled = true;
-			this.selectedSprite.OffsetX += deltaX;
-			this.selectedSprite.OffsetY += deltaY;
-			this.MarkDirty();
-			this.UpdateNumericEditors();
-			this.RefreshPlacements();
+			if( this.selectedSprite != null )
+			{
+				this.selectedSprite.OffsetX += deltaX;
+				this.selectedSprite.OffsetY += deltaY;
+				this.MarkDirty();
+				this.UpdateNumericEditors();
+				this.RefreshPlacements();
+			}
+			else
+			{
+				this.selectedRoomObject!.OffsetX += deltaX;
+				this.selectedRoomObject.OffsetY += deltaY;
+				this.MarkDirty();
+				this.UpdateNumericEditors();
+				this.roomPreviewControl.RefreshContent();
+			}
 		}
 
 		private void UpdateNumericEditors()
@@ -1040,31 +1302,42 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			try
 			{
 				var sprite = this.selectedSprite;
-				var enabled = sprite != null;
-				this.numericTextureX.Enabled = enabled;
-				this.numericTextureY.Enabled = enabled;
-				this.numericTextureWidth.Enabled = enabled;
-				this.numericTextureHeight.Enabled = enabled;
-				this.numericOffsetX.Enabled = enabled;
-				this.numericOffsetY.Enabled = enabled;
-				this.numericLayer.Enabled = enabled;
 
+				// a sprite-variant room object shares the atlas rect editors, and any room
+				// object shares the offset editors (they hold its screen position)
+				var atlasSprite = (IAtlasSprite?)sprite ?? this.selectedRoomObject?.Sprite;
+				var atlasEnabled = atlasSprite != null;
+				this.numericTextureX.Enabled = atlasEnabled;
+				this.numericTextureY.Enabled = atlasEnabled;
+				this.numericTextureWidth.Enabled = atlasEnabled;
+				this.numericTextureHeight.Enabled = atlasEnabled;
+				this.numericOffsetX.Enabled = sprite != null || this.selectedRoomObject != null;
+				this.numericOffsetY.Enabled = this.numericOffsetX.Enabled;
+				this.numericLayer.Enabled = sprite != null;
+
+				if( atlasSprite != null )
+				{
+					this.numericTextureX.Value = Clamp( atlasSprite.TextureX, this.numericTextureX );
+					this.numericTextureY.Value = Clamp( atlasSprite.TextureY, this.numericTextureY );
+					this.numericTextureWidth.Value = Clamp( atlasSprite.TextureWidth, this.numericTextureWidth );
+					this.numericTextureHeight.Value = Clamp( atlasSprite.TextureHeight, this.numericTextureHeight );
+				}
 				if( sprite != null )
 				{
-					this.numericTextureX.Value = Clamp( sprite.TextureX, this.numericTextureX );
-					this.numericTextureY.Value = Clamp( sprite.TextureY, this.numericTextureY );
-					this.numericTextureWidth.Value = Clamp( sprite.TextureWidth, this.numericTextureWidth );
-					this.numericTextureHeight.Value = Clamp( sprite.TextureHeight, this.numericTextureHeight );
 					this.numericOffsetX.Value = Clamp( (decimal)sprite.OffsetX, this.numericOffsetX );
 					this.numericOffsetY.Value = Clamp( (decimal)sprite.OffsetY, this.numericOffsetY );
 					this.numericLayer.Value = Clamp( sprite.Layer, this.numericLayer );
 				}
+				else if( this.selectedRoomObject != null )
+				{
+					this.numericOffsetX.Value = Clamp( (decimal)this.selectedRoomObject.OffsetX, this.numericOffsetX );
+					this.numericOffsetY.Value = Clamp( (decimal)this.selectedRoomObject.OffsetY, this.numericOffsetY );
+				}
 
-				this.buttonCopyFrameBox.Enabled = enabled;
-				this.buttonPasteFrameBox.Enabled = enabled && this.copiedFrameBox != null;
+				this.buttonCopyFrameBox.Enabled = sprite != null;
+				this.buttonPasteFrameBox.Enabled = sprite != null && this.copiedFrameBox != null;
 
-				// the Texture row follows the texture target, which may be a non-sprite entity whose
-				// screen-space rectangle keeps the numeric editors above disabled
+				// the Texture row follows the texture target, which may be a non-sprite entity
 				this.textBoxTextureName.Text = this.selectedTextureTarget?.TextureFileName ?? "";
 				this.buttonChangeTexture.Enabled = this.selectedTextureTarget != null;
 			}
@@ -1081,46 +1354,100 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private void HandleNumericValueChanged( object sender, EventArgs args )
 		{
-			if( this.suppressUiEvents || this.selectedSprite == null )
+			if( this.suppressUiEvents )
 			{
 				return;
 			}
 
-			// only write the edited field back; writing all of them would silently apply
-			// the display clamp of an out-of-range field the user never touched
-			if( sender == this.numericTextureX )
+			if( this.selectedSprite != null )
 			{
-				this.selectedSprite.TextureX = (int)this.numericTextureX.Value;
+				// only write the edited field back; writing all of them would silently apply
+				// the display clamp of an out-of-range field the user never touched
+				if( sender == this.numericTextureX )
+				{
+					this.selectedSprite.TextureX = (int)this.numericTextureX.Value;
+				}
+				else if( sender == this.numericTextureY )
+				{
+					this.selectedSprite.TextureY = (int)this.numericTextureY.Value;
+				}
+				else if( sender == this.numericTextureWidth )
+				{
+					this.selectedSprite.TextureWidth = (int)this.numericTextureWidth.Value;
+				}
+				else if( sender == this.numericTextureHeight )
+				{
+					this.selectedSprite.TextureHeight = (int)this.numericTextureHeight.Value;
+				}
+				else if( sender == this.numericOffsetX )
+				{
+					this.selectedSprite.OffsetX = (float)this.numericOffsetX.Value;
+				}
+				else if( sender == this.numericOffsetY )
+				{
+					this.selectedSprite.OffsetY = (float)this.numericOffsetY.Value;
+				}
+				else if( sender == this.numericLayer )
+				{
+					this.selectedSprite.Layer = (int)this.numericLayer.Value;
+				}
+
+				this.MarkDirty();
+				this.UpdateSelectedSpriteNodeText();
+				this.atlasViewControl.Invalidate();
+				this.RefreshPlacements();
+				return;
 			}
-			else if( sender == this.numericTextureY )
+
+			if( this.selectedRoomObject == null )
 			{
-				this.selectedSprite.TextureY = (int)this.numericTextureY.Value;
+				return;
 			}
-			else if( sender == this.numericTextureWidth )
+
+			// room object: the atlas rect editors write to its sprite record, the offset
+			// editors to the overlay's screen position
+			var roomObjectSprite = this.selectedRoomObject.Sprite;
+			if( sender == this.numericTextureX && roomObjectSprite != null )
 			{
-				this.selectedSprite.TextureWidth = (int)this.numericTextureWidth.Value;
+				roomObjectSprite.X = (int)this.numericTextureX.Value;
 			}
-			else if( sender == this.numericTextureHeight )
+			else if( sender == this.numericTextureY && roomObjectSprite != null )
 			{
-				this.selectedSprite.TextureHeight = (int)this.numericTextureHeight.Value;
+				roomObjectSprite.Y = (int)this.numericTextureY.Value;
+			}
+			else if( sender == this.numericTextureWidth && roomObjectSprite != null )
+			{
+				roomObjectSprite.Width = (int)this.numericTextureWidth.Value;
+			}
+			else if( sender == this.numericTextureHeight && roomObjectSprite != null )
+			{
+				roomObjectSprite.Height = (int)this.numericTextureHeight.Value;
 			}
 			else if( sender == this.numericOffsetX )
 			{
-				this.selectedSprite.OffsetX = (float)this.numericOffsetX.Value;
+				this.selectedRoomObject.OffsetX = (float)this.numericOffsetX.Value;
 			}
 			else if( sender == this.numericOffsetY )
 			{
-				this.selectedSprite.OffsetY = (float)this.numericOffsetY.Value;
+				this.selectedRoomObject.OffsetY = (float)this.numericOffsetY.Value;
 			}
-			else if( sender == this.numericLayer )
+			else
 			{
-				this.selectedSprite.Layer = (int)this.numericLayer.Value;
+				return;
 			}
 
 			this.MarkDirty();
-			this.UpdateSelectedSpriteNodeText();
 			this.atlasViewControl.Invalidate();
-			this.RefreshPlacements();
+			if( sender == this.numericOffsetX || sender == this.numericOffsetY )
+			{
+				// draw positions derive from the entity's offset at paint time
+				this.roomPreviewControl.RefreshContent();
+			}
+			else
+			{
+				this.UpdateSelectedRoomObjectNodeText();
+				this.RefreshRoomObjectPreviews();
+			}
 		}
 
 		private void UpdateSelectedSpriteNodeText()
@@ -1133,6 +1460,21 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			if( spriteNode != null )
 			{
 				spriteNode.Text = DescribeSprite( spriteNode.Index, this.selectedSprite );
+			}
+		}
+
+		private void UpdateSelectedRoomObjectNodeText()
+		{
+			var roomObject = this.selectedRoomObject;
+			if( roomObject?.Sprite == null )
+			{
+				return;
+			}
+			var node = this.FindRoomObjectInstanceNode( roomObject );
+			if( node != null )
+			{
+				var name = this.FindRoomObjectPreviewEntry( roomObject )?.Name ?? "?";
+				node.Text = string.Concat( "[", name, "/", roomObject.Index, "] sprite ", roomObject.Sprite.Width, "x", roomObject.Sprite.Height, " - ", TextureTail( roomObject.Sprite.TextureFileName ) );
 			}
 		}
 
@@ -1278,6 +1620,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room!, this.LoadTexture );
 				this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room!, this.LoadTexture );
 				this.checkBoxForeground.Enabled = this.roomPreviewControl.Foreground != null;
+			}
+			else if( target is RoomObjectSprite || target is RoomObjectImageChunk )
+			{
+				// the overlay draws cache their textures, so rebuild them
+				this.RefreshRoomObjectPreviews();
 			}
 			else if( target is Sprite sprite )
 			{
