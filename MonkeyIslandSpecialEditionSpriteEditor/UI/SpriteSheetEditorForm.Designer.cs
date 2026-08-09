@@ -90,6 +90,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericScaleY = new System.Windows.Forms.NumericUpDown();
 			this.checkBoxCalibration = new System.Windows.Forms.CheckBox();
 			this.checkBoxForeground = new System.Windows.Forms.CheckBox();
+			this.checkBoxWalkBoxes = new System.Windows.Forms.CheckBox();
+			this.groupBoxWalkBox = new System.Windows.Forms.GroupBox();
+			this.labelBoxMask = new System.Windows.Forms.Label();
+			this.numericBoxMask = new System.Windows.Forms.NumericUpDown();
+			this.checkBoxBoxWalkable = new System.Windows.Forms.CheckBox();
+			this.labelBoxScale = new System.Windows.Forms.Label();
+			this.numericBoxScale = new System.Windows.Forms.NumericUpDown();
+			this.buttonSaveWalkBoxes = new System.Windows.Forms.Button();
 			this.labelHint = new System.Windows.Forms.Label();
 			this.panelPreview = new MonkeyIslandSpecialEditionSpriteEditor.UI.NonScrollingPanel();
 			this.roomPreviewControl = new MonkeyIslandSpecialEditionSpriteEditor.UI.RoomPreviewControl();
@@ -111,6 +119,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitTree.Panel2.SuspendLayout();
 			this.splitTree.SuspendLayout();
 			this.panelProperties.SuspendLayout();
+			this.groupBoxWalkBox.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.numericBoxMask)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericBoxScale)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureX)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureY)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureWidth)).BeginInit();
@@ -492,6 +503,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.numericScaleY);
 			this.panelProperties.Controls.Add(this.checkBoxCalibration);
 			this.panelProperties.Controls.Add(this.checkBoxForeground);
+			this.panelProperties.Controls.Add(this.checkBoxWalkBoxes);
+			this.panelProperties.Controls.Add(this.groupBoxWalkBox);
 			this.panelProperties.Controls.Add(this.labelHint);
 			this.panelProperties.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.panelProperties.Location = new System.Drawing.Point(0, 0);
@@ -795,10 +808,89 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.checkBoxForeground.Text = "Show foreground layer";
 			this.checkBoxForeground.CheckedChanged += new System.EventHandler(this.HandleForegroundCheckedChanged);
 			//
+			// checkBoxWalkBoxes
+			//
+			this.checkBoxWalkBoxes.Location = new System.Drawing.Point(9, 448);
+			this.checkBoxWalkBoxes.Name = "checkBoxWalkBoxes";
+			this.checkBoxWalkBoxes.Size = new System.Drawing.Size(181, 20);
+			this.checkBoxWalkBoxes.TabIndex = 33;
+			this.checkBoxWalkBoxes.Text = "Walk boxes (classic)";
+			this.checkBoxWalkBoxes.CheckedChanged += new System.EventHandler(this.HandleWalkBoxesCheckedChanged);
+			//
+			// groupBoxWalkBox
+			//
+			this.groupBoxWalkBox.Controls.Add(this.labelBoxMask);
+			this.groupBoxWalkBox.Controls.Add(this.numericBoxMask);
+			this.groupBoxWalkBox.Controls.Add(this.checkBoxBoxWalkable);
+			this.groupBoxWalkBox.Controls.Add(this.labelBoxScale);
+			this.groupBoxWalkBox.Controls.Add(this.numericBoxScale);
+			this.groupBoxWalkBox.Controls.Add(this.buttonSaveWalkBoxes);
+			this.groupBoxWalkBox.Location = new System.Drawing.Point(6, 474);
+			this.groupBoxWalkBox.Name = "groupBoxWalkBox";
+			this.groupBoxWalkBox.Size = new System.Drawing.Size(196, 132);
+			this.groupBoxWalkBox.TabIndex = 34;
+			this.groupBoxWalkBox.TabStop = false;
+			this.groupBoxWalkBox.Text = "Selected walk box";
+			this.groupBoxWalkBox.Visible = false;
+			//
+			// labelBoxMask
+			//
+			this.labelBoxMask.Location = new System.Drawing.Point(6, 22);
+			this.labelBoxMask.Name = "labelBoxMask";
+			this.labelBoxMask.Size = new System.Drawing.Size(60, 18);
+			this.labelBoxMask.TabIndex = 0;
+			this.labelBoxMask.Text = "Mask";
+			//
+			// numericBoxMask
+			//
+			this.numericBoxMask.Location = new System.Drawing.Point(70, 20);
+			this.numericBoxMask.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
+			this.numericBoxMask.Name = "numericBoxMask";
+			this.numericBoxMask.Size = new System.Drawing.Size(60, 20);
+			this.numericBoxMask.TabIndex = 1;
+			this.numericBoxMask.ValueChanged += new System.EventHandler(this.HandleWalkBoxAttributeChanged);
+			//
+			// checkBoxBoxWalkable
+			//
+			this.checkBoxBoxWalkable.Location = new System.Drawing.Point(9, 46);
+			this.checkBoxBoxWalkable.Name = "checkBoxBoxWalkable";
+			this.checkBoxBoxWalkable.Size = new System.Drawing.Size(150, 20);
+			this.checkBoxBoxWalkable.TabIndex = 2;
+			this.checkBoxBoxWalkable.Text = "Walkable";
+			this.checkBoxBoxWalkable.CheckedChanged += new System.EventHandler(this.HandleWalkBoxAttributeChanged);
+			//
+			// labelBoxScale
+			//
+			this.labelBoxScale.Location = new System.Drawing.Point(6, 74);
+			this.labelBoxScale.Name = "labelBoxScale";
+			this.labelBoxScale.Size = new System.Drawing.Size(60, 18);
+			this.labelBoxScale.TabIndex = 3;
+			this.labelBoxScale.Text = "Scale";
+			//
+			// numericBoxScale
+			//
+			this.numericBoxScale.Location = new System.Drawing.Point(70, 72);
+			this.numericBoxScale.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+			this.numericBoxScale.Name = "numericBoxScale";
+			this.numericBoxScale.Size = new System.Drawing.Size(60, 20);
+			this.numericBoxScale.TabIndex = 4;
+			this.numericBoxScale.ValueChanged += new System.EventHandler(this.HandleWalkBoxAttributeChanged);
+			//
+			// buttonSaveWalkBoxes
+			//
+			this.buttonSaveWalkBoxes.Enabled = false;
+			this.buttonSaveWalkBoxes.Location = new System.Drawing.Point(9, 100);
+			this.buttonSaveWalkBoxes.Name = "buttonSaveWalkBoxes";
+			this.buttonSaveWalkBoxes.Size = new System.Drawing.Size(150, 24);
+			this.buttonSaveWalkBoxes.TabIndex = 5;
+			this.buttonSaveWalkBoxes.Text = "Save walk boxes";
+			this.buttonSaveWalkBoxes.UseVisualStyleBackColor = true;
+			this.buttonSaveWalkBoxes.Click += new System.EventHandler(this.HandleSaveWalkBoxesClick);
+			//
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 448);
+			this.labelHint.Location = new System.Drawing.Point(6, 612);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(196, 98);
 			this.labelHint.TabIndex = 32;
@@ -856,6 +948,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitTree.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitTree)).EndInit();
 			this.splitTree.ResumeLayout(false);
+			this.groupBoxWalkBox.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.numericBoxMask)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numericBoxScale)).EndInit();
 			this.panelProperties.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureX)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericTextureY)).EndInit();
@@ -938,6 +1033,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.NumericUpDown numericScaleY;
 		private System.Windows.Forms.CheckBox checkBoxCalibration;
 		private System.Windows.Forms.CheckBox checkBoxForeground;
+		private System.Windows.Forms.CheckBox checkBoxWalkBoxes;
+		private System.Windows.Forms.GroupBox groupBoxWalkBox;
+		private System.Windows.Forms.Label labelBoxMask;
+		private System.Windows.Forms.NumericUpDown numericBoxMask;
+		private System.Windows.Forms.CheckBox checkBoxBoxWalkable;
+		private System.Windows.Forms.Label labelBoxScale;
+		private System.Windows.Forms.NumericUpDown numericBoxScale;
+		private System.Windows.Forms.Button buttonSaveWalkBoxes;
 		private System.Windows.Forms.Label labelHint;
 		private NonScrollingPanel panelPreview;
 		private RoomPreviewControl roomPreviewControl;

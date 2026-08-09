@@ -95,10 +95,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
+		/// Removes any cached classic data for a pak, so the next load re-reads it (used after
+		/// writing a walkbox override).
+		/// </summary>
+		public static void Invalidate( string? pakPath )
+		{
+			ClassicDataLocator.cache.Remove( pakPath ?? "" );
+		}
+
+		/// <summary>
 		/// Loads the classic data for an opened LPAK without caching.
 		/// </summary>
 		public static ClassicData? Load( LPAKFile lpakFile, Func<string?>? folderPrompt )
 		{
+			// 0. a loose classic override beside the pak (what the walkbox save writes) wins over
+			//    the pak-embedded copy, mirroring the resource override convention used elsewhere
+			var looseOverride = LoadFromLooseOverride( lpakFile );
+			if( looseOverride != null )
+			{
+				return looseOverride;
+			}
+
 			// 1. embedded in the pak itself (classic/en/monkey1.001)
 			var embedded = LoadFromLpak( lpakFile );
 			if( embedded != null )
@@ -123,6 +140,48 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			}
 
 			return null;
+		}
+
+		/// <summary>
+		/// Loads a loose classic-data override sitting beside the pak at the pak's own entry path
+		/// (e.g. classic/en/monkey1.001), the target the walkbox save writes. Returns null when no
+		/// such override exists.
+		/// </summary>
+		private static ClassicData? LoadFromLooseOverride( LPAKFile lpakFile )
+		{
+			if( string.IsNullOrWhiteSpace( lpakFile.FileNameOnDisk ) )
+			{
+				return null;
+			}
+
+			var dataIndex = lpakFile.FindEntryIndex( name => name.EndsWith( ".001", StringComparison.OrdinalIgnoreCase ) );
+			if( dataIndex < 0 )
+			{
+				return null;
+			}
+			var dataEntryName = lpakFile.PakFileNames[dataIndex].FileName;
+			var looseDataPath = dataEntryName == null
+				? null
+				: Formats.LPAK.Parser.GetOverrideFilePath( lpakFile.FileNameOnDisk, dataEntryName );
+			if( looseDataPath == null )
+			{
+				return null;
+			}
+
+			// the matching loose .000, extracted next to the .001 by the save (so room names and
+			// costumes survive); may be absent for a hand-placed override
+			string? looseIndexPath = null;
+			var indexIndex = lpakFile.FindEntryIndex( name => name.EndsWith( ".000", StringComparison.OrdinalIgnoreCase ) );
+			if( indexIndex >= 0 )
+			{
+				var indexEntryName = lpakFile.PakFileNames[indexIndex].FileName;
+				if( indexEntryName != null )
+				{
+					looseIndexPath = Formats.LPAK.Parser.GetOverrideFilePath( lpakFile.FileNameOnDisk, indexEntryName );
+				}
+			}
+
+			return LoadFromFiles( new ClassicDataFiles( looseDataPath, looseIndexPath ) );
 		}
 
 		private static ClassicData? LoadFromLpak( LPAKFile lpakFile )
@@ -156,7 +215,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					roomNames: roomNames,
 					costumeList: costumeList,
 					source: string.Concat( Path.GetFileName( lpakFile.FileNameOnDisk ), ":", lpakFile.PakFileNames[dataIndex].FileName )
-				);
+				)
+				{
+					PakDataEntryName = lpakFile.PakFileNames[dataIndex].FileName,
+					PakIndexEntryName = indexIndex >= 0 ? lpakFile.PakFileNames[indexIndex].FileName : null,
+				};
 				ApplyRoomNames( data );
 				ApplyActorPlacementsSafely( data, () => ScriptScanner.ScanFromEncodedBytes( lpakFile.ReadEntryBytes( dataIndex ) ) );
 				return data;
@@ -190,7 +253,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					roomNames: roomNames,
 					costumeList: costumeList,
 					source: files.DataFileName
-				);
+				)
+				{
+					LooseDataFilePath = files.DataFileName,
+					LooseIndexFilePath = files.IndexFileName,
+				};
 				ApplyRoomNames( data );
 				ApplyActorPlacementsSafely( data, () => ScriptScanner.ScanFromEncodedBytes( File.ReadAllBytes( files.DataFileName ) ) );
 				return data;

@@ -59,6 +59,48 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 		} = source;
 
 		/// <summary>
+		/// Gets or sets the full path of the loose resource file (.001) the data was read from,
+		/// or null when it came from inside the pak. Writing walkboxes patches this file (or, for
+		/// pak data, a loose override created beside the pak).
+		/// </summary>
+		public string? LooseDataFilePath
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the full path of the loose index file (.000) beside the resource file, or
+		/// null when it came from inside the pak or has no index sibling.
+		/// </summary>
+		public string? LooseIndexFilePath
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the pak's resource (.001) entry name when the data was read from inside
+		/// the pak, or null when it was loose. Used to place a loose override at the same path.
+		/// </summary>
+		public string? PakDataEntryName
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the pak's index (.000) entry name when the data was read from inside the
+		/// pak, or null. The index sibling is extracted next to a resource override so room names
+		/// and costumes survive a reload.
+		/// </summary>
+		public string? PakIndexEntryName
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Finds a room by its classic room number (matches the SE room's Header.Identifier).
 		/// </summary>
 		public ClassicRoom? FindRoom( int roomNumber )

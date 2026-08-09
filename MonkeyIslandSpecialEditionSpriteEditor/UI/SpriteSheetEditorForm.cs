@@ -58,6 +58,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private PointF? copiedOffsets;
 		private readonly UndoStack undoStack = new UndoStack();
 
+		// walkboxes are a separate edit domain: they save to the classic data file, not the SE
+		// room override, so they carry their own undo stack and modified flag; Ctrl+Z/Y act on
+		// whichever domain was edited most recently
+		private readonly UndoStack walkBoxUndoStack = new UndoStack();
+		private UndoStack lastActiveUndoStack = null!;
+		private bool walkBoxesDirty;
+		// an editable deep copy of the room's classic walkboxes, and a snapshot for the save-time
+		// integrity check; the shared ClassicRoom.BoxList is only updated on a successful save
+		private List<ClassicBox> workingBoxes = new List<ClassicBox>();
+		private List<ClassicBox> originalBoxes = new List<ClassicBox>();
+
 		public Room? Room
 		{
 			get;
@@ -104,7 +115,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.roomPreviewControl.SelectedSpriteChanged += this.HandlePreviewSelectionChanged;
 			this.roomPreviewControl.SelectedRoomObjectChanged += this.HandlePreviewRoomObjectSelectionChanged;
 			this.roomPreviewControl.KeyDown += this.HandlePreviewKeyDown;
+			this.roomPreviewControl.SelectedWalkBoxChanged += this.HandleWalkBoxSelectionChanged;
+			this.roomPreviewControl.WalkBoxEdited += this.HandleWalkBoxEdited;
 			this.undoStack.StateChanged += delegate { this.HandleUndoStackChanged(); };
+			this.walkBoxUndoStack.StateChanged += delegate { this.HandleUndoStackChanged(); };
+			this.lastActiveUndoStack = this.undoStack;
 
 			this.InitializeSpriteTreeContextMenu();
 			this.InitializeActorListContextMenu();
@@ -171,6 +186,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.PopulateSpriteTree();
 			this.PopulateDiagnostics();
 			this.BuildActorOverlays();
+			this.BuildWalkBoxes();
 			this.RefreshPlacements();
 			this.RefreshRoomObjectPreviews();
 			this.UpdateNumericEditors();
@@ -1414,6 +1430,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private void HandlePreviewKeyDown( object? sender, KeyEventArgs args )
 		{
+			// a selected walk box takes the arrow keys before sprites/room objects do
+			if( this.checkBoxWalkBoxes.Checked && this.roomPreviewControl.SelectedWalkBox != null && this.HandleWalkBoxNudge( args ) )
+			{
+				return;
+			}
+
 			if( this.selectedSprite == null && this.selectedRoomObject == null )
 			{
 				return;
@@ -2016,11 +2038,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private void RevertChanges( object sender, EventArgs args )
 		{
-			if( this.dirty )
+			if( this.dirty || this.walkBoxesDirty )
 			{
 				var answer = MessageBox.Show(
 					this,
-					"Discard all unsaved changes and reload the room?",
+					"Discard all unsaved changes (including walk boxes) and reload the room?",
 					"Revert changes",
 					MessageBoxButtons.YesNo,
 					MessageBoxIcon.Question
@@ -2040,25 +2062,45 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private void ConfirmCloseWithUnsavedChanges( object? sender, FormClosingEventArgs args )
 		{
-			if( !this.dirty )
+			if( this.dirty )
 			{
-				return;
+				var answer = MessageBox.Show(
+					this,
+					"Save the changed sprite data as an override before closing?",
+					"Unsaved changes",
+					MessageBoxButtons.YesNoCancel,
+					MessageBoxIcon.Question
+				);
+				if( answer == DialogResult.Cancel )
+				{
+					args.Cancel = true;
+					return;
+				}
+				if( answer == DialogResult.Yes && !this.TrySaveOverride() )
+				{
+					args.Cancel = true;
+					return;
+				}
 			}
 
-			var answer = MessageBox.Show(
-				this,
-				"Save the changed sprite data as an override before closing?",
-				"Unsaved changes",
-				MessageBoxButtons.YesNoCancel,
-				MessageBoxIcon.Question
-			);
-			if( answer == DialogResult.Cancel )
+			if( this.walkBoxesDirty )
 			{
-				args.Cancel = true;
-			}
-			else if( answer == DialogResult.Yes && !this.TrySaveOverride() )
-			{
-				args.Cancel = true;
+				var answer = MessageBox.Show(
+					this,
+					"Save the changed walk boxes to the classic data file before closing?",
+					"Unsaved walk boxes",
+					MessageBoxButtons.YesNoCancel,
+					MessageBoxIcon.Question
+				);
+				if( answer == DialogResult.Cancel )
+				{
+					args.Cancel = true;
+					return;
+				}
+				if( answer == DialogResult.Yes && !this.TrySaveWalkBoxes() )
+				{
+					args.Cancel = true;
+				}
 			}
 		}
 
@@ -2260,6 +2302,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private void RecordEdit( UndoableEdit edit, bool forceCoalesce = false )
 		{
+			this.lastActiveUndoStack = this.undoStack;
 			this.undoStack.Record( edit, forceCoalesce );
 		}
 
@@ -2306,16 +2349,61 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			};
 		}
 
+		private UndoStack OtherStack( UndoStack stack )
+		{
+			return stack == this.undoStack ? this.walkBoxUndoStack : this.undoStack;
+		}
+
+		/// <summary>
+		/// The stack Ctrl+Z acts on: the most recently edited domain, falling back to the other
+		/// once the active one is exhausted so an earlier edit is never stranded.
+		/// </summary>
+		private UndoStack UndoTarget()
+		{
+			return this.lastActiveUndoStack.CanUndo ? this.lastActiveUndoStack : this.OtherStack( this.lastActiveUndoStack );
+		}
+
+		private UndoStack RedoTarget()
+		{
+			return this.lastActiveUndoStack.CanRedo ? this.lastActiveUndoStack : this.OtherStack( this.lastActiveUndoStack );
+		}
+
 		private void HandleUndoClick( object? sender, EventArgs args )
 		{
-			this.undoStack.Undo();
-			this.RefreshAfterUndoRedo();
+			var target = this.UndoTarget();
+			if( !target.CanUndo )
+			{
+				return;
+			}
+			this.lastActiveUndoStack = target;
+			target.Undo();
+			if( target == this.walkBoxUndoStack )
+			{
+				this.RefreshAfterWalkBoxUndoRedo();
+			}
+			else
+			{
+				this.RefreshAfterUndoRedo();
+			}
 		}
 
 		private void HandleRedoClick( object? sender, EventArgs args )
 		{
-			this.undoStack.Redo();
-			this.RefreshAfterUndoRedo();
+			var target = this.RedoTarget();
+			if( !target.CanRedo )
+			{
+				return;
+			}
+			this.lastActiveUndoStack = target;
+			target.Redo();
+			if( target == this.walkBoxUndoStack )
+			{
+				this.RefreshAfterWalkBoxUndoRedo();
+			}
+			else
+			{
+				this.RefreshAfterUndoRedo();
+			}
 		}
 
 		/// <summary>
@@ -2337,15 +2425,26 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private void HandleUndoStackChanged()
 		{
 			this.dirty = !this.undoStack.IsAtSavedPosition;
+			this.walkBoxesDirty = !this.walkBoxUndoStack.IsAtSavedPosition;
 			this.UpdateTitle();
+			if( this.buttonSaveWalkBoxes != null )
+			{
+				this.buttonSaveWalkBoxes.Enabled = this.walkBoxesDirty;
+				// keep the group (and its Save button) reachable while there are unsaved box
+				// edits, even if the overlay was toggled off
+				this.groupBoxWalkBox.Visible = this.checkBoxWalkBoxes.Checked || this.walkBoxesDirty;
+			}
 
-			this.undoToolStripMenuItem.Enabled = this.undoStack.CanUndo;
-			this.undoToolStripMenuItem.Text = this.undoStack.CanUndo
-				? string.Concat( "&Undo ", this.undoStack.UndoDescription )
+			// the menu acts on whichever domain Ctrl+Z/Y would target
+			var undoTarget = this.UndoTarget();
+			this.undoToolStripMenuItem.Enabled = undoTarget.CanUndo;
+			this.undoToolStripMenuItem.Text = undoTarget.CanUndo
+				? string.Concat( "&Undo ", undoTarget.UndoDescription )
 				: "&Undo";
-			this.redoToolStripMenuItem.Enabled = this.undoStack.CanRedo;
-			this.redoToolStripMenuItem.Text = this.undoStack.CanRedo
-				? string.Concat( "&Redo ", this.undoStack.RedoDescription )
+			var redoTarget = this.RedoTarget();
+			this.redoToolStripMenuItem.Enabled = redoTarget.CanRedo;
+			this.redoToolStripMenuItem.Text = redoTarget.CanRedo
+				? string.Concat( "&Redo ", redoTarget.RedoDescription )
 				: "&Redo";
 		}
 
@@ -2357,8 +2456,339 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 			this.label1.Text = string.Concat(
 				"Spritesheet Editor - Room ", this.Room.Header.Identifier, " - ", this.Room.Header.Name,
-				this.dirty ? " (modified)" : ""
+				this.dirty ? " (modified)" : "",
+				this.walkBoxesDirty ? " (walk boxes modified)" : ""
 			);
+		}
+
+		//-------------------------------------------
+		// walk boxes (classic BOXD)
+
+		/// <summary>
+		/// Builds an editable working copy of the room's classic walkboxes and the overlay that
+		/// draws them. The shared classic data is never touched until a successful save.
+		/// </summary>
+		private void BuildWalkBoxes()
+		{
+			var boxes = this.classicRoom?.BoxList ?? new List<ClassicBox>();
+			this.workingBoxes = boxes.Select( box => box.Clone() ).ToList();
+			this.originalBoxes = boxes.Select( box => box.Clone() ).ToList();
+
+			this.roomPreviewControl.SelectedWalkBox = null;
+			this.roomPreviewControl.WalkBoxes.Clear();
+			for( var index = 0; index < this.workingBoxes.Count; index++ )
+			{
+				this.roomPreviewControl.WalkBoxes.Add( new RoomPreviewControlWalkBox( index, this.workingBoxes[index] ) );
+			}
+
+			this.walkBoxUndoStack.Clear();
+			this.walkBoxesDirty = false;
+
+			var haveBoxes = this.workingBoxes.Count > 0;
+			this.suppressUiEvents = true;
+			try
+			{
+				this.checkBoxWalkBoxes.Enabled = haveBoxes;
+				if( !haveBoxes )
+				{
+					this.checkBoxWalkBoxes.Checked = false;
+				}
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.roomPreviewControl.ShowWalkBoxes = this.checkBoxWalkBoxes.Checked;
+			this.groupBoxWalkBox.Visible = this.checkBoxWalkBoxes.Checked;
+			this.UpdateWalkBoxEditors();
+			this.roomPreviewControl.Invalidate();
+		}
+
+		private void HandleWalkBoxesCheckedChanged( object sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+			var on = this.checkBoxWalkBoxes.Checked;
+			this.roomPreviewControl.ShowWalkBoxes = on;
+			this.groupBoxWalkBox.Visible = on || this.walkBoxesDirty;
+			if( !on )
+			{
+				// don't leave a hidden box selected, eating arrow keys
+				this.roomPreviewControl.SelectedWalkBox = null;
+			}
+			this.roomPreviewControl.Invalidate();
+		}
+
+		private void HandleWalkBoxSelectionChanged( object? sender, EventArgs args )
+		{
+			this.walkBoxUndoStack.BreakCoalescing();
+			this.UpdateWalkBoxEditors();
+		}
+
+		private void UpdateWalkBoxEditors()
+		{
+			var box = this.roomPreviewControl.SelectedWalkBox?.Box;
+			this.suppressUiEvents = true;
+			try
+			{
+				var enabled = box != null;
+				this.numericBoxMask.Enabled = enabled;
+				this.checkBoxBoxWalkable.Enabled = enabled;
+				this.numericBoxScale.Enabled = enabled;
+				if( box != null )
+				{
+					this.numericBoxMask.Value = Clamp( box.Mask, this.numericBoxMask );
+					this.checkBoxBoxWalkable.Checked = box.IsWalkable;
+					this.numericBoxScale.Value = Clamp( box.Scale, this.numericBoxScale );
+				}
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+		}
+
+		private void HandleWalkBoxAttributeChanged( object sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+			var walkBox = this.roomPreviewControl.SelectedWalkBox;
+			if( walkBox == null )
+			{
+				return;
+			}
+			var box = walkBox.Box;
+
+			if( sender == this.numericBoxMask )
+			{
+				int oldValue = box.Mask, newValue = (int)this.numericBoxMask.Value;
+				if( oldValue == newValue )
+				{
+					return;
+				}
+				box.Mask = newValue;
+				this.RecordWalkBoxEdit( box, "BoxMask", "walk box mask", () => box.Mask = oldValue, () => box.Mask = newValue );
+			}
+			else if( sender == this.checkBoxBoxWalkable )
+			{
+				int oldFlags = box.Flags;
+				int newFlags = this.checkBoxBoxWalkable.Checked ? ( box.Flags & ~0x80 ) : ( box.Flags | 0x80 );
+				if( oldFlags == newFlags )
+				{
+					return;
+				}
+				box.Flags = newFlags;
+				this.RecordWalkBoxEdit( box, "BoxWalkable", "walk box walkable", () => box.Flags = oldFlags, () => box.Flags = newFlags );
+			}
+			else if( sender == this.numericBoxScale )
+			{
+				int oldValue = box.Scale, newValue = (int)this.numericBoxScale.Value;
+				if( oldValue == newValue )
+				{
+					return;
+				}
+				box.Scale = newValue;
+				this.RecordWalkBoxEdit( box, "BoxScale", "walk box scale", () => box.Scale = oldValue, () => box.Scale = newValue );
+			}
+
+			this.RecomputeActorLayering();
+			this.roomPreviewControl.Invalidate();
+		}
+
+		private void HandleWalkBoxEdited( object? sender, WalkBoxEditEventArgs args )
+		{
+			var changes = args.Changes;
+
+			// a completed drag is one undo step
+			this.walkBoxUndoStack.BreakCoalescing();
+			this.RecordWalkBoxEdit(
+				owner: null,
+				key: "WalkBoxDrag",
+				description: "move walk box",
+				undo: () =>
+				{
+					foreach( var change in changes )
+					{
+						this.SetWorkingCorner( change.BoxIndex, change.CornerIndex, change.OldPoint );
+					}
+				},
+				redo: () =>
+				{
+					foreach( var change in changes )
+					{
+						this.SetWorkingCorner( change.BoxIndex, change.CornerIndex, change.NewPoint );
+					}
+				} );
+
+			this.RecomputeActorLayering();
+			this.roomPreviewControl.Invalidate();
+		}
+
+		private void SetWorkingCorner( int boxIndex, int cornerIndex, Point point )
+		{
+			if( boxIndex >= 0 && boxIndex < this.workingBoxes.Count )
+			{
+				this.workingBoxes[boxIndex].CornerList[cornerIndex] = point;
+			}
+		}
+
+		/// <summary>
+		/// Records a walkbox edit on the walkbox undo stack and makes that stack the target of
+		/// Ctrl+Z/Y. Undo/redo re-enable the overlay and re-select the edited box.
+		/// </summary>
+		private void RecordWalkBoxEdit( object? owner, string key, string description, Action undo, Action redo )
+		{
+			var selectedIndex = this.roomPreviewControl.SelectedWalkBox?.Index;
+			this.lastActiveUndoStack = this.walkBoxUndoStack;
+			this.walkBoxUndoStack.Record( new UndoableEdit
+			{
+				Owner = owner,
+				Key = key,
+				Description = description,
+				Undo = undo,
+				Redo = redo,
+				Select = () =>
+				{
+					if( !this.checkBoxWalkBoxes.Checked )
+					{
+						this.suppressUiEvents = true;
+						try
+						{
+							this.checkBoxWalkBoxes.Checked = true;
+						}
+						finally
+						{
+							this.suppressUiEvents = false;
+						}
+						this.roomPreviewControl.ShowWalkBoxes = true;
+						this.groupBoxWalkBox.Visible = true;
+					}
+					if( selectedIndex != null && selectedIndex.Value >= 0 && selectedIndex.Value < this.roomPreviewControl.WalkBoxes.Count )
+					{
+						this.roomPreviewControl.SelectedWalkBox = this.roomPreviewControl.WalkBoxes[selectedIndex.Value];
+					}
+				},
+			} );
+		}
+
+		private void RefreshAfterWalkBoxUndoRedo()
+		{
+			this.UpdateWalkBoxEditors();
+			this.RecomputeActorLayering();
+			this.roomPreviewControl.Invalidate();
+		}
+
+		/// <summary>
+		/// The z-plane mask an actor at the point would get from the working (edited) boxes, so
+		/// the actor overlay's draw order reflects mask edits before they are saved. Mirrors
+		/// <see cref="ClassicRoom.GetBoxMaskAt"/> over the working copy.
+		/// </summary>
+		private int GetWorkingBoxMaskAt( int x, int y )
+		{
+			ClassicBox? best = null;
+			var bestDistance = double.MaxValue;
+			foreach( var box in this.workingBoxes )
+			{
+				if( !box.IsWalkable )
+				{
+					continue;
+				}
+				var distance = box.DistanceTo( x, y );
+				if( distance < bestDistance )
+				{
+					bestDistance = distance;
+					best = box;
+				}
+			}
+			return best?.Mask ?? 0;
+		}
+
+		private void RecomputeActorLayering()
+		{
+			foreach( var actor in this.roomPreviewControl.Actors )
+			{
+				actor.DrawAboveForeground = this.GetWorkingBoxMaskAt( actor.Placement.X, actor.Placement.Y ) == 0;
+			}
+		}
+
+		private void HandleSaveWalkBoxesClick( object sender, EventArgs args )
+		{
+			this.TrySaveWalkBoxes();
+		}
+
+		private bool TrySaveWalkBoxes()
+		{
+			if( this.Room == null || this.classicRoom == null || this.classicData == null )
+			{
+				return false;
+			}
+
+			var result = new SaveWalkBoxesCommand( this.LPAKFile, this.classicData, this.Room.Header.Identifier, this.workingBoxes, this.originalBoxes ).Execute();
+			if( !result.IsSuccess )
+			{
+				MessageBox.Show( this, result.Error, "Save walk boxes", MessageBoxButtons.OK, MessageBoxIcon.Error );
+				return false;
+			}
+
+			// the file now holds the working boxes: sync the shared classic room and the snapshot
+			// so a further save verifies against the new on-disk state, and drop the cache so a
+			// reopen re-reads the loose override
+			this.classicRoom.BoxList = this.workingBoxes.Select( box => box.Clone() ).ToList();
+			this.originalBoxes = this.workingBoxes.Select( box => box.Clone() ).ToList();
+			this.walkBoxUndoStack.MarkSaved();
+			ClassicDataLocator.Invalidate( this.LPAKFile.FileNameOnDisk );
+			return true;
+		}
+
+		private bool HandleWalkBoxNudge( KeyEventArgs args )
+		{
+			var walkBox = this.roomPreviewControl.SelectedWalkBox;
+			if( walkBox == null )
+			{
+				return false;
+			}
+
+			var step = args.Shift ? 8 : 1;
+			var deltaX = 0;
+			var deltaY = 0;
+			switch( args.KeyCode )
+			{
+				case Keys.Left:
+					deltaX = -step;
+					break;
+				case Keys.Right:
+					deltaX = step;
+					break;
+				case Keys.Up:
+					deltaY = -step;
+					break;
+				case Keys.Down:
+					deltaY = step;
+					break;
+				default:
+					return false;
+			}
+
+			args.Handled = true;
+			var box = walkBox.Box;
+			var index = walkBox.Index;
+			var oldCorners = (Point[])box.CornerList.Clone();
+			for( var corner = 0; corner < box.CornerList.Length; corner++ )
+			{
+				box.CornerList[corner] = new Point( box.CornerList[corner].X + deltaX, box.CornerList[corner].Y + deltaY );
+			}
+			var newCorners = (Point[])box.CornerList.Clone();
+			this.RecordWalkBoxEdit( box, "BoxNudge", "nudge walk box",
+				() => { for( var corner = 0; corner < 4; corner++ ) this.SetWorkingCorner( index, corner, oldCorners[corner] ); },
+				() => { for( var corner = 0; corner < 4; corner++ ) this.SetWorkingCorner( index, corner, newCorners[corner] ); } );
+			this.RecomputeActorLayering();
+			this.roomPreviewControl.Invalidate();
+			return true;
 		}
 
 		private string? PromptForClassicDataFolder()

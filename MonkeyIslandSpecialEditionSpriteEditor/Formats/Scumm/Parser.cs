@@ -47,7 +47,23 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		public static List<ClassicRoom> ReadRooms( BinaryReader reader )
 		{
 			var roomList = new List<ClassicRoom>();
+			foreach( var (roomNumber, roomBlock) in EnumerateRoomBlocks( reader ) )
+			{
+				roomList.Add( ReadRoom( reader, roomBlock, roomNumber ) );
+			}
+			return roomList;
+		}
+
+		/// <summary>
+		/// Walks the resource file's LECF -> (LOFF, LFLF -> ROOM) structure, yielding each room's
+		/// number and ROOM block. The room number resolution (LOFF keyed by ROOM position, LFLF
+		/// payload or LFLF position, then a sequential fallback) is shared by the reader and the
+		/// walkbox patcher so they can never disagree on which room a block belongs to.
+		/// </summary>
+		private static IEnumerable<(int RoomNumber, Block RoomBlock)> EnumerateRoomBlocks( BinaryReader reader )
+		{
 			var roomNumberByOffset = new Dictionary<long, int>();
+			var roomCount = 0;
 
 			// the file is a single LECF block containing a LOFF block (room number to
 			// offset table) followed by one LFLF block per room
@@ -66,16 +82,56 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					}
 					else if( child.Tag == "LFLF" )
 					{
-						var room = ReadRoomFromLflf( reader, child, roomNumberByOffset, fallbackRoomNumber: roomList.Count + 1 );
-						if( room != null )
+						foreach( var roomChild in ReadBlocks( reader, child.PayloadPosition, child.EndPosition ) )
 						{
-							roomList.Add( room );
+							if( roomChild.Tag != "ROOM" )
+							{
+								continue;
+							}
+
+							// the LOFF table may point at the ROOM block, the LFLF payload or the LFLF block itself
+							int roomNumber;
+							if( !roomNumberByOffset.TryGetValue( roomChild.Position, out roomNumber )
+								&& !roomNumberByOffset.TryGetValue( child.PayloadPosition, out roomNumber )
+								&& !roomNumberByOffset.TryGetValue( child.Position, out roomNumber ) )
+							{
+								roomNumber = roomCount + 1;
+							}
+							roomCount++;
+							yield return ( roomNumber, roomChild );
+
+							// one ROOM per LFLF
+							break;
 						}
 					}
 				}
 			}
+		}
 
-			return roomList;
+		/// <summary>
+		/// Finds the BOXD (walkbox) block of a room by its classic number, returning the payload
+		/// position (the 16 bit count, followed by the 20 byte records) and the block end. Uses
+		/// the same room resolution as <see cref="ReadRooms"/>. Null when the room or its BOXD is
+		/// absent.
+		/// </summary>
+		internal static (long PayloadPosition, long EndPosition)? FindRoomBoxd( BinaryReader reader, int roomNumber )
+		{
+			foreach( var (number, roomBlock) in EnumerateRoomBlocks( reader ) )
+			{
+				if( number != roomNumber )
+				{
+					continue;
+				}
+				foreach( var child in ReadBlocks( reader, roomBlock.PayloadPosition, roomBlock.EndPosition ) )
+				{
+					if( child.Tag == "BOXD" )
+					{
+						return ( child.PayloadPosition, child.EndPosition );
+					}
+				}
+				return null;
+			}
+			return null;
 		}
 
 		/// <summary>
@@ -514,30 +570,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				var offset = reader.ReadUInt32();
 				roomNumberByOffset[offset] = roomNumber;
 			}
-		}
-
-		private static ClassicRoom? ReadRoomFromLflf( BinaryReader reader, Block lflf, Dictionary<long, int> roomNumberByOffset, int fallbackRoomNumber )
-		{
-			foreach( var child in ReadBlocks( reader, lflf.PayloadPosition, lflf.EndPosition ) )
-			{
-				if( child.Tag != "ROOM" )
-				{
-					continue;
-				}
-
-				// the LOFF table may point at the ROOM block, the LFLF payload or the LFLF block itself
-				int roomNumber;
-				if( !roomNumberByOffset.TryGetValue( child.Position, out roomNumber )
-					&& !roomNumberByOffset.TryGetValue( lflf.PayloadPosition, out roomNumber )
-					&& !roomNumberByOffset.TryGetValue( lflf.Position, out roomNumber ) )
-				{
-					roomNumber = fallbackRoomNumber;
-				}
-
-				return ReadRoom( reader, child, roomNumber );
-			}
-
-			return null;
 		}
 
 		private static ClassicRoom ReadRoom( BinaryReader reader, Block roomBlock, int roomNumber )

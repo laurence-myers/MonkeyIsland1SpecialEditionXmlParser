@@ -73,6 +73,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 		}
 
 		/// <summary>
+		/// Returns an independent copy (the corner array is cloned), so an editor can hold a
+		/// working copy without touching the shared classic data.
+		/// </summary>
+		public ClassicBox Clone()
+		{
+			return new ClassicBox(
+				cornerList: (Point[])this.CornerList.Clone(),
+				mask: this.Mask,
+				flags: this.Flags,
+				scale: this.Scale
+			);
+		}
+
+		/// <summary>
 		/// Returns whether the point lies inside the quad. Degenerate (zero area) boxes
 		/// contain nothing; their edge distance decides instead.
 		/// </summary>
@@ -112,6 +126,25 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 				return 0;
 			}
 
+			var best = double.MaxValue;
+			for( var index = 0; index < 4; index++ )
+			{
+				var distance = DistanceToSegment( x, y, this.CornerList[index], this.CornerList[( index + 1 ) % 4] );
+				if( distance < best )
+				{
+					best = distance;
+				}
+			}
+			return best;
+		}
+
+		/// <summary>
+		/// Returns the distance from the point to the nearest edge, whether the point is inside
+		/// the box or not (unlike <see cref="DistanceTo"/>, which is 0 inside). Used to select a
+		/// box by clicking near its outline rather than anywhere in its interior.
+		/// </summary>
+		public double DistanceToEdge( int x, int y )
+		{
 			var best = double.MaxValue;
 			for( var index = 0; index < 4; index++ )
 			{

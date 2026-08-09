@@ -25,8 +25,25 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private RoomPreviewControlSprite? selectedSprite;
 		private RoomPreviewControlRoomObject? selectedRoomObject;
 
+		private bool showWalkBoxes;
+		private RoomPreviewControlWalkBox? selectedWalkBox;
+		private const int WalkBoxHandlePixels = 6;
+		private WalkBoxDragKind walkBoxDragKind = WalkBoxDragKind.None;
+		private readonly List<(RoomPreviewControlWalkBox Box, int Corner, Point Original)> walkBoxDragCorners = new List<(RoomPreviewControlWalkBox, int, Point)>();
+		private Point walkBoxDragStartClassic;
+		private bool walkBoxDragMoved;
+
+		private enum WalkBoxDragKind
+		{
+			None,
+			Corner,
+			Box,
+		}
+
 		public event EventHandler? SelectedSpriteChanged;
 		public event EventHandler? SelectedRoomObjectChanged;
+		public event EventHandler? SelectedWalkBoxChanged;
+		public event EventHandler<WalkBoxEditEventArgs>? WalkBoxEdited;
 		public event EventHandler? ZoomChanged;
 
 		public RoomPreviewControl()
@@ -39,6 +56,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.Sprites = new List<RoomPreviewControlSprite>();
 			this.RoomObjects = new List<RoomPreviewControlRoomObject>();
 			this.Actors = new List<RoomPreviewControlActor>();
+			this.WalkBoxes = new List<RoomPreviewControlWalkBox>();
 			this.HdScale = Renderer.DefaultHdScale;
 			this.mouseNavigation = new CanvasMouseNavigation( this );
 		}
@@ -223,6 +241,53 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
+		/// Gets the walkbox overlays. Call <see cref="RefreshContent"/> (or Invalidate) after
+		/// changing the list.
+		/// </summary>
+		public List<RoomPreviewControlWalkBox> WalkBoxes
+		{
+			get;
+			private set;
+		}
+
+		/// <summary>
+		/// Gets or sets whether the walkbox overlay is drawn and editable.
+		/// </summary>
+		public bool ShowWalkBoxes
+		{
+			get
+			{
+				return this.showWalkBoxes;
+			}
+			set
+			{
+				this.showWalkBoxes = value;
+				this.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the selected walkbox; it is outlined and shows draggable corner handles.
+		/// </summary>
+		public RoomPreviewControlWalkBox? SelectedWalkBox
+		{
+			get
+			{
+				return this.selectedWalkBox;
+			}
+			set
+			{
+				if( this.selectedWalkBox == value )
+				{
+					return;
+				}
+				this.selectedWalkBox = value;
+				this.Invalidate();
+				this.SelectedWalkBoxChanged?.Invoke( this, EventArgs.Empty );
+			}
+		}
+
+		/// <summary>
 		/// Recomputes the control size from the current content and repaints.
 		/// </summary>
 		public void RefreshContent()
@@ -277,17 +342,30 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 			if( args.Button == MouseButtons.Left )
 			{
+				// the walkbox overlay claims clicks near a box edge or the selected box's corners;
+				// interior clicks fall through so sprites under the boxes stay selectable
+				if( this.showWalkBoxes && this.HandleWalkBoxMouseDown( args ) )
+				{
+					return;
+				}
+
 				// sprites draw above the room object overlays, so they get first pick
 				var sprite = this.HitTest( args.Location );
 				if( sprite != null )
 				{
 					this.SelectedRoomObject = null;
 					this.SelectedSprite = sprite;
+					this.SelectedWalkBox = null;
 				}
 				else
 				{
-					this.SelectedRoomObject = this.HitTestRoomObject( args.Location );
+					var roomObject = this.HitTestRoomObject( args.Location );
+					this.SelectedRoomObject = roomObject;
 					this.SelectedSprite = null;
+					if( roomObject != null )
+					{
+						this.SelectedWalkBox = null;
+					}
 				}
 			}
 		}
@@ -295,13 +373,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		protected override void OnMouseMove( MouseEventArgs args )
 		{
 			base.OnMouseMove( args );
-			this.mouseNavigation.HandleMouseMove();
+			if( this.mouseNavigation.HandleMouseMove() )
+			{
+				return;
+			}
+			if( this.walkBoxDragKind != WalkBoxDragKind.None )
+			{
+				this.UpdateWalkBoxDrag( args );
+			}
 		}
 
 		protected override void OnMouseUp( MouseEventArgs args )
 		{
 			base.OnMouseUp( args );
-			this.mouseNavigation.HandleMouseUp( args );
+			if( this.mouseNavigation.HandleMouseUp( args ) )
+			{
+				return;
+			}
+			if( this.walkBoxDragKind != WalkBoxDragKind.None )
+			{
+				this.EndWalkBoxDrag();
+			}
 		}
 
 		protected override void OnMouseWheel( MouseEventArgs args )
@@ -395,6 +487,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			this.PaintActors( graphics, drawAboveForeground: true );
 
+			if( this.showWalkBoxes )
+			{
+				this.PaintWalkBoxes( graphics );
+			}
+
 			if( this.ShowCalibrationOverlay )
 			{
 				this.PaintCalibrationOverlay( graphics );
@@ -475,6 +572,238 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private IEnumerable<RoomPreviewControlSprite> GetDrawOrder()
 		{
 			return this.Sprites.OrderBy( s => s.Placement.Sprite.Layer );
+		}
+
+		//-------------------------------------------
+		// walkbox overlay
+
+		private PointF ClassicToClient( Point classic )
+		{
+			return new PointF(
+				( this.HdOrigin.X + classic.X * this.HdScale.Width ) * this.zoom,
+				( this.HdOrigin.Y + classic.Y * this.HdScale.Height ) * this.zoom
+			);
+		}
+
+		private Point ClientToClassic( Point client )
+		{
+			var scaleX = this.HdScale.Width == 0 ? 1 : this.HdScale.Width;
+			var scaleY = this.HdScale.Height == 0 ? 1 : this.HdScale.Height;
+			var classicX = ( client.X / this.zoom - this.HdOrigin.X ) / scaleX;
+			var classicY = ( client.Y / this.zoom - this.HdOrigin.Y ) / scaleY;
+			return new Point( (int)Math.Round( classicX ), (int)Math.Round( classicY ) );
+		}
+
+		private bool HandleWalkBoxMouseDown( MouseEventArgs args )
+		{
+			// a corner handle of the selected box starts a corner drag
+			if( this.selectedWalkBox != null )
+			{
+				var corner = this.FindCornerHandle( this.selectedWalkBox, args.Location );
+				if( corner >= 0 )
+				{
+					this.ClearSpriteAndRoomObjectSelection();
+					this.BeginCornerDrag( this.selectedWalkBox, corner, detach: ( Control.ModifierKeys & Keys.Control ) != 0, args.Location );
+					return true;
+				}
+			}
+
+			// clicking near a box edge selects it (and arms a whole-box drag)
+			var edgeBox = this.HitTestWalkBoxEdge( args.Location );
+			if( edgeBox != null )
+			{
+				this.ClearSpriteAndRoomObjectSelection();
+				this.SelectedWalkBox = edgeBox;
+				this.BeginBoxDrag( edgeBox, args.Location );
+				return true;
+			}
+
+			// clicking inside the already-selected box moves the whole box
+			if( this.selectedWalkBox != null )
+			{
+				var classic = this.ClientToClassic( args.Location );
+				if( this.selectedWalkBox.Box.Contains( classic.X, classic.Y ) )
+				{
+					this.ClearSpriteAndRoomObjectSelection();
+					this.BeginBoxDrag( this.selectedWalkBox, args.Location );
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		// a walkbox and a sprite/room object are never selected at once, so the arrow keys and
+		// the property editors act on exactly one thing
+		private void ClearSpriteAndRoomObjectSelection()
+		{
+			this.SelectedSprite = null;
+			this.SelectedRoomObject = null;
+		}
+
+		private int FindCornerHandle( RoomPreviewControlWalkBox box, Point clientPoint )
+		{
+			for( var corner = 0; corner < box.Box.CornerList.Length; corner++ )
+			{
+				var handle = this.ClassicToClient( box.Box.CornerList[corner] );
+				var deltaX = handle.X - clientPoint.X;
+				var deltaY = handle.Y - clientPoint.Y;
+				if( deltaX * deltaX + deltaY * deltaY <= WalkBoxHandlePixels * WalkBoxHandlePixels )
+				{
+					return corner;
+				}
+			}
+			return -1;
+		}
+
+		private RoomPreviewControlWalkBox? HitTestWalkBoxEdge( Point clientPoint )
+		{
+			var classic = this.ClientToClassic( clientPoint );
+
+			// a client-pixel threshold in classic units; the smaller (X) scale is the more
+			// forgiving, so use it
+			var scale = Math.Min( this.HdScale.Width, this.HdScale.Height );
+			var thresholdClassic = scale > 0 ? WalkBoxHandlePixels / ( this.zoom * scale ) : 0;
+
+			// later boxes draw on top, so the last within the threshold wins
+			RoomPreviewControlWalkBox? best = null;
+			foreach( var walkBox in this.WalkBoxes )
+			{
+				if( walkBox.Box.DistanceToEdge( classic.X, classic.Y ) <= thresholdClassic )
+				{
+					best = walkBox;
+				}
+			}
+			return best;
+		}
+
+		private void BeginCornerDrag( RoomPreviewControlWalkBox box, int corner, bool detach, Point clientPoint )
+		{
+			this.walkBoxDragKind = WalkBoxDragKind.Corner;
+			this.walkBoxDragStartClassic = this.ClientToClassic( clientPoint );
+			this.walkBoxDragMoved = false;
+			this.walkBoxDragCorners.Clear();
+
+			var grabbed = box.Box.CornerList[corner];
+			if( detach )
+			{
+				this.walkBoxDragCorners.Add( ( box, corner, grabbed ) );
+			}
+			else
+			{
+				// move every coincident corner across all boxes together, so shared edges stay sealed
+				foreach( var walkBox in this.WalkBoxes )
+				{
+					for( var index = 0; index < walkBox.Box.CornerList.Length; index++ )
+					{
+						if( walkBox.Box.CornerList[index] == grabbed )
+						{
+							this.walkBoxDragCorners.Add( ( walkBox, index, walkBox.Box.CornerList[index] ) );
+						}
+					}
+				}
+			}
+		}
+
+		private void BeginBoxDrag( RoomPreviewControlWalkBox box, Point clientPoint )
+		{
+			this.walkBoxDragKind = WalkBoxDragKind.Box;
+			this.walkBoxDragStartClassic = this.ClientToClassic( clientPoint );
+			this.walkBoxDragMoved = false;
+			this.walkBoxDragCorners.Clear();
+			for( var corner = 0; corner < box.Box.CornerList.Length; corner++ )
+			{
+				this.walkBoxDragCorners.Add( ( box, corner, box.Box.CornerList[corner] ) );
+			}
+		}
+
+		private void UpdateWalkBoxDrag( MouseEventArgs args )
+		{
+			var classic = this.ClientToClassic( args.Location );
+			var deltaX = classic.X - this.walkBoxDragStartClassic.X;
+			var deltaY = classic.Y - this.walkBoxDragStartClassic.Y;
+			if( deltaX == 0 && deltaY == 0 && !this.walkBoxDragMoved )
+			{
+				return;
+			}
+
+			foreach( var (box, corner, original) in this.walkBoxDragCorners )
+			{
+				box.Box.CornerList[corner] = new Point( original.X + deltaX, original.Y + deltaY );
+			}
+			if( deltaX != 0 || deltaY != 0 )
+			{
+				this.walkBoxDragMoved = true;
+			}
+			this.Invalidate();
+		}
+
+		private void EndWalkBoxDrag()
+		{
+			var changes = new List<WalkBoxCornerChange>();
+			if( this.walkBoxDragMoved )
+			{
+				foreach( var (box, corner, original) in this.walkBoxDragCorners )
+				{
+					var current = box.Box.CornerList[corner];
+					if( current != original )
+					{
+						changes.Add( new WalkBoxCornerChange( box.Index, corner, original, current ) );
+					}
+				}
+			}
+
+			this.walkBoxDragKind = WalkBoxDragKind.None;
+			this.walkBoxDragCorners.Clear();
+			this.walkBoxDragMoved = false;
+
+			if( changes.Count > 0 )
+			{
+				this.WalkBoxEdited?.Invoke( this, new WalkBoxEditEventArgs( changes ) );
+			}
+		}
+
+		private void PaintWalkBoxes( Graphics graphics )
+		{
+			using( var walkableFill = new SolidBrush( Color.FromArgb( 55, Color.LimeGreen ) ) )
+			using( var blockedFill = new SolidBrush( Color.FromArgb( 55, Color.Red ) ) )
+			using( var walkablePen = new Pen( Color.FromArgb( 210, Color.LimeGreen ) ) )
+			using( var blockedPen = new Pen( Color.FromArgb( 210, Color.Red ) ) { DashStyle = DashStyle.Dash } )
+			using( var labelBrush = new SolidBrush( Color.White ) )
+			using( var labelBack = new SolidBrush( Color.FromArgb( 140, Color.Black ) ) )
+			{
+				foreach( var walkBox in this.WalkBoxes )
+				{
+					var points = walkBox.Box.CornerList.Select( this.ClassicToClient ).ToArray();
+					var walkable = walkBox.Box.IsWalkable;
+					graphics.FillPolygon( walkable ? walkableFill : blockedFill, points );
+					graphics.DrawPolygon( walkable ? walkablePen : blockedPen, points );
+
+					// a small label at the centroid: index and mask
+					var centroidX = points.Average( p => p.X );
+					var centroidY = points.Average( p => p.Y );
+					var label = string.Concat( walkBox.Index, " m", walkBox.Box.Mask );
+					var size = graphics.MeasureString( label, this.Font );
+					graphics.FillRectangle( labelBack, centroidX - 1, centroidY - 1, size.Width + 2, size.Height + 2 );
+					graphics.DrawString( label, this.Font, labelBrush, centroidX, centroidY );
+				}
+
+				if( this.selectedWalkBox != null && this.WalkBoxes.Contains( this.selectedWalkBox ) )
+				{
+					var points = this.selectedWalkBox.Box.CornerList.Select( this.ClassicToClient ).ToArray();
+					using( var selectedPen = new Pen( Color.Yellow, 2 ) )
+					{
+						graphics.DrawPolygon( selectedPen, points );
+					}
+					using( var handleBrush = new SolidBrush( Color.Yellow ) )
+					{
+						foreach( var point in points )
+						{
+							graphics.FillRectangle( handleBrush, point.X - WalkBoxHandlePixels / 2.0f, point.Y - WalkBoxHandlePixels / 2.0f, WalkBoxHandlePixels, WalkBoxHandlePixels );
+						}
+					}
+				}
+			}
 		}
 
 		private void UpdateContentSize()
