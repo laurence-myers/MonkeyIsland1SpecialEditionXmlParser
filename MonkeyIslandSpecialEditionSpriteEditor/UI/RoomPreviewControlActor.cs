@@ -41,13 +41,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		} = origin;
 
 		/// <summary>
-		/// Gets or sets the image's top left corner in HD room pixels.
+		/// Gets or sets the image's top left corner in HD room pixels (already accounting for
+		/// <see cref="Scale"/>, so the feet stay on the placement).
 		/// </summary>
 		public PointF Position
 		{
 			get;
 			set;
 		}
+
+		/// <summary>
+		/// Gets or sets a uniform scale applied to the drawn image. The costume image is
+		/// composited at the costume scale (which matches the usual 144-line rooms); in a
+		/// fullscreen room, whose art is smaller, this drops below 1 so the actor sits at the
+		/// room's own size rather than oversized. The feet stay anchored because
+		/// <see cref="Position"/> is set from the scaled origin.
+		/// </summary>
+		public float Scale
+		{
+			get;
+			set;
+		} = 1.0f;
 
 		/// <summary>
 		/// Gets or sets the text shown for the actor in the actor list.
@@ -86,9 +100,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			get
 			{
+				var size = this.Image != null ? this.Image.Size : Size.Empty;
 				return new RectangleF(
 					this.Position,
-					this.Image != null ? this.Image.Size : Size.Empty
+					new SizeF( size.Width * this.Scale, size.Height * this.Scale )
 				);
 			}
 		}

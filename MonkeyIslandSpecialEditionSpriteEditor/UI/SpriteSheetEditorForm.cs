@@ -645,6 +645,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private void UpdateActorPositions()
 		{
 			var hdTransform = this.GetHdTransform();
+
+			// the actor images are composited at the costume scale (which matches the usual
+			// 144-line rooms); scale them to this room's scale so they sit at its own size
+			// rather than oversized in a fullscreen room (a no-op where the scales agree)
+			var actorScale = CostumeRenderer.DefaultHdScale.Height > 0
+				? hdTransform.Scale.Height / CostumeRenderer.DefaultHdScale.Height
+				: 1.0f;
+
 			foreach( var actor in this.roomPreviewControl.Actors )
 			{
 				if( actor.Image == null )
@@ -653,11 +661,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				}
 
 				// the actor origin is its feet: classic position scaled to HD, lifted by the
-				// elevation
+				// elevation; the origin is scaled too so the feet stay on the placement
 				var placement = actor.Placement;
 				var originX = hdTransform.Origin.X + placement.X * hdTransform.Scale.Width;
 				var originY = hdTransform.Origin.Y + ( placement.Y - ( placement.Elevation ?? 0 ) ) * hdTransform.Scale.Height;
-				actor.Position = new PointF( originX - actor.Origin.X, originY - actor.Origin.Y );
+				actor.Scale = actorScale;
+				actor.Position = new PointF( originX - actor.Origin.X * actorScale, originY - actor.Origin.Y * actorScale );
 			}
 		}
 
