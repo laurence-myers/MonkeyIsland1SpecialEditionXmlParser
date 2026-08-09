@@ -109,6 +109,18 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
+		/// Yields every room number in the resource file, in file order (same resolution as the
+		/// reader). Used by the walkbox patch exporter to walk all rooms.
+		/// </summary>
+		internal static IEnumerable<int> EnumerateRoomNumbers( BinaryReader reader )
+		{
+			foreach( var (number, _) in EnumerateRoomBlocks( reader ) )
+			{
+				yield return number;
+			}
+		}
+
+		/// <summary>
 		/// Finds the BOXD (walkbox) block of a room by its classic number, returning the payload
 		/// position (the 16 bit count, followed by the 20 byte records) and the block end. Uses
 		/// the same room resolution as <see cref="ReadRooms"/>. Null when the room or its BOXD is

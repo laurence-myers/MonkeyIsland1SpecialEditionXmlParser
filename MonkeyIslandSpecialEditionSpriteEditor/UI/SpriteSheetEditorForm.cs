@@ -2791,6 +2791,103 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			return true;
 		}
 
+		//-------------------------------------------
+		// redistributable walk box patch
+
+		private const string ClassicPatchFilter = "Walk box patch (*.mi1classicpatch.xml)|*.mi1classicpatch.xml|XML files (*.xml)|*.xml";
+
+		private static string ToolVersion()
+		{
+			return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "";
+		}
+
+		private void HandleExportClassicPatch( object sender, EventArgs args )
+		{
+			// the patch is built from the saved classic data, so offer to save pending edits first
+			if( this.walkBoxesDirty )
+			{
+				var answer = MessageBox.Show(
+					this,
+					"Save your walk box changes before exporting? The patch is built from the saved classic data.",
+					"Export walk box patch",
+					MessageBoxButtons.YesNoCancel,
+					MessageBoxIcon.Question
+				);
+				if( answer == DialogResult.Cancel )
+				{
+					return;
+				}
+				if( answer == DialogResult.Yes && !this.TrySaveWalkBoxes() )
+				{
+					return;
+				}
+			}
+
+			using( var dialog = new SaveFileDialog() )
+			{
+				dialog.Filter = ClassicPatchFilter;
+				dialog.Title = "Export walk box patch";
+				dialog.FileName = string.Concat( string.IsNullOrWhiteSpace( this.Room?.Header.Name ) ? "walkboxes" : this.Room!.Header.Name, ".mi1classicpatch.xml" );
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+
+				var info = new ClassicPatchInfo { Name = this.Room?.Header.Name ?? "" };
+				var label = System.IO.Path.GetFileNameWithoutExtension( this.LPAKFile.FileNameOnDisk ) ?? "local";
+				var result = new ExportClassicPatchCommand( this.LPAKFile, dialog.FileName, info, label, ToolVersion() ).Execute();
+				MessageBox.Show(
+					this,
+					result.IsSuccess ? result.Value : result.Error,
+					"Export walk box patch",
+					MessageBoxButtons.OK,
+					result.IsSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Error
+				);
+			}
+		}
+
+		private void HandleApplyClassicPatch( object sender, EventArgs args )
+		{
+			using( var dialog = new OpenFileDialog() )
+			{
+				dialog.Filter = ClassicPatchFilter;
+				dialog.Title = "Apply walk box patch";
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+				var result = new ApplyClassicPatchCommand( this.LPAKFile, dialog.FileName ).Execute();
+				MessageBox.Show(
+					this,
+					result.IsSuccess ? result.Value : result.Error,
+					"Apply walk box patch",
+					MessageBoxButtons.OK,
+					result.IsSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Error
+				);
+			}
+		}
+
+		private void HandleRemoveClassicPatch( object sender, EventArgs args )
+		{
+			using( var dialog = new OpenFileDialog() )
+			{
+				dialog.Filter = ClassicPatchFilter;
+				dialog.Title = "Remove walk box patch";
+				if( dialog.ShowDialog( this ) != DialogResult.OK )
+				{
+					return;
+				}
+				var result = new RemoveClassicPatchCommand( this.LPAKFile, dialog.FileName ).Execute();
+				MessageBox.Show(
+					this,
+					result.IsSuccess ? result.Value : result.Error,
+					"Remove walk box patch",
+					MessageBoxButtons.OK,
+					result.IsSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Error
+				);
+			}
+		}
+
 		private string? PromptForClassicDataFolder()
 		{
 			using( var dialog = new FolderBrowserDialog() )

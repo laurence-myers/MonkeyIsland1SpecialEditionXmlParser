@@ -40,6 +40,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.exportAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.importAllTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.classicPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.exportClassicPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.applyClassicPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.removeClassicPatchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportXmlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportMergedPngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -156,6 +160,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
             this.importTexturePngToolStripMenuItem,
             this.exportAllTexturesToolStripMenuItem,
             this.importAllTexturesToolStripMenuItem,
+            this.classicPatchToolStripMenuItem,
             this.exportToolStripMenuItem});
 			this.fileToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.MatchOnly;
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -216,6 +221,39 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.importAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
 			this.importAllTexturesToolStripMenuItem.Text = "Import all te&xtures from folder...";
 			this.importAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ImportAllTexturesPng);
+			//
+			// classicPatchToolStripMenuItem
+			//
+			this.classicPatchToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exportClassicPatchToolStripMenuItem,
+            this.applyClassicPatchToolStripMenuItem,
+            this.removeClassicPatchToolStripMenuItem});
+			this.classicPatchToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Insert;
+			this.classicPatchToolStripMenuItem.MergeIndex = 7;
+			this.classicPatchToolStripMenuItem.Name = "classicPatchToolStripMenuItem";
+			this.classicPatchToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.classicPatchToolStripMenuItem.Text = "Walk box &patch (classic)";
+			//
+			// exportClassicPatchToolStripMenuItem
+			//
+			this.exportClassicPatchToolStripMenuItem.Name = "exportClassicPatchToolStripMenuItem";
+			this.exportClassicPatchToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.exportClassicPatchToolStripMenuItem.Text = "&Export patch...";
+			this.exportClassicPatchToolStripMenuItem.Click += new System.EventHandler(this.HandleExportClassicPatch);
+			//
+			// applyClassicPatchToolStripMenuItem
+			//
+			this.applyClassicPatchToolStripMenuItem.Name = "applyClassicPatchToolStripMenuItem";
+			this.applyClassicPatchToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.applyClassicPatchToolStripMenuItem.Text = "&Apply patch...";
+			this.applyClassicPatchToolStripMenuItem.Click += new System.EventHandler(this.HandleApplyClassicPatch);
+			//
+			// removeClassicPatchToolStripMenuItem
+			//
+			this.removeClassicPatchToolStripMenuItem.Name = "removeClassicPatchToolStripMenuItem";
+			this.removeClassicPatchToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.removeClassicPatchToolStripMenuItem.Text = "&Remove patch...";
+			this.removeClassicPatchToolStripMenuItem.Click += new System.EventHandler(this.HandleRemoveClassicPatch);
 			//
 			// editToolStripMenuItem
 			//
@@ -976,6 +1014,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem classicPatchToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem exportClassicPatchToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem applyClassicPatchToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem removeClassicPatchToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem revertToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportTexturePngToolStripMenuItem;

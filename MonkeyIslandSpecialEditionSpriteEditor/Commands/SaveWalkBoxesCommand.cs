@@ -72,7 +72,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 				}
 				sourceBytes = read;
 
-				var extractError = ExtractIndexSibling( lpakFile, pakDirectory );
+				var extractError = ClassicOverride.ExtractIndexSibling( lpakFile, pakDirectory );
 				if( extractError != null )
 				{
 					return CommandResult.Fail( extractError );
@@ -107,94 +107,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 				}
 			}
 
-			var targetDirectory = Path.GetDirectoryName( targetPath );
-			if( !string.IsNullOrWhiteSpace( targetDirectory ) && !Directory.Exists( targetDirectory ) )
-			{
-				Directory.CreateDirectory( targetDirectory );
-			}
-
-			// write via a temp file, then swap it in: File.Replace is atomic and never leaves the
-			// target missing (unlike delete-then-move) when the swap fails
-			var tempPath = targetPath + ".tmp";
+			// atomic swap: File.Replace never leaves the target missing on a failed write
 			try
 			{
-				File.WriteAllBytes( tempPath, patched );
-				if( File.Exists( targetPath ) )
-				{
-					File.Replace( tempPath, targetPath, null );
-				}
-				else
-				{
-					File.Move( tempPath, targetPath );
-				}
+				ClassicOverride.AtomicWrite( targetPath, patched );
 			}
 			catch( Exception exception )
 			{
-				try
-				{
-					if( File.Exists( tempPath ) )
-					{
-						File.Delete( tempPath );
-					}
-				}
-				catch( Exception )
-				{
-					// the temp file is inert; leaving it behind beats masking the real error
-				}
 				return CommandResult.Fail( "Failed to write the walkboxes: " + exception.Message );
 			}
 
 			return CommandResult.Success( string.Concat( "Walkboxes saved to ", targetPath, " - verify in game." ) );
-		}
-
-		/// <summary>
-		/// Extracts the pak's .000 index next to a .001 override (once), so a reload of the loose
-		/// override still finds room names and costumes. Returns an error message on failure, or
-		/// null on success or when there is nothing to extract.
-		/// </summary>
-		private static string? ExtractIndexSibling( LPAKFile lpakFile, string pakDirectory )
-		{
-			var indexEntryIndex = lpakFile.FindEntryIndex( name => name.EndsWith( ".000", StringComparison.OrdinalIgnoreCase ) );
-			if( indexEntryIndex < 0 )
-			{
-				return null;
-			}
-			var indexEntryName = lpakFile.PakFileNames[indexEntryIndex].FileName;
-			if( string.IsNullOrWhiteSpace( indexEntryName ) )
-			{
-				return null;
-			}
-
-			var indexPath = Path.Combine( pakDirectory, indexEntryName! );
-			if( File.Exists( indexPath ) )
-			{
-				return null;
-			}
-
-			try
-			{
-				var indexBytes = lpakFile.ReadEntryBytes( indexEntryIndex );
-				var indexDirectory = Path.GetDirectoryName( indexPath );
-				if( !string.IsNullOrWhiteSpace( indexDirectory ) && !Directory.Exists( indexDirectory ) )
-				{
-					Directory.CreateDirectory( indexDirectory );
-				}
-				var tempPath = indexPath + ".tmp";
-				File.WriteAllBytes( tempPath, indexBytes );
-				if( File.Exists( indexPath ) )
-				{
-					File.Replace( tempPath, indexPath, null );
-				}
-				else
-				{
-					File.Move( tempPath, indexPath );
-				}
-				return null;
-			}
-			catch( Exception exception )
-			{
-				return "Could not extract the classic index (.000) beside the override: " + exception.Message;
-			}
 		}
 	}
 }

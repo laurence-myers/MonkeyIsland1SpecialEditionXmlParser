@@ -12,7 +12,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 	/// </summary>
 	public static class Packer
 	{
-		private const int BoxRecordSize = 20;
+		internal const int BoxRecordSize = 20;
 
 		/// <summary>
 		/// Returns a new, still XOR encoded resource file with one room's walkboxes replaced.
@@ -143,6 +143,22 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			buffer[position] = (byte)( value & 0xFF );
 			buffer[position + 1] = (byte)( ( value >> 8 ) & 0xFF );
+		}
+
+		// little-endian record-field helpers, shared with ClassicPatcher
+		internal static void WriteInt16Le( byte[] buffer, int position, int value )
+		{
+			WriteInt16( buffer, position, value );
+		}
+
+		internal static int ReadInt16Le( byte[] buffer, int position )
+		{
+			return (short)( buffer[position] | ( buffer[position + 1] << 8 ) );
+		}
+
+		internal static int ReadUInt16Le( byte[] buffer, int position )
+		{
+			return buffer[position] | ( buffer[position + 1] << 8 );
 		}
 	}
 }
