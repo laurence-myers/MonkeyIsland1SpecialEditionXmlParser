@@ -81,6 +81,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelClassicDelta = new System.Windows.Forms.Label();
 			this.buttonAlignToClassic = new System.Windows.Forms.Button();
 			this.checkBoxCalibration = new System.Windows.Forms.CheckBox();
+			this.labelScreenAnchored = new System.Windows.Forms.Label();
 			this.labelHint = new System.Windows.Forms.Label();
 			this.panelPreviewHost = new System.Windows.Forms.Panel();
 			this.panelPreview = new MonkeyIslandSpecialEditionSpriteEditor.UI.NonScrollingPanel();
@@ -91,6 +92,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.numericStep = new System.Windows.Forms.NumericUpDown();
 			this.labelStepCount = new System.Windows.Forms.Label();
 			this.checkBoxPlay = new System.Windows.Forms.CheckBox();
+			this.checkBoxGamePlacement = new System.Windows.Forms.CheckBox();
+			this.labelRoomBackdrop = new System.Windows.Forms.Label();
+			this.comboBoxRoomBackdrop = new System.Windows.Forms.ComboBox();
 			this.timerPlayback = new System.Windows.Forms.Timer( this.components );
 			((System.ComponentModel.ISupportInitialize)(this.splitMain)).BeginInit();
 			this.splitMain.Panel1.SuspendLayout();
@@ -384,6 +388,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.labelClassicDelta);
 			this.panelProperties.Controls.Add(this.buttonAlignToClassic);
 			this.panelProperties.Controls.Add(this.checkBoxCalibration);
+			this.panelProperties.Controls.Add(this.labelScreenAnchored);
 			this.panelProperties.Controls.Add(this.labelHint);
 			this.panelProperties.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.panelProperties.Location = new System.Drawing.Point(0, 0);
@@ -684,10 +689,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.checkBoxCalibration.UseVisualStyleBackColor = true;
 			this.checkBoxCalibration.CheckedChanged += new System.EventHandler(this.HandleCalibrationCheckedChanged);
 			//
+			// labelScreenAnchored
+			//
+			this.labelScreenAnchored.ForeColor = System.Drawing.Color.SaddleBrown;
+			this.labelScreenAnchored.Location = new System.Drawing.Point(6, 442);
+			this.labelScreenAnchored.Name = "labelScreenAnchored";
+			this.labelScreenAnchored.Size = new System.Drawing.Size(220, 44);
+			this.labelScreenAnchored.TabIndex = 33;
+			this.labelScreenAnchored.Text = "This sprite is anchored to its classic cel, so the game ignores Screen X/Y. Turn off Game placement to edit it anyway.";
+			this.labelScreenAnchored.Visible = false;
+			//
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 442);
+			this.labelHint.Location = new System.Drawing.Point(6, 490);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(220, 86);
 			this.labelHint.TabIndex = 32;
@@ -729,10 +744,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelAnimation.Controls.Add(this.numericStep);
 			this.panelAnimation.Controls.Add(this.labelStep);
 			this.panelAnimation.Controls.Add(this.comboBoxAnimations);
+			this.panelAnimation.Controls.Add(this.checkBoxGamePlacement);
+			this.panelAnimation.Controls.Add(this.labelRoomBackdrop);
+			this.panelAnimation.Controls.Add(this.comboBoxRoomBackdrop);
 			this.panelAnimation.Dock = System.Windows.Forms.DockStyle.Top;
 			this.panelAnimation.Location = new System.Drawing.Point(0, 0);
 			this.panelAnimation.Name = "panelAnimation";
-			this.panelAnimation.Size = new System.Drawing.Size(584, 27);
+			this.panelAnimation.Size = new System.Drawing.Size(584, 54);
 			this.panelAnimation.TabIndex = 0;
 			//
 			// comboBoxAnimations
@@ -781,6 +799,36 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.checkBoxPlay.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			this.checkBoxPlay.UseVisualStyleBackColor = true;
 			this.checkBoxPlay.CheckedChanged += new System.EventHandler(this.HandlePlayCheckedChanged);
+			//
+			// checkBoxGamePlacement
+			//
+			this.checkBoxGamePlacement.Location = new System.Drawing.Point(3, 30);
+			this.checkBoxGamePlacement.Name = "checkBoxGamePlacement";
+			this.checkBoxGamePlacement.Size = new System.Drawing.Size(120, 20);
+			this.checkBoxGamePlacement.TabIndex = 5;
+			this.checkBoxGamePlacement.Text = "Game placement";
+			this.checkBoxGamePlacement.UseVisualStyleBackColor = true;
+			this.checkBoxGamePlacement.CheckedChanged += new System.EventHandler(this.HandleGamePlacementCheckedChanged);
+			//
+			// labelRoomBackdrop
+			//
+			this.labelRoomBackdrop.Location = new System.Drawing.Point(129, 32);
+			this.labelRoomBackdrop.Name = "labelRoomBackdrop";
+			this.labelRoomBackdrop.Size = new System.Drawing.Size(44, 16);
+			this.labelRoomBackdrop.TabIndex = 6;
+			this.labelRoomBackdrop.Text = "Room:";
+			//
+			// comboBoxRoomBackdrop
+			//
+			this.comboBoxRoomBackdrop.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+			| System.Windows.Forms.AnchorStyles.Right)));
+			this.comboBoxRoomBackdrop.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxRoomBackdrop.FormattingEnabled = true;
+			this.comboBoxRoomBackdrop.Location = new System.Drawing.Point(175, 29);
+			this.comboBoxRoomBackdrop.Name = "comboBoxRoomBackdrop";
+			this.comboBoxRoomBackdrop.Size = new System.Drawing.Size(405, 21);
+			this.comboBoxRoomBackdrop.TabIndex = 7;
+			this.comboBoxRoomBackdrop.SelectedIndexChanged += new System.EventHandler(this.HandleRoomBackdropSelected);
 			//
 			// timerPlayback
 			//
@@ -884,6 +932,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.Label labelClassicDelta;
 		private System.Windows.Forms.Button buttonAlignToClassic;
 		private System.Windows.Forms.CheckBox checkBoxCalibration;
+		private System.Windows.Forms.Label labelScreenAnchored;
 		private System.Windows.Forms.Label labelHint;
 		private System.Windows.Forms.Panel panelPreviewHost;
 		private NonScrollingPanel panelPreview;
@@ -894,6 +943,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.NumericUpDown numericStep;
 		private System.Windows.Forms.Label labelStepCount;
 		private System.Windows.Forms.CheckBox checkBoxPlay;
+		private System.Windows.Forms.CheckBox checkBoxGamePlacement;
+		private System.Windows.Forms.Label labelRoomBackdrop;
+		private System.Windows.Forms.ComboBox comboBoxRoomBackdrop;
 		private System.Windows.Forms.Timer timerPlayback;
 	}
 }

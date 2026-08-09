@@ -105,6 +105,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.roomPreviewControl.KeyDown += this.HandlePreviewKeyDown;
 
 			this.InitializeSpriteTreeContextMenu();
+			this.InitializeActorListContextMenu();
 		}
 
 		private void LoadRoom()
@@ -114,6 +115,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
+
+			// re-read everything from disk on a (re)load, so a Revert or a costume/texture saved
+			// since the last load is picked up rather than served stale from these caches
+			this.costumeCache.Clear();
+			this.textureCache.Clear();
 
 			this.dirty = false;
 			this.UpdateTitle();
@@ -669,20 +675,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			try
 			{
-				for( var index = 0; index < this.LPAKFile.PakFileNames.Length; index++ )
-				{
-					var fileName = this.LPAKFile.PakFileNames[index].FileName;
-					if( fileName == null )
-					{
-						continue;
-					}
-					var match = SpriteSheetEditorForm.costumeFileNameRegex.Match( fileName );
-					if( match.Success && int.Parse( match.Groups[1].Value ) == costumeId )
-					{
-						costume = this.LPAKFile.LoadCostume( index );
-						break;
-					}
-				}
+				var index = this.FindCostumeFileIndex( costumeId );
+				costume = index >= 0 ? this.LPAKFile.LoadCostume( index ) : null;
 			}
 			catch( Exception )
 			{
@@ -691,6 +685,65 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			this.costumeCache[costumeId] = costume;
 			return costume;
+		}
+
+		/// <summary>
+		/// Finds the pak entry index of the SE costume whose file name prefix matches the classic
+		/// costume number, or -1 when the pak has no such costume.
+		/// </summary>
+		private int FindCostumeFileIndex( int costumeId )
+		{
+			for( var index = 0; index < this.LPAKFile.PakFileNames.Length; index++ )
+			{
+				var fileName = this.LPAKFile.PakFileNames[index].FileName;
+				if( fileName == null )
+				{
+					continue;
+				}
+				var match = SpriteSheetEditorForm.costumeFileNameRegex.Match( fileName );
+				if( match.Success && int.Parse( match.Groups[1].Value ) == costumeId )
+				{
+					return index;
+				}
+			}
+			return -1;
+		}
+
+		/// <summary>
+		/// Rebuilds the room's actor overlays for a costume that was just saved or re-textured in
+		/// an open costume editor, so the room preview reflects the change without a full reload.
+		/// Preserves the user's per-actor show/hide choices.
+		/// </summary>
+		public void InvalidateCostume( int costumeId )
+		{
+			if( this.Room == null )
+			{
+				return;
+			}
+
+			// forget the cached costume so it reloads (picking up its override), and drop the
+			// texture cache since a re-imported costume texture may be cached under its name
+			this.costumeCache.Remove( costumeId );
+			this.textureCache.Clear();
+
+			// remember which actors the user had shown or hidden, keyed by their placement
+			var visibleByPlacement = new Dictionary<ClassicActorPlacement, bool>();
+			foreach( var actor in this.roomPreviewControl.Actors )
+			{
+				visibleByPlacement[actor.Placement] = actor.Visible;
+			}
+
+			this.BuildActorOverlays();
+
+			foreach( var actor in this.roomPreviewControl.Actors )
+			{
+				if( visibleByPlacement.TryGetValue( actor.Placement, out var wasVisible ) )
+				{
+					actor.Visible = actor.Image != null && wasVisible;
+				}
+			}
+			this.PopulateActorList();
+			this.roomPreviewControl.Invalidate();
 		}
 
 		private void PopulateActorList()
@@ -725,6 +778,87 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.roomPreviewControl.Actors[args.Index].Visible = args.NewValue == CheckState.Checked;
 				this.roomPreviewControl.Invalidate();
 			}
+		}
+
+		/// <summary>
+		/// Adds a right-click menu to the actor list for opening the costume editor with the room
+		/// as its backdrop, so the actor can be placed pixel-accurately against this scene.
+		/// </summary>
+		private void InitializeActorListContextMenu()
+		{
+			var menu = new ContextMenuStrip();
+			var openItem = new ToolStripMenuItem( "Open costume editor here" );
+			openItem.Click += delegate { this.OpenCostumeEditorForSelectedActor(); };
+			menu.Items.Add( openItem );
+			menu.Opening += delegate
+			{
+				var placement = this.GetSelectedActorPlacement();
+				openItem.Enabled = placement?.CostumeId != null
+					&& this.FindCostumeFileIndex( placement.CostumeId.Value ) >= 0;
+			};
+
+			this.checkedListBoxActors.ContextMenuStrip = menu;
+
+			// a right-click does not move the list selection on its own, so select the clicked
+			// row (left-click still toggles the check thanks to CheckOnClick)
+			this.checkedListBoxActors.MouseDown += delegate ( object? sender, MouseEventArgs args )
+			{
+				if( args.Button == MouseButtons.Right )
+				{
+					var index = this.checkedListBoxActors.IndexFromPoint( args.Location );
+					if( index >= 0 )
+					{
+						this.checkedListBoxActors.SelectedIndex = index;
+					}
+				}
+			};
+		}
+
+		private ClassicActorPlacement? GetSelectedActorPlacement()
+		{
+			var index = this.checkedListBoxActors.SelectedIndex;
+			return index >= 0 && index < this.roomPreviewControl.Actors.Count
+				? this.roomPreviewControl.Actors[index].Placement
+				: null;
+		}
+
+		private void OpenCostumeEditorForSelectedActor()
+		{
+			var index = this.checkedListBoxActors.SelectedIndex;
+			if( this.Room == null || index < 0 || index >= this.roomPreviewControl.Actors.Count )
+			{
+				return;
+			}
+
+			// the actor list is built one-to-one from the classic room's placement list, so the
+			// list index is also the placement's index there
+			var placement = this.roomPreviewControl.Actors[index].Placement;
+			if( placement.CostumeId == null )
+			{
+				return;
+			}
+
+			var costumeFileIndex = this.FindCostumeFileIndex( placement.CostumeId.Value );
+			if( costumeFileIndex < 0 )
+			{
+				MessageBox.Show(
+					this,
+					string.Concat( "No SE costume file found for costume ", placement.CostumeId.Value, "." ),
+					"Open costume editor",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information
+				);
+				return;
+			}
+
+			var fileName = this.LPAKFile.PakFileNames[costumeFileIndex].FileName;
+			new OpenCostumeSpriteSheetEditorCommand(
+				this.LPAKFile,
+				fileName,
+				costumeFileIndex,
+				backdropRoomNumber: this.Room.Header.Identifier,
+				backdropPlacementIndex: index
+			).Execute();
 		}
 
 		//-------------------------------------------

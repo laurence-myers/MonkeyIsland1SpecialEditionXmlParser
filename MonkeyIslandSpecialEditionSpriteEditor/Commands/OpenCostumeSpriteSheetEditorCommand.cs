@@ -4,7 +4,7 @@ using MonkeyIslandSpecialEditionSpriteEditor.UI;
 
 namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 {
-	public class OpenCostumeSpriteSheetEditorCommand( LPAKFile lpakFile, string? fileName, int fileIndex ) : BaseCommand
+	public class OpenCostumeSpriteSheetEditorCommand( LPAKFile lpakFile, string? fileName, int fileIndex, int? backdropRoomNumber = null, int backdropPlacementIndex = 0 ) : BaseCommand
 	{
 		protected override CommandResult InnerExecute()
 		{
@@ -22,6 +22,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 			{
 				Text = fileName,
 			};
+
+			// when opened to place a specific actor, show that room behind the costume
+			if( backdropRoomNumber != null )
+			{
+				form.SelectRoomBackdrop( backdropRoomNumber.Value, backdropPlacementIndex );
+			}
+
 			form.Show();
 
 			return CommandResult.Success( string.Empty );

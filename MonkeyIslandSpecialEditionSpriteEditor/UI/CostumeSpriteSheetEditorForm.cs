@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using MonkeyIslandSpecialEditionSpriteEditor.Commands;
 using MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes;
@@ -20,6 +21,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 	/// </summary>
 	public partial class CostumeSpriteSheetEditorForm : Form
 	{
+		/// <summary>
+		/// Matches SE room pak entries; the number prefix of the file name is the classic room
+		/// number. Anchored at a slash (or start) so a language-prefixed entry still matches.
+		/// </summary>
+		private static readonly Regex roomFileNameRegex = new Regex(
+			@"(?:^|/)(\d+)_[^/]*\.room\.xml$", RegexOptions.IgnoreCase | RegexOptions.Compiled );
+
 		private static readonly List<CostumeSpriteSheetEditorForm> instances = new List<CostumeSpriteSheetEditorForm>();
 		private readonly Dictionary<string, Image?> textureCache = new Dictionary<string, Image?>();
 		private ClassicData? classicData;
@@ -29,6 +37,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Sprite? selectedSprite;
 		private bool suppressUiEvents;
 		private bool dirty;
+		// "Game placement" defaults to on when a classic costume matched, but only on the first
+		// load - reverting or reloading must not fight a choice the user has since made
+		private bool gamePlacementDefaulted;
+		// the room backdrop bitmaps this form owns and must dispose; the preview only borrows them
+		private Bitmap? backdropBelow;
+		private Bitmap? backdropAbove;
+		// a room number + placement to select as the backdrop once the costume has loaded, set when
+		// the room editor opens this form to place a specific actor
+		private int? pendingBackdropRoomNumber;
+		private int pendingBackdropPlacementIndex;
 		// the three copy/paste slots: atlas rect position, atlas rect size, screen position;
 		// each pair copies both of its numbers at once so animation cels line up exactly
 		private Point? copiedTextureXY;
@@ -69,7 +87,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.WindowState = windowState;
 
 			CostumeSpriteSheetEditorForm.instances.Add( this );
-			this.FormClosed += delegate { CostumeSpriteSheetEditorForm.instances.Remove( this ); };
+			this.FormClosed += delegate
+			{
+				CostumeSpriteSheetEditorForm.instances.Remove( this );
+				this.ClearBackdrop();
+			};
 
 			this.InitializeComponent();
 
@@ -114,6 +136,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.warningLabel.Visible = false;
 			}
 
+			// drop any backdrop from a previous load before the room list is rebuilt
+			this.ClearBackdrop();
+
+			// default "Game placement" on when the game anchors this costume's sprites to their
+			// classic cels, but only the first time - a later reload must keep the user's choice
+			if( !this.gamePlacementDefaulted )
+			{
+				this.gamePlacementDefaulted = true;
+				this.suppressUiEvents = true;
+				try
+				{
+					this.checkBoxGamePlacement.Checked = this.classicCostume != null;
+				}
+				finally
+				{
+					this.suppressUiEvents = false;
+				}
+			}
+			this.costumePreviewControl.AnchorToClassic = this.checkBoxGamePlacement.Checked;
+			this.PopulateRoomBackdropCombo();
+
 			this.PopulateAnimationCombo();
 			this.PopulateTextureCombo();
 			this.PopulateSpriteTree();
@@ -121,6 +164,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.UpdateStepRange();
 			this.RefreshPlacements();
 			this.UpdateNumericEditors();
+
+			this.ApplyPendingBackdrop();
 		}
 
 		//-------------------------------------------
@@ -386,7 +431,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				foreach( var placement in Renderer.ResolveFramePlacements( this.Costume, animation, step, this.classicCostume ) )
 				{
-					bounds = bounds == null ? placement.ScreenRect : RectangleF.Union( bounds.Value, placement.ScreenRect );
+					// match the preview's draw rect so the origin stays put when Game placement
+					// shifts sprites onto their classic anchors
+					var drawRect = this.costumePreviewControl.AnchorToClassic
+						? Renderer.GetAnchoredScreenRect( placement, Renderer.DefaultHdScale )
+						: placement.ScreenRect;
+					bounds = bounds == null ? drawRect : RectangleF.Union( bounds.Value, drawRect );
 					if( placement.ClassicCel != null )
 					{
 						bounds = RectangleF.Union( bounds.Value, Renderer.GetClassicScreenRect( placement.ClassicCel, placement.Flipped, Renderer.DefaultHdScale ) );
@@ -684,6 +734,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					return;
 			}
 
+			// with Game placement on, a cel-matched sprite is anchored and the game ignores its
+			// Screen X/Y, so nudging it would be a silent no-op - block it and explain instead
+			if( this.costumePreviewControl.AnchorToClassic && this.FindClassicCel( this.selectedSprite ) != null )
+			{
+				args.Handled = true;
+				this.labelScreenAnchored.Visible = true;
+				return;
+			}
+
 			// a left facing preview shows the sprite mirrored; flip the horizontal nudge so
 			// the sprite follows the arrow key on screen
 			var previewSprite = this.costumePreviewControl.SelectedSprite;
@@ -708,15 +767,26 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				var sprite = this.selectedSprite;
 				var enabled = sprite != null;
+
+				// with Game placement on, a cel-matched sprite is anchored to its classic cel and
+				// the game ignores its Screen X/Y, so the fields are disabled and annotated
+				var anchored = enabled
+					&& this.costumePreviewControl.AnchorToClassic
+					&& this.FindClassicCel( sprite ) != null;
+
 				this.numericTextureX.Enabled = enabled;
 				this.numericTextureY.Enabled = enabled;
 				this.numericTextureWidth.Enabled = enabled;
 				this.numericTextureHeight.Enabled = enabled;
-				this.numericScreenX.Enabled = enabled;
-				this.numericScreenY.Enabled = enabled;
+				this.numericScreenX.Enabled = enabled && !anchored;
+				this.numericScreenY.Enabled = enabled && !anchored;
 				this.numericMoveX.Enabled = enabled;
 				this.numericMoveY.Enabled = enabled;
-				this.buttonAlignToClassic.Enabled = enabled && this.FindClassicCel( sprite ) != null;
+				// aligning writes Screen X/Y, which the game ignores while anchored, so gate it too
+				this.buttonAlignToClassic.Enabled = enabled && !anchored && this.FindClassicCel( sprite ) != null;
+				this.labelScreenAnchored.Visible = anchored;
+				this.labelScreenX.Text = anchored ? "Screen X *" : "Screen X";
+				this.labelScreenY.Text = anchored ? "Screen Y *" : "Screen Y";
 
 				if( sprite != null )
 				{
@@ -734,8 +804,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.buttonPasteTextureXY.Enabled = enabled && this.copiedTextureXY != null;
 				this.buttonCopyTextureSize.Enabled = enabled;
 				this.buttonPasteTextureSize.Enabled = enabled && this.copiedTextureSize != null;
-				this.buttonCopyScreen.Enabled = enabled;
-				this.buttonPasteScreen.Enabled = enabled && this.copiedScreen != null;
+				this.buttonCopyScreen.Enabled = enabled && !anchored;
+				this.buttonPasteScreen.Enabled = enabled && !anchored && this.copiedScreen != null;
 
 				// costume sprites reference a texture by index; -1 shows as "(none)"
 				this.textBoxTextureName.Text = sprite == null ? "" : ( this.GetTextureFileName( sprite.TextureNumber ) ?? "(none)" );
@@ -1017,6 +1087,309 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.costumePreviewControl.Invalidate();
 		}
 
+		//-------------------------------------------
+		// game placement and room backdrop
+
+		/// <summary>
+		/// One entry in the room backdrop combo: a classic actor placement of this costume, or
+		/// the "(no room backdrop)" sentinel whose <see cref="Placement"/> is null.
+		/// </summary>
+		private sealed class RoomBackdropOption( int roomNumber, ClassicActorPlacement? placement, string label )
+		{
+			public int RoomNumber
+			{
+				get;
+			} = roomNumber;
+
+			public ClassicActorPlacement? Placement
+			{
+				get;
+			} = placement;
+
+			public string Label
+			{
+				get;
+			} = label;
+
+			public override string ToString()
+			{
+				return this.Label;
+			}
+		}
+
+		private void HandleGamePlacementCheckedChanged( object sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+			this.costumePreviewControl.AnchorToClassic = this.checkBoxGamePlacement.Checked;
+
+			// the room backdrop is anchored to the actor's game placement, so turning game
+			// placement off drops it rather than leaving the sprites' raw positions floating over
+			// a scene they no longer line up with (selecting a room turns game placement back on)
+			if( !this.checkBoxGamePlacement.Checked && ( this.backdropBelow != null || this.backdropAbove != null ) )
+			{
+				this.suppressUiEvents = true;
+				try
+				{
+					this.comboBoxRoomBackdrop.SelectedIndex = 0;
+				}
+				finally
+				{
+					this.suppressUiEvents = false;
+				}
+				this.ClearBackdrop();
+			}
+
+			this.UpdateAnimationBounds();
+			this.RefreshPlacements();
+			this.UpdateNumericEditors();
+		}
+
+		/// <summary>
+		/// Lists every room the classic scripts place this costume's actor in, so the costume can
+		/// be shown against that room's background.
+		/// </summary>
+		private void PopulateRoomBackdropCombo()
+		{
+			this.suppressUiEvents = true;
+			try
+			{
+				this.comboBoxRoomBackdrop.Items.Clear();
+				this.comboBoxRoomBackdrop.Items.Add( new RoomBackdropOption( -1, null, "(no room backdrop)" ) );
+
+				if( this.classicData != null && this.Costume != null )
+				{
+					foreach( var room in this.classicData.RoomList )
+					{
+						foreach( var placement in room.ActorPlacementList )
+						{
+							if( placement.CostumeId != this.Costume.Header.Identifier )
+							{
+								continue;
+							}
+							var label = string.Concat(
+								room.RoomNumber, " - ", room.Name ?? "?",
+								": actor ", placement.ActorNumber,
+								" @ (", placement.X, ",", placement.Y, ") ", placement.Source
+							);
+							this.comboBoxRoomBackdrop.Items.Add( new RoomBackdropOption( room.RoomNumber, placement, label ) );
+						}
+					}
+				}
+
+				this.comboBoxRoomBackdrop.SelectedIndex = 0;
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.comboBoxRoomBackdrop.Enabled = this.comboBoxRoomBackdrop.Items.Count > 1;
+			this.labelRoomBackdrop.Enabled = this.comboBoxRoomBackdrop.Enabled;
+		}
+
+		private void HandleRoomBackdropSelected( object sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+			this.ApplySelectedRoomBackdrop();
+		}
+
+		private void ApplySelectedRoomBackdrop()
+		{
+			var option = this.comboBoxRoomBackdrop.SelectedItem as RoomBackdropOption;
+			if( option?.Placement == null )
+			{
+				this.ClearBackdrop();
+				this.costumePreviewControl.RefreshContent();
+				return;
+			}
+
+			if( !this.SetRoomBackdrop( option.RoomNumber, option.Placement ) )
+			{
+				return;
+			}
+
+			// showing a backdrop only makes sense with game placement on
+			this.costumePreviewControl.AnchorToClassic = true;
+			this.suppressUiEvents = true;
+			try
+			{
+				this.checkBoxGamePlacement.Checked = true;
+
+				// face the actor the way the placement does
+				var animation = Renderer.FindStandingAnimation( this.Costume!, option.Placement.DirectionName );
+				if( animation != null )
+				{
+					var animationIndex = this.comboBoxAnimations.Items.IndexOf( animation.Name );
+					if( animationIndex >= 0 )
+					{
+						this.comboBoxAnimations.SelectedIndex = animationIndex;
+					}
+				}
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.UpdateStepRange();
+			this.RefreshPlacements();
+			this.UpdateNumericEditors();
+		}
+
+		/// <summary>
+		/// Renders the room's imagery behind the costume, with the actor's feet on the placement.
+		/// Returns false (and leaves no backdrop) when the SE room cannot be resolved or loaded.
+		/// </summary>
+		private bool SetRoomBackdrop( int roomNumber, ClassicActorPlacement placement )
+		{
+			var roomIndex = this.FindRoomFileIndex( roomNumber );
+			Formats.Rooms.Entities.Room? room = null;
+			if( roomIndex >= 0 )
+			{
+				try
+				{
+					room = this.LPAKFile.LoadRoom( roomIndex );
+				}
+				catch( Exception )
+				{
+					room = null;
+				}
+			}
+
+			if( room == null )
+			{
+				this.ClearBackdrop();
+				this.warningLabel.Text = string.Concat( "SE room ", roomNumber, " could not be loaded - no room backdrop shown." );
+				this.warningLabel.Visible = true;
+				this.costumePreviewControl.RefreshContent();
+				return false;
+			}
+
+			var classicRoom = this.classicData?.FindRoom( roomNumber );
+
+			// load the room's textures through a throwaway cache so a room's dozen large chunk
+			// bitmaps do not linger in this costume form's texture cache for its whole lifetime
+			var roomTextures = new Dictionary<string, Image?>();
+			Func<string?, Image?> roomTextureLoader = fileName =>
+			{
+				if( string.IsNullOrEmpty( fileName ) )
+				{
+					return null;
+				}
+				Image? image;
+				if( roomTextures.TryGetValue( fileName!, out image ) )
+				{
+					return image;
+				}
+				try
+				{
+					image = this.LPAKFile.LoadImage( fileName );
+				}
+				catch( Exception )
+				{
+					image = null;
+				}
+				roomTextures[fileName!] = image;
+				return image;
+			};
+
+			Formats.Rooms.RoomBackdrop backdrop;
+			try
+			{
+				backdrop = Formats.Rooms.BackdropRenderer.Render( room, classicRoom, placement, roomTextureLoader );
+			}
+			finally
+			{
+				foreach( var texture in roomTextures.Values )
+				{
+					texture?.Dispose();
+				}
+			}
+
+			this.ClearBackdrop();
+			this.backdropBelow = backdrop.Below;
+			this.backdropAbove = backdrop.Above;
+			this.costumePreviewControl.BackdropBelow = backdrop.Below;
+			this.costumePreviewControl.BackdropAbove = backdrop.Above;
+			this.costumePreviewControl.BackdropOffset = new PointF( -backdrop.ActorOriginHd.X, -backdrop.ActorOriginHd.Y );
+			return true;
+		}
+
+		private int FindRoomFileIndex( int roomNumber )
+		{
+			for( var index = 0; index < this.LPAKFile.PakFileNames.Length; index++ )
+			{
+				var fileName = this.LPAKFile.PakFileNames[index].FileName;
+				if( fileName == null )
+				{
+					continue;
+				}
+				var match = CostumeSpriteSheetEditorForm.roomFileNameRegex.Match( fileName );
+				if( match.Success && int.Parse( match.Groups[1].Value ) == roomNumber )
+				{
+					return index;
+				}
+			}
+			return -1;
+		}
+
+		private void ClearBackdrop()
+		{
+			this.costumePreviewControl.BackdropBelow = null;
+			this.costumePreviewControl.BackdropAbove = null;
+			this.backdropBelow?.Dispose();
+			this.backdropAbove?.Dispose();
+			this.backdropBelow = null;
+			this.backdropAbove = null;
+		}
+
+		/// <summary>
+		/// Selects the room backdrop for a specific classic actor placement, once the costume has
+		/// loaded. Called when the room editor opens this form to place an actor against its room.
+		/// </summary>
+		public void SelectRoomBackdrop( int roomNumber, int placementIndex )
+		{
+			this.pendingBackdropRoomNumber = roomNumber;
+			this.pendingBackdropPlacementIndex = placementIndex;
+			if( this.Costume != null )
+			{
+				this.ApplyPendingBackdrop();
+			}
+		}
+
+		private void ApplyPendingBackdrop()
+		{
+			if( this.pendingBackdropRoomNumber == null )
+			{
+				return;
+			}
+			var roomNumber = this.pendingBackdropRoomNumber.Value;
+			var placementIndex = this.pendingBackdropPlacementIndex;
+			this.pendingBackdropRoomNumber = null;
+
+			var classicRoom = this.classicData?.FindRoom( roomNumber );
+			if( classicRoom == null || placementIndex < 0 || placementIndex >= classicRoom.ActorPlacementList.Count )
+			{
+				return;
+			}
+
+			var target = classicRoom.ActorPlacementList[placementIndex];
+			for( var index = 0; index < this.comboBoxRoomBackdrop.Items.Count; index++ )
+			{
+				if( this.comboBoxRoomBackdrop.Items[index] is RoomBackdropOption option && option.Placement == target )
+				{
+					this.comboBoxRoomBackdrop.SelectedIndex = index;
+					return;
+				}
+			}
+		}
+
 		private void HandleTextureSelected( object sender, EventArgs args )
 		{
 			if( this.suppressUiEvents )
@@ -1110,6 +1483,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				this.dirty = false;
 				this.UpdateTitle();
+				this.NotifyRoomEditorsCostumeChanged();
 				return true;
 			}
 
@@ -1224,6 +1598,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.textureCache.Clear();
 			this.UpdateAtlas();
 			this.RefreshPlacements();
+			this.NotifyRoomEditorsCostumeChanged();
 		}
 
 		private string[] GetAllTextureNames()
@@ -1302,6 +1677,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.textureCache.Clear();
 			this.UpdateAtlas();
 			this.RefreshPlacements();
+			this.NotifyRoomEditorsCostumeChanged();
 		}
 
 		//-------------------------------------------
@@ -1320,6 +1696,22 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				this.dirty = true;
 				this.UpdateTitle();
+			}
+		}
+
+		/// <summary>
+		/// Tells any open room editors to rebuild this costume's actor overlays, so a save or
+		/// texture import here shows in their room previews without a manual reload.
+		/// </summary>
+		private void NotifyRoomEditorsCostumeChanged()
+		{
+			if( this.Costume == null )
+			{
+				return;
+			}
+			foreach( var roomForm in SpriteSheetEditorForm.Instances )
+			{
+				roomForm.InvalidateCostume( this.Costume.Header.Identifier );
 			}
 		}
 
