@@ -29,9 +29,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		public event EventHandler? SelectedSpriteChanged;
 
 		/// <summary>
-		/// Raised after the selected sprite's rectangle was moved by dragging or arrow keys.
+		/// Raised after the selected sprite's rectangle was moved by dragging or arrow keys,
+		/// carrying the old and new location and whether a drag is in progress.
 		/// </summary>
-		public event EventHandler? SpriteRectChanged;
+		public event EventHandler<SpriteRectChangedEventArgs>? SpriteRectChanged;
 
 		public AtlasViewControl()
 		{
@@ -322,10 +323,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
+			var oldLocation = new Point( this.selectedSprite.TextureX, this.selectedSprite.TextureY );
 			this.selectedSprite.TextureX = newX;
 			this.selectedSprite.TextureY = newY;
 			this.Invalidate();
-			this.SpriteRectChanged?.Invoke( this, EventArgs.Empty );
+			this.SpriteRectChanged?.Invoke( this, new SpriteRectChangedEventArgs( this.selectedSprite, oldLocation, new Point( newX, newY ), this.dragging ) );
 		}
 
 		private void UpdateContentSize()

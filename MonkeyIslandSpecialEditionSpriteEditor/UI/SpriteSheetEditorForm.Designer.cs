@@ -30,6 +30,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			this.menuStrip1 = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.redoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.saveOverrideToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.revertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.exportTexturePngToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -124,7 +127,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// menuStrip1
 			//
 			this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.editToolStripMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
 			this.menuStrip1.Size = new System.Drawing.Size(1008, 24);
@@ -201,6 +205,33 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.importAllTexturesToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
 			this.importAllTexturesToolStripMenuItem.Text = "Import all te&xtures from folder...";
 			this.importAllTexturesToolStripMenuItem.Click += new System.EventHandler(this.ImportAllTexturesPng);
+			//
+			// editToolStripMenuItem
+			//
+			this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.undoToolStripMenuItem,
+            this.redoToolStripMenuItem});
+			this.editToolStripMenuItem.MergeAction = System.Windows.Forms.MergeAction.Insert;
+			this.editToolStripMenuItem.MergeIndex = 1;
+			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+			this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
+			this.editToolStripMenuItem.Text = "&Edit";
+			//
+			// undoToolStripMenuItem
+			//
+			this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
+			this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+			this.undoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.undoToolStripMenuItem.Text = "&Undo";
+			this.undoToolStripMenuItem.Click += new System.EventHandler(this.HandleUndoClick);
+			//
+			// redoToolStripMenuItem
+			//
+			this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
+			this.redoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+			this.redoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+			this.redoToolStripMenuItem.Text = "&Redo";
+			this.redoToolStripMenuItem.Click += new System.EventHandler(this.HandleRedoClick);
 			//
 			// exportToolStripMenuItem
 			//
@@ -773,7 +804,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelHint.TabIndex = 32;
 			this.labelHint.Text = "Arrow keys nudge the selection:\r\natlas = texture rect, preview = offset.\r\nHold S" +
 				"hift for steps of 10.\r\nMouse wheel zooms at the cursor.\r\nMiddle mouse drags to " +
-				"pan.\r\nRoom object checkboxes show overlays.";
+				"pan.\r\nRoom object checkboxes show overlays.\r\nCtrl+Z undoes, Ctrl+Y redoes.";
 			//
 			// panelPreview
 			//
@@ -847,6 +878,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private System.Windows.Forms.MenuStrip menuStrip1;
 		private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem saveOverrideToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem revertToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem exportTexturePngToolStripMenuItem;

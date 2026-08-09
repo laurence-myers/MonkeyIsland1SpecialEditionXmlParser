@@ -52,6 +52,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Point? copiedTextureXY;
 		private Size? copiedTextureSize;
 		private PointF? copiedScreen;
+		private readonly UndoStack undoStack = new UndoStack();
 
 		public Costume? Costume
 		{
@@ -103,6 +104,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.costumePreviewControl.SelectedSpriteChanged += this.HandlePreviewSelectionChanged;
 			this.costumePreviewControl.KeyDown += this.HandlePreviewKeyDown;
 			this.timerPlayback.Tick += this.HandlePlaybackTick;
+			this.undoStack.StateChanged += delegate { this.HandleUndoStackChanged(); };
 
 			this.InitializeSpriteTreeContextMenu();
 		}
@@ -115,6 +117,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
+			// a fresh (re)load starts a new undo history and a clean document
+			this.undoStack.Clear();
 			this.dirty = false;
 			this.UpdateTitle();
 
@@ -470,6 +474,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 			this.selectedSprite = sprite;
 
+			// a new selection ends the current coalescing run, so edits on the new sprite start
+			// their own undo step
+			this.undoStack.BreakCoalescing();
+
 			this.suppressUiEvents = true;
 			try
 			{
@@ -711,9 +719,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		//-------------------------------------------
 		// editing
 
-		private void HandleAtlasSpriteRectChanged( object? sender, EventArgs args )
+		private void HandleAtlasSpriteRectChanged( object? sender, SpriteRectChangedEventArgs args )
 		{
-			this.MarkDirty();
+			if( args.Sprite is Sprite sprite )
+			{
+				var oldLocation = args.OldLocation;
+				var newLocation = args.NewLocation;
+				this.RecordEdit(
+					this.SpriteEdit( sprite, "AtlasRect", "texture rectangle",
+						() => { sprite.TextureX = oldLocation.X; sprite.TextureY = oldLocation.Y; },
+						() => { sprite.TextureX = newLocation.X; sprite.TextureY = newLocation.Y; } ),
+					// a drag fires many moves; coalesce them into one undo step
+					forceCoalesce: args.Dragging );
+			}
 			this.UpdateNumericEditors();
 			this.UpdateSelectedSpriteNodeText();
 			this.RefreshPlacements();
@@ -765,9 +783,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			args.Handled = true;
-			this.selectedSprite.ScreenX += deltaX;
-			this.selectedSprite.ScreenY += deltaY;
-			this.MarkDirty();
+			var sprite = this.selectedSprite;
+			var oldX = sprite.ScreenX;
+			var oldY = sprite.ScreenY;
+			sprite.ScreenX += deltaX;
+			sprite.ScreenY += deltaY;
+			var newX = sprite.ScreenX;
+			var newY = sprite.ScreenY;
+			this.RecordEdit( this.SpriteEdit( sprite, "ScreenXY", "screen position",
+				() => { sprite.ScreenX = oldX; sprite.ScreenY = oldY; },
+				() => { sprite.ScreenX = newX; sprite.ScreenY = newY; } ) );
 			this.UpdateNumericEditors();
 			this.UpdateSelectedSpriteNodeText();
 			this.RefreshPlacements();
@@ -845,42 +870,67 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
-			// only write the edited field back; writing all of them would silently apply
-			// the display clamp of an out-of-range field the user never touched
+			// only write the edited field back (writing all of them would silently apply the
+			// display clamp of an out-of-range field the user never touched), and record an
+			// undoable edit that captures that field's old and new value
+			var sprite = this.selectedSprite;
 			if( sender == this.numericTextureX )
 			{
-				this.selectedSprite.TextureX = (int)this.numericTextureX.Value;
+				var oldValue = sprite.TextureX;
+				var newValue = (int)this.numericTextureX.Value;
+				sprite.TextureX = newValue;
+				this.RecordEdit( this.SpriteEdit( sprite, "TextureX", "texture X", () => sprite.TextureX = oldValue, () => sprite.TextureX = newValue ) );
 			}
 			else if( sender == this.numericTextureY )
 			{
-				this.selectedSprite.TextureY = (int)this.numericTextureY.Value;
+				var oldValue = sprite.TextureY;
+				var newValue = (int)this.numericTextureY.Value;
+				sprite.TextureY = newValue;
+				this.RecordEdit( this.SpriteEdit( sprite, "TextureY", "texture Y", () => sprite.TextureY = oldValue, () => sprite.TextureY = newValue ) );
 			}
 			else if( sender == this.numericTextureWidth )
 			{
-				this.selectedSprite.TextureWidth = (int)this.numericTextureWidth.Value;
+				var oldValue = sprite.TextureWidth;
+				var newValue = (int)this.numericTextureWidth.Value;
+				sprite.TextureWidth = newValue;
+				this.RecordEdit( this.SpriteEdit( sprite, "TextureWidth", "texture width", () => sprite.TextureWidth = oldValue, () => sprite.TextureWidth = newValue ) );
 			}
 			else if( sender == this.numericTextureHeight )
 			{
-				this.selectedSprite.TextureHeight = (int)this.numericTextureHeight.Value;
+				var oldValue = sprite.TextureHeight;
+				var newValue = (int)this.numericTextureHeight.Value;
+				sprite.TextureHeight = newValue;
+				this.RecordEdit( this.SpriteEdit( sprite, "TextureHeight", "texture height", () => sprite.TextureHeight = oldValue, () => sprite.TextureHeight = newValue ) );
 			}
 			else if( sender == this.numericScreenX )
 			{
-				this.selectedSprite.ScreenX = (float)this.numericScreenX.Value;
+				var oldValue = sprite.ScreenX;
+				var newValue = (float)this.numericScreenX.Value;
+				sprite.ScreenX = newValue;
+				this.RecordEdit( this.SpriteEdit( sprite, "ScreenX", "screen X", () => sprite.ScreenX = oldValue, () => sprite.ScreenX = newValue ) );
 			}
 			else if( sender == this.numericScreenY )
 			{
-				this.selectedSprite.ScreenY = (float)this.numericScreenY.Value;
+				var oldValue = sprite.ScreenY;
+				var newValue = (float)this.numericScreenY.Value;
+				sprite.ScreenY = newValue;
+				this.RecordEdit( this.SpriteEdit( sprite, "ScreenY", "screen Y", () => sprite.ScreenY = oldValue, () => sprite.ScreenY = newValue ) );
 			}
 			else if( sender == this.numericMoveX )
 			{
-				this.selectedSprite.MoveX = (float)this.numericMoveX.Value;
+				var oldValue = sprite.MoveX;
+				var newValue = (float)this.numericMoveX.Value;
+				sprite.MoveX = newValue;
+				this.RecordEdit( this.SpriteEdit( sprite, "MoveX", "move X", () => sprite.MoveX = oldValue, () => sprite.MoveX = newValue ) );
 			}
 			else if( sender == this.numericMoveY )
 			{
-				this.selectedSprite.MoveY = (float)this.numericMoveY.Value;
+				var oldValue = sprite.MoveY;
+				var newValue = (float)this.numericMoveY.Value;
+				sprite.MoveY = newValue;
+				this.RecordEdit( this.SpriteEdit( sprite, "MoveY", "move Y", () => sprite.MoveY = oldValue, () => sprite.MoveY = newValue ) );
 			}
 
-			this.MarkDirty();
 			this.UpdateSelectedSpriteNodeText();
 			this.UpdateClassicDeltaLabel();
 			this.atlasViewControl.Invalidate();
@@ -905,12 +955,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		// of an animation can be sized and placed identically)
 
 		/// <summary>
-		/// Runs the refreshes both paste buttons need after writing a pair of fields (the
-		/// same work <see cref="HandleNumericValueChanged"/> does).
+		/// Runs the refreshes a paste needs after writing a pair of fields (the same work
+		/// <see cref="HandleNumericValueChanged"/> does). Each paste handler records its own
+		/// undoable edit before calling this.
 		/// </summary>
 		private void RefreshAfterPaste()
 		{
-			this.MarkDirty();
 			this.UpdateNumericEditors();
 			this.UpdateSelectedSpriteNodeText();
 			this.atlasViewControl.Invalidate();
@@ -935,8 +985,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			this.selectedSprite.TextureX = this.copiedTextureXY.Value.X;
-			this.selectedSprite.TextureY = this.copiedTextureXY.Value.Y;
+			var sprite = this.selectedSprite;
+			int oldX = sprite.TextureX, oldY = sprite.TextureY;
+			int newX = this.copiedTextureXY.Value.X, newY = this.copiedTextureXY.Value.Y;
+			sprite.TextureX = newX;
+			sprite.TextureY = newY;
+			this.RecordEdit( this.SpriteEdit( sprite, "PasteTextureXY", "paste texture position",
+				() => { sprite.TextureX = oldX; sprite.TextureY = oldY; },
+				() => { sprite.TextureX = newX; sprite.TextureY = newY; } ) );
 			this.RefreshAfterPaste();
 		}
 
@@ -956,8 +1012,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			this.selectedSprite.TextureWidth = this.copiedTextureSize.Value.Width;
-			this.selectedSprite.TextureHeight = this.copiedTextureSize.Value.Height;
+			var sprite = this.selectedSprite;
+			int oldW = sprite.TextureWidth, oldH = sprite.TextureHeight;
+			int newW = this.copiedTextureSize.Value.Width, newH = this.copiedTextureSize.Value.Height;
+			sprite.TextureWidth = newW;
+			sprite.TextureHeight = newH;
+			this.RecordEdit( this.SpriteEdit( sprite, "PasteTextureSize", "paste texture size",
+				() => { sprite.TextureWidth = oldW; sprite.TextureHeight = oldH; },
+				() => { sprite.TextureWidth = newW; sprite.TextureHeight = newH; } ) );
 			this.RefreshAfterPaste();
 		}
 
@@ -977,8 +1039,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			this.selectedSprite.ScreenX = this.copiedScreen.Value.X;
-			this.selectedSprite.ScreenY = this.copiedScreen.Value.Y;
+			var sprite = this.selectedSprite;
+			float oldX = sprite.ScreenX, oldY = sprite.ScreenY;
+			float newX = this.copiedScreen.Value.X, newY = this.copiedScreen.Value.Y;
+			sprite.ScreenX = newX;
+			sprite.ScreenY = newY;
+			this.RecordEdit( this.SpriteEdit( sprite, "PasteScreen", "paste screen position",
+				() => { sprite.ScreenX = oldX; sprite.ScreenY = oldY; },
+				() => { sprite.ScreenX = newX; sprite.ScreenY = newY; } ) );
 			this.RefreshAfterPaste();
 		}
 
@@ -1038,10 +1106,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			var scale = Renderer.DefaultHdScale;
-			sprite.ScreenX = cel.RelX * scale.Width;
-			sprite.ScreenY = cel.RelY * scale.Height;
-
-			this.MarkDirty();
+			float oldX = sprite.ScreenX, oldY = sprite.ScreenY;
+			float newX = cel.RelX * scale.Width, newY = cel.RelY * scale.Height;
+			sprite.ScreenX = newX;
+			sprite.ScreenY = newY;
+			this.RecordEdit( this.SpriteEdit( sprite, "AlignToClassic", "align to classic",
+				() => { sprite.ScreenX = oldX; sprite.ScreenY = oldY; },
+				() => { sprite.ScreenX = newX; sprite.ScreenY = newY; } ) );
 			this.UpdateNumericEditors();
 			this.UpdateSelectedSpriteNodeText();
 			this.RefreshPlacements();
@@ -1455,21 +1526,83 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					return;
 				}
 
+				// a change-texture is a discrete structural edit (it may append a texture entry);
+				// never let it coalesce with another, or a merged undo could fail to drop both
+				// appended entries
+				this.undoStack.BreakCoalescing();
+
 				// reuse the costume's existing texture entry, or append one for a texture it does
 				// not list yet, then point the sprite at that index
-				var index = TextureAssignment.GetOrAddTextureIndex( this.Costume!, dialog.SelectedResourcePath );
-				this.selectedSprite.TextureNumber = index;
-				this.MarkDirty();
+				var sprite = this.selectedSprite;
+				var oldTextureNumber = sprite.TextureNumber;
+				var oldCount = this.Costume!.TextureFileNameList.Count;
+				var index = TextureAssignment.GetOrAddTextureIndex( this.Costume, dialog.SelectedResourcePath );
+				var addedEntry = this.Costume.TextureFileNameList.Count > oldCount
+					? this.Costume.TextureFileNameList[this.Costume.TextureFileNameList.Count - 1]
+					: null;
+				sprite.TextureNumber = index;
 
-				// a brand-new texture may have been cached as a null miss before it existed on disk
-				this.textureCache.Clear();
+				// undo restores the old index and drops the entry only if this edit appended it
+				this.RecordEdit( new UndoableEdit
+				{
+					Owner = sprite,
+					Key = "ChangeTexture",
+					Description = "change texture",
+					Undo = () =>
+					{
+						sprite.TextureNumber = oldTextureNumber;
+						if( addedEntry != null
+							&& this.Costume!.TextureFileNameList.Count > 0
+							&& ReferenceEquals( this.Costume.TextureFileNameList[this.Costume.TextureFileNameList.Count - 1], addedEntry ) )
+						{
+							this.Costume.TextureFileNameList.RemoveAt( this.Costume.TextureFileNameList.Count - 1 );
+						}
+					},
+					Redo = () =>
+					{
+						if( addedEntry != null && !this.Costume!.TextureFileNameList.Contains( addedEntry ) )
+						{
+							this.Costume.TextureFileNameList.Add( addedEntry );
+						}
+						sprite.TextureNumber = index;
+					},
+					Select = () => this.SetSelectedSprite( sprite ),
+					ExtraRefresh = this.RefreshAfterTextureChange,
+				} );
 
-				// the combo index is the TextureNumber; an appended texture lands at the end
-				this.PopulateTextureCombo();
-				this.comboBoxTextures.SelectedIndex = index;
-				this.atlasViewControl.SelectedSprite = this.atlasViewControl.Sprites.Contains( this.selectedSprite ) ? this.selectedSprite : null;
+				this.RefreshAfterTextureChange();
 				this.RefreshPlacements();
 				this.UpdateNumericEditors();
+			}
+		}
+
+		/// <summary>
+		/// Rebuilds the texture combo and atlas after the selected sprite's texture number (or
+		/// the costume's texture list) changed, selecting the sprite's texture. Used by the change
+		/// texture edit both immediately and on undo/redo.
+		/// </summary>
+		private void RefreshAfterTextureChange()
+		{
+			// a brand-new texture may have been cached as a null miss before it existed on disk
+			this.textureCache.Clear();
+			this.PopulateTextureCombo();
+			this.suppressUiEvents = true;
+			try
+			{
+				var textureNumber = this.selectedSprite?.TextureNumber ?? -1;
+				if( textureNumber >= 0 && textureNumber < this.comboBoxTextures.Items.Count )
+				{
+					this.comboBoxTextures.SelectedIndex = textureNumber;
+				}
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+			this.UpdateAtlas();
+			if( this.selectedSprite != null )
+			{
+				this.atlasViewControl.SelectedSprite = this.atlasViewControl.Sprites.Contains( this.selectedSprite ) ? this.selectedSprite : null;
 			}
 		}
 
@@ -1480,9 +1613,23 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
+			// a texture change is a discrete edit; keep it its own undo step
+			this.undoStack.BreakCoalescing();
+
 			// -1 is a valid "no texture" sprite; the packer ignores it and the sanity check allows it
-			this.selectedSprite.TextureNumber = -1;
-			this.MarkDirty();
+			var sprite = this.selectedSprite;
+			var oldNumber = sprite.TextureNumber;
+			sprite.TextureNumber = -1;
+			this.RecordEdit( new UndoableEdit
+			{
+				Owner = sprite,
+				Key = "ClearTexture",
+				Description = "clear texture",
+				Undo = () => sprite.TextureNumber = oldNumber,
+				Redo = () => sprite.TextureNumber = -1,
+				Select = () => this.SetSelectedSprite( sprite ),
+				ExtraRefresh = () => this.UpdateAtlas(),
+			} );
 			this.UpdateAtlas();
 			this.RefreshPlacements();
 			this.UpdateNumericEditors();
@@ -1502,8 +1649,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			var result = new SaveCostumeOverrideCommand( this.LPAKFile, resourcePath, this.Costume ).Execute();
 			if( result.IsSuccess )
 			{
-				this.dirty = false;
-				this.UpdateTitle();
+				this.undoStack.MarkSaved();
 				this.NotifyRoomEditorsCostumeChanged();
 				return true;
 			}
@@ -1711,13 +1857,71 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				: null;
 		}
 
-		private void MarkDirty()
+		//-------------------------------------------
+		// undo / redo
+
+		/// <summary>
+		/// Builds an undoable edit for a single sprite, re-selecting that sprite on undo/redo so
+		/// the property fields and preview show the change.
+		/// </summary>
+		private UndoableEdit SpriteEdit( Sprite sprite, string key, string description, Action undo, Action redo )
 		{
-			if( !this.dirty )
+			return new UndoableEdit
 			{
-				this.dirty = true;
-				this.UpdateTitle();
-			}
+				Owner = sprite,
+				Key = key,
+				Description = description,
+				Undo = undo,
+				Redo = redo,
+				Select = () => this.SetSelectedSprite( sprite ),
+			};
+		}
+
+		private void RecordEdit( UndoableEdit edit, bool forceCoalesce = false )
+		{
+			this.undoStack.Record( edit, forceCoalesce );
+		}
+
+		private void HandleUndoClick( object? sender, EventArgs args )
+		{
+			this.undoStack.Undo();
+			this.RefreshAfterUndoRedo();
+		}
+
+		private void HandleRedoClick( object? sender, EventArgs args )
+		{
+			this.undoStack.Redo();
+			this.RefreshAfterUndoRedo();
+		}
+
+		/// <summary>
+		/// Refreshes the whole editor after an undo or redo. The edit's Select already re-selected
+		/// the affected sprite; UpdateNumericEditors is called unconditionally because Select is a
+		/// no-op when that sprite was already selected, and a stale spinner value would otherwise
+		/// be written straight back on the next edit.
+		/// </summary>
+		private void RefreshAfterUndoRedo()
+		{
+			this.UpdateNumericEditors();
+			this.UpdateSelectedSpriteNodeText();
+			this.UpdateClassicDeltaLabel();
+			this.atlasViewControl.Invalidate();
+			this.RefreshPlacements();
+		}
+
+		private void HandleUndoStackChanged()
+		{
+			this.dirty = !this.undoStack.IsAtSavedPosition;
+			this.UpdateTitle();
+
+			this.undoToolStripMenuItem.Enabled = this.undoStack.CanUndo;
+			this.undoToolStripMenuItem.Text = this.undoStack.CanUndo
+				? string.Concat( "&Undo ", this.undoStack.UndoDescription )
+				: "&Undo";
+			this.redoToolStripMenuItem.Enabled = this.undoStack.CanRedo;
+			this.redoToolStripMenuItem.Text = this.undoStack.CanRedo
+				? string.Concat( "&Redo ", this.undoStack.RedoDescription )
+				: "&Redo";
 		}
 
 		/// <summary>

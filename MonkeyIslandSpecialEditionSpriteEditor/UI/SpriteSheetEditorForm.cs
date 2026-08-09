@@ -56,6 +56,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Point? copiedTextureXY;
 		private Size? copiedTextureSize;
 		private PointF? copiedOffsets;
+		private readonly UndoStack undoStack = new UndoStack();
 
 		public Room? Room
 		{
@@ -103,6 +104,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.roomPreviewControl.SelectedSpriteChanged += this.HandlePreviewSelectionChanged;
 			this.roomPreviewControl.SelectedRoomObjectChanged += this.HandlePreviewRoomObjectSelectionChanged;
 			this.roomPreviewControl.KeyDown += this.HandlePreviewKeyDown;
+			this.undoStack.StateChanged += delegate { this.HandleUndoStackChanged(); };
 
 			this.InitializeSpriteTreeContextMenu();
 			this.InitializeActorListContextMenu();
@@ -121,6 +123,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.costumeCache.Clear();
 			this.textureCache.Clear();
 
+			// a fresh (re)load starts a new undo history and a clean document
+			this.undoStack.Clear();
 			this.dirty = false;
 			this.UpdateTitle();
 
@@ -879,6 +883,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
+			// a new selection ends the current coalescing run
+			this.undoStack.BreakCoalescing();
 			this.selectedSprite = sprite;
 			this.selectedTextureTarget = sprite;
 
@@ -945,6 +951,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
+			this.undoStack.BreakCoalescing();
 
 			// clear any object-sprite selection first (this also nulls selectedTextureTarget and
 			// disables the numeric editors), then track the new target on its own
@@ -986,6 +993,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private void SetSelectedRoomObjectInstance( RoomObject roomObject )
 		{
+			this.undoStack.BreakCoalescing();
 			this.SetSelectedSprite( null );
 			this.selectedTextureTarget = null;
 			this.selectedRoomObject = roomObject;
@@ -1379,9 +1387,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		//-------------------------------------------
 		// editing
 
-		private void HandleAtlasSpriteRectChanged( object? sender, EventArgs args )
+		private void HandleAtlasSpriteRectChanged( object? sender, SpriteRectChangedEventArgs args )
 		{
-			this.MarkDirty();
+			var atlasSprite = args.Sprite;
+			var oldLocation = args.OldLocation;
+			var newLocation = args.NewLocation;
+			this.RecordRoomEdit( atlasSprite, "AtlasRect", "texture rectangle",
+				() => { atlasSprite.TextureX = oldLocation.X; atlasSprite.TextureY = oldLocation.Y; },
+				() => { atlasSprite.TextureX = newLocation.X; atlasSprite.TextureY = newLocation.Y; },
+				// a drag fires many moves; coalesce them into one undo step
+				forceCoalesce: args.Dragging );
+
 			this.UpdateNumericEditors();
 			if( this.selectedSprite != null )
 			{
@@ -1427,17 +1443,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			args.Handled = true;
 			if( this.selectedSprite != null )
 			{
-				this.selectedSprite.OffsetX += deltaX;
-				this.selectedSprite.OffsetY += deltaY;
-				this.MarkDirty();
+				var sprite = this.selectedSprite;
+				float oldX = sprite.OffsetX, oldY = sprite.OffsetY;
+				sprite.OffsetX += deltaX;
+				sprite.OffsetY += deltaY;
+				float newX = sprite.OffsetX, newY = sprite.OffsetY;
+				this.RecordRoomEdit( sprite, "Offset", "offset",
+					() => { sprite.OffsetX = oldX; sprite.OffsetY = oldY; },
+					() => { sprite.OffsetX = newX; sprite.OffsetY = newY; } );
 				this.UpdateNumericEditors();
 				this.RefreshPlacements();
 			}
 			else
 			{
-				this.selectedRoomObject!.OffsetX += deltaX;
-				this.selectedRoomObject.OffsetY += deltaY;
-				this.MarkDirty();
+				var roomObject = this.selectedRoomObject!;
+				float oldX = roomObject.OffsetX, oldY = roomObject.OffsetY;
+				roomObject.OffsetX += deltaX;
+				roomObject.OffsetY += deltaY;
+				float newX = roomObject.OffsetX, newY = roomObject.OffsetY;
+				this.RecordRoomEdit( roomObject, "Offset", "offset",
+					() => { roomObject.OffsetX = oldX; roomObject.OffsetY = oldY; },
+					() => { roomObject.OffsetX = newX; roomObject.OffsetY = newY; } );
 				this.UpdateNumericEditors();
 				this.roomPreviewControl.RefreshContent();
 			}
@@ -1512,38 +1538,52 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			if( this.selectedSprite != null )
 			{
-				// only write the edited field back; writing all of them would silently apply
-				// the display clamp of an out-of-range field the user never touched
+				// only write the edited field back (writing all of them would silently apply the
+				// display clamp of an untouched out-of-range field), recording an undoable edit
+				var sprite = this.selectedSprite;
 				if( sender == this.numericTextureX )
 				{
-					this.selectedSprite.TextureX = (int)this.numericTextureX.Value;
+					int oldValue = sprite.TextureX, newValue = (int)this.numericTextureX.Value;
+					sprite.TextureX = newValue;
+					this.RecordRoomEdit( sprite, "TextureX", "texture X", () => sprite.TextureX = oldValue, () => sprite.TextureX = newValue );
 				}
 				else if( sender == this.numericTextureY )
 				{
-					this.selectedSprite.TextureY = (int)this.numericTextureY.Value;
+					int oldValue = sprite.TextureY, newValue = (int)this.numericTextureY.Value;
+					sprite.TextureY = newValue;
+					this.RecordRoomEdit( sprite, "TextureY", "texture Y", () => sprite.TextureY = oldValue, () => sprite.TextureY = newValue );
 				}
 				else if( sender == this.numericTextureWidth )
 				{
-					this.selectedSprite.TextureWidth = (int)this.numericTextureWidth.Value;
+					int oldValue = sprite.TextureWidth, newValue = (int)this.numericTextureWidth.Value;
+					sprite.TextureWidth = newValue;
+					this.RecordRoomEdit( sprite, "TextureWidth", "texture width", () => sprite.TextureWidth = oldValue, () => sprite.TextureWidth = newValue );
 				}
 				else if( sender == this.numericTextureHeight )
 				{
-					this.selectedSprite.TextureHeight = (int)this.numericTextureHeight.Value;
+					int oldValue = sprite.TextureHeight, newValue = (int)this.numericTextureHeight.Value;
+					sprite.TextureHeight = newValue;
+					this.RecordRoomEdit( sprite, "TextureHeight", "texture height", () => sprite.TextureHeight = oldValue, () => sprite.TextureHeight = newValue );
 				}
 				else if( sender == this.numericOffsetX )
 				{
-					this.selectedSprite.OffsetX = (float)this.numericOffsetX.Value;
+					float oldValue = sprite.OffsetX, newValue = (float)this.numericOffsetX.Value;
+					sprite.OffsetX = newValue;
+					this.RecordRoomEdit( sprite, "OffsetX", "offset X", () => sprite.OffsetX = oldValue, () => sprite.OffsetX = newValue );
 				}
 				else if( sender == this.numericOffsetY )
 				{
-					this.selectedSprite.OffsetY = (float)this.numericOffsetY.Value;
+					float oldValue = sprite.OffsetY, newValue = (float)this.numericOffsetY.Value;
+					sprite.OffsetY = newValue;
+					this.RecordRoomEdit( sprite, "OffsetY", "offset Y", () => sprite.OffsetY = oldValue, () => sprite.OffsetY = newValue );
 				}
 				else if( sender == this.numericLayer )
 				{
-					this.selectedSprite.Layer = (int)this.numericLayer.Value;
+					int oldValue = sprite.Layer, newValue = (int)this.numericLayer.Value;
+					sprite.Layer = newValue;
+					this.RecordRoomEdit( sprite, "Layer", "layer", () => sprite.Layer = oldValue, () => sprite.Layer = newValue );
 				}
 
-				this.MarkDirty();
 				this.UpdateSelectedSpriteNodeText();
 				this.atlasViewControl.Invalidate();
 				this.RefreshPlacements();
@@ -1557,37 +1597,49 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			// room object: the atlas rect editors write to its sprite record, the offset
 			// editors to the overlay's screen position
-			var roomObjectSprite = this.selectedRoomObject.Sprite;
+			var roomObject = this.selectedRoomObject;
+			var roomObjectSprite = roomObject.Sprite;
 			if( sender == this.numericTextureX && roomObjectSprite != null )
 			{
-				roomObjectSprite.X = (int)this.numericTextureX.Value;
+				int oldValue = roomObjectSprite.X, newValue = (int)this.numericTextureX.Value;
+				roomObjectSprite.X = newValue;
+				this.RecordRoomEdit( roomObjectSprite, "RoomObjectSpriteX", "texture X", () => roomObjectSprite.X = oldValue, () => roomObjectSprite.X = newValue );
 			}
 			else if( sender == this.numericTextureY && roomObjectSprite != null )
 			{
-				roomObjectSprite.Y = (int)this.numericTextureY.Value;
+				int oldValue = roomObjectSprite.Y, newValue = (int)this.numericTextureY.Value;
+				roomObjectSprite.Y = newValue;
+				this.RecordRoomEdit( roomObjectSprite, "RoomObjectSpriteY", "texture Y", () => roomObjectSprite.Y = oldValue, () => roomObjectSprite.Y = newValue );
 			}
 			else if( sender == this.numericTextureWidth && roomObjectSprite != null )
 			{
-				roomObjectSprite.Width = (int)this.numericTextureWidth.Value;
+				int oldValue = roomObjectSprite.Width, newValue = (int)this.numericTextureWidth.Value;
+				roomObjectSprite.Width = newValue;
+				this.RecordRoomEdit( roomObjectSprite, "RoomObjectSpriteWidth", "texture width", () => roomObjectSprite.Width = oldValue, () => roomObjectSprite.Width = newValue );
 			}
 			else if( sender == this.numericTextureHeight && roomObjectSprite != null )
 			{
-				roomObjectSprite.Height = (int)this.numericTextureHeight.Value;
+				int oldValue = roomObjectSprite.Height, newValue = (int)this.numericTextureHeight.Value;
+				roomObjectSprite.Height = newValue;
+				this.RecordRoomEdit( roomObjectSprite, "RoomObjectSpriteHeight", "texture height", () => roomObjectSprite.Height = oldValue, () => roomObjectSprite.Height = newValue );
 			}
 			else if( sender == this.numericOffsetX )
 			{
-				this.selectedRoomObject.OffsetX = (float)this.numericOffsetX.Value;
+				float oldValue = roomObject.OffsetX, newValue = (float)this.numericOffsetX.Value;
+				roomObject.OffsetX = newValue;
+				this.RecordRoomEdit( roomObject, "RoomObjectOffsetX", "offset X", () => roomObject.OffsetX = oldValue, () => roomObject.OffsetX = newValue );
 			}
 			else if( sender == this.numericOffsetY )
 			{
-				this.selectedRoomObject.OffsetY = (float)this.numericOffsetY.Value;
+				float oldValue = roomObject.OffsetY, newValue = (float)this.numericOffsetY.Value;
+				roomObject.OffsetY = newValue;
+				this.RecordRoomEdit( roomObject, "RoomObjectOffsetY", "offset Y", () => roomObject.OffsetY = oldValue, () => roomObject.OffsetY = newValue );
 			}
 			else
 			{
 				return;
 			}
 
-			this.MarkDirty();
 			this.atlasViewControl.Invalidate();
 			if( sender == this.numericOffsetX || sender == this.numericOffsetY )
 			{
@@ -1648,7 +1700,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private void RefreshAfterAtlasRectEdit()
 		{
-			this.MarkDirty();
 			this.UpdateNumericEditors();
 			this.atlasViewControl.Invalidate();
 			if( this.selectedSprite != null )
@@ -1683,8 +1734,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			atlasSprite.TextureX = this.copiedTextureXY.Value.X;
-			atlasSprite.TextureY = this.copiedTextureXY.Value.Y;
+			int oldX = atlasSprite.TextureX, oldY = atlasSprite.TextureY;
+			int newX = this.copiedTextureXY.Value.X, newY = this.copiedTextureXY.Value.Y;
+			atlasSprite.TextureX = newX;
+			atlasSprite.TextureY = newY;
+			this.RecordRoomEdit( atlasSprite, "PasteTextureXY", "paste texture position",
+				() => { atlasSprite.TextureX = oldX; atlasSprite.TextureY = oldY; },
+				() => { atlasSprite.TextureX = newX; atlasSprite.TextureY = newY; } );
 			this.RefreshAfterAtlasRectEdit();
 		}
 
@@ -1706,8 +1762,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			atlasSprite.TextureWidth = this.copiedTextureSize.Value.Width;
-			atlasSprite.TextureHeight = this.copiedTextureSize.Value.Height;
+			int oldW = atlasSprite.TextureWidth, oldH = atlasSprite.TextureHeight;
+			int newW = this.copiedTextureSize.Value.Width, newH = this.copiedTextureSize.Value.Height;
+			atlasSprite.TextureWidth = newW;
+			atlasSprite.TextureHeight = newH;
+			this.RecordRoomEdit( atlasSprite, "PasteTextureSize", "paste texture size",
+				() => { atlasSprite.TextureWidth = oldW; atlasSprite.TextureHeight = oldH; },
+				() => { atlasSprite.TextureWidth = newW; atlasSprite.TextureHeight = newH; } );
 			this.RefreshAfterAtlasRectEdit();
 		}
 
@@ -1737,17 +1798,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			if( this.selectedSprite != null )
 			{
-				this.selectedSprite.OffsetX = this.copiedOffsets.Value.X;
-				this.selectedSprite.OffsetY = this.copiedOffsets.Value.Y;
-				this.MarkDirty();
+				var sprite = this.selectedSprite;
+				float oldX = sprite.OffsetX, oldY = sprite.OffsetY;
+				float newX = this.copiedOffsets.Value.X, newY = this.copiedOffsets.Value.Y;
+				sprite.OffsetX = newX;
+				sprite.OffsetY = newY;
+				this.RecordRoomEdit( sprite, "PasteOffsets", "paste offset",
+					() => { sprite.OffsetX = oldX; sprite.OffsetY = oldY; },
+					() => { sprite.OffsetX = newX; sprite.OffsetY = newY; } );
 				this.UpdateNumericEditors();
 				this.RefreshPlacements();
 			}
 			else if( this.selectedRoomObject != null )
 			{
-				this.selectedRoomObject.OffsetX = this.copiedOffsets.Value.X;
-				this.selectedRoomObject.OffsetY = this.copiedOffsets.Value.Y;
-				this.MarkDirty();
+				var roomObject = this.selectedRoomObject;
+				float oldX = roomObject.OffsetX, oldY = roomObject.OffsetY;
+				float newX = this.copiedOffsets.Value.X, newY = this.copiedOffsets.Value.Y;
+				roomObject.OffsetX = newX;
+				roomObject.OffsetY = newY;
+				this.RecordRoomEdit( roomObject, "PasteOffsets", "paste offset",
+					() => { roomObject.OffsetX = oldX; roomObject.OffsetY = oldY; },
+					() => { roomObject.OffsetX = newX; roomObject.OffsetY = newY; } );
 				this.UpdateNumericEditors();
 				this.roomPreviewControl.RefreshContent();
 			}
@@ -1823,14 +1894,46 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private void ApplyTextureToTarget( ITextureReference target, string resourcePath )
 		{
-			if( target.TextureFileName == resourcePath )
+			var oldPath = target.TextureFileName;
+			if( oldPath == resourcePath )
 			{
 				return;
 			}
 
+			// capture the tree node now: on undo/redo the selection may be elsewhere, and the
+			// leaf label (background, room object chunk) has no lookup helper to find it again
+			var node = this.treeViewSprites.SelectedNode;
 			target.TextureFileName = resourcePath;
-			this.MarkDirty();
 
+			this.RecordEdit( new UndoableEdit
+			{
+				Owner = target,
+				Key = "TextureTarget",
+				Description = "change texture",
+				Undo = () => target.TextureFileName = oldPath,
+				Redo = () => target.TextureFileName = resourcePath,
+				Select = () =>
+				{
+					if( node != null )
+					{
+						this.treeViewSprites.SelectedNode = node;
+					}
+				},
+				ExtraRefresh = () => this.RefreshAfterTextureTargetChange( target, node ),
+			} );
+
+			this.RefreshAfterTextureTargetChange( target, node );
+			this.UpdateNumericEditors();
+		}
+
+		/// <summary>
+		/// Rebuilds whatever shows a texture target after its texture file name changed - the
+		/// baked background/foreground for a static sprite, the overlay draws for a room object,
+		/// or the atlas and combo for an object sprite - and refreshes the given tree node's label.
+		/// Used both when applying the change and on undo/redo.
+		/// </summary>
+		private void RefreshAfterTextureTargetChange( ITextureReference target, TreeNode? node )
+		{
 			// a brand-new texture may have been cached as a null miss before it existed on disk
 			this.textureCache.Clear();
 
@@ -1850,7 +1953,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				// the object sprite may now belong to a texture the combo did not list
 				this.PopulateTextureCombo();
-				var comboIndex = this.comboBoxTextures.Items.IndexOf( resourcePath );
+				var comboIndex = this.comboBoxTextures.Items.IndexOf( target.TextureFileName );
 				if( comboIndex >= 0 )
 				{
 					this.comboBoxTextures.SelectedIndex = comboIndex;
@@ -1865,23 +1968,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			if( !( target is Sprite ) )
 			{
-				// keep the atlas showing the newly assigned texture and refresh the tree label
-				this.atlasViewControl.Texture = this.LoadTexture( resourcePath );
+				// keep the atlas showing the assigned texture and refresh the tree label
+				this.atlasViewControl.Texture = this.LoadTexture( target.TextureFileName );
 				this.atlasViewControl.RefreshContent();
-				this.UpdateSelectedTargetNodeText( resourcePath );
+				this.UpdateTargetNodeText( node, target.TextureFileName );
 			}
-
-			this.UpdateNumericEditors();
 		}
 
 		/// <summary>
-		/// Replaces the texture tail (the part after the last " - ") of the selected tree node; the
-		/// background and room object leaf labels all end with the texture name.
+		/// Replaces the texture tail (the part after the last " - ") of a tree node; the background
+		/// and room object leaf labels all end with the texture name.
 		/// </summary>
-		private void UpdateSelectedTargetNodeText( string resourcePath )
+		private void UpdateTargetNodeText( TreeNode? node, string? resourcePath )
 		{
-			var node = this.treeViewSprites.SelectedNode;
-			if( node == null )
+			if( node == null || resourcePath == null )
 			{
 				return;
 			}
@@ -1906,8 +2006,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			var result = new SaveRoomOverrideCommand( this.LPAKFile, resourcePath, this.Room ).Execute();
 			if( result.IsSuccess )
 			{
-				this.dirty = false;
-				this.UpdateTitle();
+				this.undoStack.MarkSaved();
 				return true;
 			}
 
@@ -1934,6 +2033,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			this.selectedSprite = null;
 			this.selectedTextureTarget = null;
+			this.selectedRoomObject = null;
 			this.hiddenSprites.Clear();
 			this.LoadRoom();
 		}
@@ -2155,13 +2255,98 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		//-------------------------------------------
 		// helpers
 
-		private void MarkDirty()
+		//-------------------------------------------
+		// undo / redo
+
+		private void RecordEdit( UndoableEdit edit, bool forceCoalesce = false )
 		{
-			if( !this.dirty )
+			this.undoStack.Record( edit, forceCoalesce );
+		}
+
+		/// <summary>
+		/// Records an undoable edit that re-selects whatever is currently selected on undo/redo,
+		/// so the property fields and preview show the change.
+		/// </summary>
+		private void RecordRoomEdit( object owner, string key, string description, Action undo, Action redo, bool forceCoalesce = false )
+		{
+			this.RecordEdit( new UndoableEdit
 			{
-				this.dirty = true;
-				this.UpdateTitle();
-			}
+				Owner = owner,
+				Key = key,
+				Description = description,
+				Undo = undo,
+				Redo = redo,
+				Select = this.CaptureSelectionRestore(),
+			}, forceCoalesce );
+		}
+
+		/// <summary>
+		/// Captures the current selection as an action that restores it, so an undo/redo of an
+		/// edit made now jumps back to the entity it changed.
+		/// </summary>
+		private Action CaptureSelectionRestore()
+		{
+			var sprite = this.selectedSprite;
+			var target = this.selectedTextureTarget;
+			var roomObject = this.selectedRoomObject;
+			return () =>
+			{
+				if( sprite != null )
+				{
+					this.SetSelectedSprite( sprite );
+				}
+				else if( target != null )
+				{
+					this.SetSelectedTextureTarget( target );
+				}
+				else if( roomObject != null )
+				{
+					this.SetSelectedRoomObjectInstance( roomObject );
+				}
+			};
+		}
+
+		private void HandleUndoClick( object? sender, EventArgs args )
+		{
+			this.undoStack.Undo();
+			this.RefreshAfterUndoRedo();
+		}
+
+		private void HandleRedoClick( object? sender, EventArgs args )
+		{
+			this.undoStack.Redo();
+			this.RefreshAfterUndoRedo();
+		}
+
+		/// <summary>
+		/// Refreshes the whole editor after an undo or redo. The edit's Select already re-selected
+		/// the affected entity; UpdateNumericEditors is called unconditionally because Select is a
+		/// no-op when that entity was already selected, and a stale spinner value would otherwise
+		/// be written straight back on the next edit.
+		/// </summary>
+		private void RefreshAfterUndoRedo()
+		{
+			this.UpdateNumericEditors();
+			this.UpdateSelectedSpriteNodeText();
+			this.UpdateSelectedRoomObjectNodeText();
+			this.atlasViewControl.Invalidate();
+			this.RefreshPlacements();
+			this.RefreshRoomObjectPreviews();
+		}
+
+		private void HandleUndoStackChanged()
+		{
+			this.dirty = !this.undoStack.IsAtSavedPosition;
+			this.UpdateTitle();
+
+			this.undoToolStripMenuItem.Enabled = this.undoStack.CanUndo;
+			this.undoToolStripMenuItem.Text = this.undoStack.CanUndo
+				? string.Concat( "&Undo ", this.undoStack.UndoDescription )
+				: "&Undo";
+			this.redoToolStripMenuItem.Enabled = this.undoStack.CanRedo;
+			this.redoToolStripMenuItem.Text = this.undoStack.CanRedo
+				? string.Concat( "&Redo ", this.undoStack.RedoDescription )
+				: "&Redo";
 		}
 
 		private void UpdateTitle()
