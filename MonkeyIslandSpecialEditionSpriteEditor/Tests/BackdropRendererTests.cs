@@ -69,6 +69,9 @@ namespace Tests
 			// Assert: origin = transform origin + (x, y - elevation) * scale
 			Assert.That( backdrop.ActorOriginHd.X, Is.EqualTo( transform.Origin.X + 100 * transform.Scale.Width ).Within( 0.001f ) );
 			Assert.That( backdrop.ActorOriginHd.Y, Is.EqualTo( transform.Origin.Y + ( 120 - 5 ) * transform.Scale.Height ).Within( 0.001f ) );
+
+			// the room scale is reported so the costume editor can size the actor to it
+			Assert.That( backdrop.Scale, Is.EqualTo( transform.Scale ) );
 		}
 
 		[Test]

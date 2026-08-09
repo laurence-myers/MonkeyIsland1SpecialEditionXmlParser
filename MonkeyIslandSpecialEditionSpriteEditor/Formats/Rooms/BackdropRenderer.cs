@@ -43,6 +43,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms
 			get;
 			set;
 		}
+
+		/// <summary>
+		/// Gets or sets the room's classic-to-HD scale. Usual 144-line rooms match the costume
+		/// scale; fullscreen rooms (the world map, the title screen) are smaller, so the actor
+		/// must be scaled to this to sit at the room's own size.
+		/// </summary>
+		public SizeF Scale
+		{
+			get;
+			set;
+		}
 	}
 
 	/// <summary>
@@ -81,6 +92,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms
 				Below = below,
 				Above = above,
 				ActorOriginHd = new PointF( originX, originY ),
+				Scale = transform.Scale,
 			};
 		}
 

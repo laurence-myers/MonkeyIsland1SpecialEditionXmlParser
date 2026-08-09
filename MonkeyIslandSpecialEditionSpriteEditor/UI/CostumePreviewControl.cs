@@ -116,6 +116,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
+		/// Gets or sets a uniform scale applied to the drawn sprites around the actor origin.
+		/// 1.0 draws them at the costume's own scale (the usual case, and what the room preview
+		/// shows). A backdrop from a fullscreen room - whose art is smaller than the costume
+		/// scale - sets this below 1 so the actor sits at the room's size rather than oversized.
+		/// The feet stay on the origin because the scale is about it.
+		/// </summary>
+		public float ActorScale
+		{
+			get;
+			set;
+		} = 1.0f;
+
+		/// <summary>
 		/// Gets or sets a canvas area (relative to the actor origin) the control always
 		/// covers, typically the union of every step of the current animation. This keeps
 		/// the origin stationary while stepping through frames; without it the canvas would
@@ -188,7 +201,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				bounds = RectangleF.Union( bounds, this.GetDrawRect( sprite ) );
 				if( sprite.Placement.ClassicCel != null )
 				{
-					bounds = RectangleF.Union( bounds, Renderer.GetClassicScreenRect( sprite.Placement.ClassicCel, sprite.Placement.Flipped, this.HdScale ) );
+					bounds = RectangleF.Union( bounds, this.ApplyActorScale( Renderer.GetClassicScreenRect( sprite.Placement.ClassicCel, sprite.Placement.Flipped, this.HdScale ) ) );
 				}
 			}
 
@@ -236,9 +249,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private RectangleF GetDrawRect( CostumePreviewControlSprite sprite )
 		{
-			return this.AnchorToClassic
+			var rect = this.AnchorToClassic
 				? Renderer.GetAnchoredScreenRect( sprite.Placement, this.HdScale )
 				: sprite.Placement.ScreenRect;
+			return this.ApplyActorScale( rect );
+		}
+
+		/// <summary>
+		/// Scales a canvas rectangle about the actor origin by <see cref="ActorScale"/>.
+		/// </summary>
+		private RectangleF ApplyActorScale( RectangleF rect )
+		{
+			return this.ActorScale == 1.0f
+				? rect
+				: new RectangleF( rect.X * this.ActorScale, rect.Y * this.ActorScale, rect.Width * this.ActorScale, rect.Height * this.ActorScale );
 		}
 
 		protected override void OnMouseDown( MouseEventArgs args )
@@ -382,7 +406,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					{
 						continue;
 					}
-					var rect = this.ToClient( Renderer.GetClassicScreenRect( sprite.Placement.ClassicCel, sprite.Placement.Flipped, this.HdScale ) );
+					var rect = this.ToClient( this.ApplyActorScale( Renderer.GetClassicScreenRect( sprite.Placement.ClassicCel, sprite.Placement.Flipped, this.HdScale ) ) );
 					graphics.DrawRectangle( pen, rect.X, rect.Y, rect.Width, rect.Height );
 				}
 			}

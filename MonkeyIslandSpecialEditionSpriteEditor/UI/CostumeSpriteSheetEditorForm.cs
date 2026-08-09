@@ -432,18 +432,31 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				foreach( var placement in Renderer.ResolveFramePlacements( this.Costume, animation, step, this.classicCostume ) )
 				{
 					// match the preview's draw rect so the origin stays put when Game placement
-					// shifts sprites onto their classic anchors
+					// shifts sprites onto their classic anchors, including the room backdrop's scale
+					var actorScale = this.costumePreviewControl.ActorScale;
 					var drawRect = this.costumePreviewControl.AnchorToClassic
 						? Renderer.GetAnchoredScreenRect( placement, Renderer.DefaultHdScale )
 						: placement.ScreenRect;
+					drawRect = ScaleAboutOrigin( drawRect, actorScale );
 					bounds = bounds == null ? drawRect : RectangleF.Union( bounds.Value, drawRect );
 					if( placement.ClassicCel != null )
 					{
-						bounds = RectangleF.Union( bounds.Value, Renderer.GetClassicScreenRect( placement.ClassicCel, placement.Flipped, Renderer.DefaultHdScale ) );
+						var classicRect = ScaleAboutOrigin( Renderer.GetClassicScreenRect( placement.ClassicCel, placement.Flipped, Renderer.DefaultHdScale ), actorScale );
+						bounds = RectangleF.Union( bounds.Value, classicRect );
 					}
 				}
 			}
 			this.costumePreviewControl.FixedBounds = bounds;
+		}
+
+		/// <summary>
+		/// Scales a canvas rectangle about the actor origin, matching the preview's ActorScale.
+		/// </summary>
+		private static RectangleF ScaleAboutOrigin( RectangleF rect, float scale )
+		{
+			return scale == 1.0f
+				? rect
+				: new RectangleF( rect.X * scale, rect.Y * scale, rect.Width * scale, rect.Height * scale );
 		}
 
 		//-------------------------------------------
@@ -1318,6 +1331,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.costumePreviewControl.BackdropBelow = backdrop.Below;
 			this.costumePreviewControl.BackdropAbove = backdrop.Above;
 			this.costumePreviewControl.BackdropOffset = new PointF( -backdrop.ActorOriginHd.X, -backdrop.ActorOriginHd.Y );
+
+			// the costume's sprites are authored at the costume scale; scale them to the room's
+			// scale so the actor sits at the room's own size (a no-op for the usual 144-line
+			// rooms, which share that scale; smaller for fullscreen map/title rooms)
+			this.costumePreviewControl.ActorScale = backdrop.Scale.Height > 0
+				? backdrop.Scale.Height / Renderer.DefaultHdScale.Height
+				: 1.0f;
 			return true;
 		}
 
@@ -1343,6 +1363,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			this.costumePreviewControl.BackdropBelow = null;
 			this.costumePreviewControl.BackdropAbove = null;
+			this.costumePreviewControl.ActorScale = 1.0f;
 			this.backdropBelow?.Dispose();
 			this.backdropAbove?.Dispose();
 			this.backdropBelow = null;
