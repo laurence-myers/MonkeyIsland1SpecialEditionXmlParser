@@ -37,7 +37,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.PatchCli
 
 			if( ( verb != "apply" && verb != "remove" ) || args.Length != 3 )
 			{
-				error.WriteLine( "Usage: mi1se-walkbox-patch <apply|remove> <Monkey1.pak> <patch.mi1classicpatch.xml>" );
+				error.WriteLine( "Usage: mi1se-patch <apply|remove> <Monkey1.pak> <patch.mi1classicpatch.xml>" );
 				return ExitUsage;
 			}
 
@@ -86,11 +86,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.PatchCli
 
 		private static void PrintUsage( TextWriter writer )
 		{
-			writer.WriteLine( "mi1se-walkbox-patch - apply a Monkey Island SE walk box patch to your own game data." );
+			writer.WriteLine( "mi1se-patch - apply a Monkey Island SE walk box patch to your own game data." );
 			writer.WriteLine();
 			writer.WriteLine( "Usage:" );
-			writer.WriteLine( "  mi1se-walkbox-patch apply  <Monkey1.pak> <patch.mi1classicpatch.xml>" );
-			writer.WriteLine( "  mi1se-walkbox-patch remove <Monkey1.pak> <patch.mi1classicpatch.xml>" );
+			writer.WriteLine( "  mi1se-patch apply  <Monkey1.pak> <patch.mi1classicpatch.xml>" );
+			writer.WriteLine( "  mi1se-patch remove <Monkey1.pak> <patch.mi1classicpatch.xml>" );
 			writer.WriteLine();
 			writer.WriteLine( "The pak is never modified: the patch is written as a loose classic-data override" );
 			writer.WriteLine( "beside it, which the game loads instead. 'remove' restores the pristine data." );
