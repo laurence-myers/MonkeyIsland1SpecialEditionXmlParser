@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MonkeyIslandSpecialEditionSpriteEditor.csproj" />
+    <ProjectReference Include="..\PatchCli\MonkeyIslandSpecialEditionSpriteEditor.PatchCli.csproj" />
   </ItemGroup>
 
   <ItemGroup>

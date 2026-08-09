@@ -4,8 +4,8 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>MonkeyIslandSpecialEditionSpriteEditor</RootNamespace>
     <AssemblyName>MonkeyIslandSpecialEditionSpriteEditor</AssemblyName>
-    <!-- Tests is a nested project directory; keep its files out of this project's default globs. -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);Tests\**</DefaultItemExcludes>
+    <!-- Tests and PatchCli are nested project directories; keep their files out of this project's default globs. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);Tests\**;PatchCli\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <!-- Replaces Properties\AssemblyInfo.cs. -->
