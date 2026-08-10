@@ -384,13 +384,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				limbTableOffsets[limb] = ReadUInt16At( numberOfColors + 10 + limb * 2 );
 			}
 
-			// walk the animation definitions to find the highest cel index each limb shows;
+			// walk the animation definitions, keeping each limb's command sequence (the cel
+			// indices the engine steps through) and the highest cel index each limb shows;
 			// a limb's cel table can extend past the next limb's table offset otherwise
 			var maximumCelIndexes = new int[16];
 			for( var limb = 0; limb < 16; limb++ )
 			{
 				maximumCelIndexes[limb] = -1;
 			}
+			var animationList = new List<ClassicAnimation>();
 			for( var animation = 0; animation <= maximumAnimationNumber; animation++ )
 			{
 				var animationOffset = ReadUInt16At( numberOfColors + 42 + animation * 2 );
@@ -399,6 +401,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					continue;
 				}
 
+				var animationLimbList = new List<ClassicAnimationLimb>();
 				reader.BaseStream.Position = basePosition + animationOffset;
 				var mask = reader.ReadUInt16();
 				for( var limb = 0; limb < 16 && reader.BaseStream.Position < blockEnd; limb++, mask <<= 1 )
@@ -414,7 +417,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					}
 					var lengthByte = reader.ReadByte();
 					var length = lengthByte & 0x7F;
+					// the high bit marks a play-once sequence that holds its last command;
+					// without it the engine loops back to the start
+					var loop = ( lengthByte & 0x80 ) == 0;
 
+					var commandList = new List<int>();
 					var commandsPosition = reader.BaseStream.Position;
 					for( var step = 0; step <= length; step++ )
 					{
@@ -425,13 +432,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 						}
 						reader.BaseStream.Position = commandOffset;
 						var command = reader.ReadByte();
-						if( command < 0x71 && command > maximumCelIndexes[limb] )
+						commandList.Add( command );
+						if( command < ClassicAnimationLimb.FirstNonCelCommand && command > maximumCelIndexes[limb] )
 						{
 							maximumCelIndexes[limb] = command;
 						}
 					}
 					reader.BaseStream.Position = commandsPosition;
+
+					animationLimbList.Add( new ClassicAnimationLimb( limbNumber: limb, loop: loop, commandList: commandList ) );
 				}
+				animationList.Add( new ClassicAnimation( animationNumber: animation, limbList: animationLimbList ) );
 			}
 
 			// each limb's cel table runs up to the next distinct table offset; the last
@@ -500,7 +511,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				maximumAnimationNumber: maximumAnimationNumber,
 				format: format,
 				mirror: mirror,
-				limbList: limbList
+				limbList: limbList,
+				animationList: animationList
 			);
 		}
 

@@ -70,20 +70,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
-		/// Gets or sets whether sprites are drawn where the game shows them - anchored
-		/// bottom-center to their classic cel (see
-		/// <see cref="Renderer.GetAnchoredScreenRect"/>) - rather than at their raw ScreenX/ScreenY.
-		/// Sprites with no matching classic cel are unaffected (the anchored rect falls back to
-		/// the raw rect). This matches the room preview and the in-game placement, so a Screen X/Y
-		/// edit that the engine ignores does not appear to move the sprite here either.
-		/// </summary>
-		public bool AnchorToClassic
-		{
-			get;
-			set;
-		}
-
-		/// <summary>
 		/// Gets or sets a room image drawn under the sprites, positioned by
 		/// <see cref="BackdropOffset"/>. Lets the costume be placed against the room it appears
 		/// in. Null hides it.
@@ -243,16 +229,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
-		/// Returns the rectangle a sprite is drawn at, in canvas coordinates: its game-anchored
-		/// position when <see cref="AnchorToClassic"/> is set, otherwise its raw ScreenX/ScreenY
-		/// rectangle.
+		/// Returns the rectangle a sprite is drawn at, in canvas coordinates: its ScreenX/ScreenY
+		/// rectangle (the placement the engine honors), scaled about the actor origin.
 		/// </summary>
 		private RectangleF GetDrawRect( CostumePreviewControlSprite sprite )
 		{
-			var rect = this.AnchorToClassic
-				? Renderer.GetAnchoredScreenRect( sprite.Placement, this.HdScale )
-				: sprite.Placement.ScreenRect;
-			return this.ApplyActorScale( rect );
+			return this.ApplyActorScale( sprite.Placement.ScreenRect );
 		}
 
 		/// <summary>

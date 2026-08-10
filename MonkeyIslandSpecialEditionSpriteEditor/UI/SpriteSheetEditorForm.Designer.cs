@@ -57,10 +57,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.listBoxDiagnostics = new System.Windows.Forms.ListBox();
 			this.splitRight = new System.Windows.Forms.SplitContainer();
 			this.splitEdit = new System.Windows.Forms.SplitContainer();
-			this.splitTree = new System.Windows.Forms.SplitContainer();
+			this.tabControlRoom = new System.Windows.Forms.TabControl();
+			this.tabPageObjects = new System.Windows.Forms.TabPage();
+			this.tabPageBackgrounds = new System.Windows.Forms.TabPage();
+			this.tabPageActors = new System.Windows.Forms.TabPage();
+			this.tabPageWalkBoxes = new System.Windows.Forms.TabPage();
 			this.treeViewSprites = new System.Windows.Forms.TreeView();
+			this.treeViewBackground = new System.Windows.Forms.TreeView();
 			this.labelActors = new System.Windows.Forms.Label();
 			this.checkedListBoxActors = new System.Windows.Forms.CheckedListBox();
+			this.listViewWalkBoxes = new System.Windows.Forms.ListView();
+			this.columnHeaderBoxIndex = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderBoxMask = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderBoxWalkable = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderBoxScale = new System.Windows.Forms.ColumnHeader();
 			this.panelProperties = new System.Windows.Forms.Panel();
 			this.labelTextureX = new System.Windows.Forms.Label();
 			this.numericTextureX = new System.Windows.Forms.NumericUpDown();
@@ -118,10 +128,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitEdit.Panel1.SuspendLayout();
 			this.splitEdit.Panel2.SuspendLayout();
 			this.splitEdit.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.splitTree)).BeginInit();
-			this.splitTree.Panel1.SuspendLayout();
-			this.splitTree.Panel2.SuspendLayout();
-			this.splitTree.SuspendLayout();
+			this.tabControlRoom.SuspendLayout();
+			this.tabPageObjects.SuspendLayout();
+			this.tabPageBackgrounds.SuspendLayout();
+			this.tabPageActors.SuspendLayout();
+			this.tabPageWalkBoxes.SuspendLayout();
 			this.panelProperties.SuspendLayout();
 			this.groupBoxWalkBox.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numericBoxMask)).BeginInit();
@@ -440,7 +451,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// splitEdit.Panel1
 			//
-			this.splitEdit.Panel1.Controls.Add(this.splitTree);
+			this.splitEdit.Panel1.Controls.Add(this.tabControlRoom);
 			//
 			// splitEdit.Panel2
 			//
@@ -450,26 +461,61 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitEdit.SplitterDistance = 370;
 			this.splitEdit.TabIndex = 0;
 			//
-			// splitTree
+			// tabControlRoom
 			//
-			this.splitTree.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.splitTree.Location = new System.Drawing.Point(0, 0);
-			this.splitTree.Name = "splitTree";
-			this.splitTree.Orientation = System.Windows.Forms.Orientation.Horizontal;
+			this.tabControlRoom.Controls.Add(this.tabPageObjects);
+			this.tabControlRoom.Controls.Add(this.tabPageBackgrounds);
+			this.tabControlRoom.Controls.Add(this.tabPageActors);
+			this.tabControlRoom.Controls.Add(this.tabPageWalkBoxes);
+			this.tabControlRoom.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.tabControlRoom.Location = new System.Drawing.Point(0, 0);
+			this.tabControlRoom.Name = "tabControlRoom";
+			this.tabControlRoom.SelectedIndex = 0;
+			this.tabControlRoom.Size = new System.Drawing.Size(370, 280);
+			this.tabControlRoom.TabIndex = 0;
 			//
-			// splitTree.Panel1
+			// tabPageObjects
 			//
-			this.splitTree.Panel1.Controls.Add(this.treeViewSprites);
+			this.tabPageObjects.Controls.Add(this.treeViewSprites);
+			this.tabPageObjects.Location = new System.Drawing.Point(4, 22);
+			this.tabPageObjects.Name = "tabPageObjects";
+			this.tabPageObjects.Size = new System.Drawing.Size(362, 254);
+			this.tabPageObjects.TabIndex = 0;
+			this.tabPageObjects.Text = "Room objects";
+			this.tabPageObjects.UseVisualStyleBackColor = true;
 			//
-			// splitTree.Panel2
+			// tabPageBackgrounds
 			//
-			this.splitTree.Panel2.Controls.Add(this.checkedListBoxActors);
-			this.splitTree.Panel2.Controls.Add(this.labelActors);
-			this.splitTree.Size = new System.Drawing.Size(370, 280);
-			this.splitTree.SplitterDistance = 160;
-			this.splitTree.TabIndex = 0;
-			// stays collapsed until the classic scripts place an actor in the room
-			this.splitTree.Panel2Collapsed = true;
+			this.tabPageBackgrounds.Controls.Add(this.treeViewBackground);
+			this.tabPageBackgrounds.Location = new System.Drawing.Point(4, 22);
+			this.tabPageBackgrounds.Name = "tabPageBackgrounds";
+			this.tabPageBackgrounds.Size = new System.Drawing.Size(362, 254);
+			this.tabPageBackgrounds.TabIndex = 1;
+			this.tabPageBackgrounds.Text = "Backgrounds";
+			this.tabPageBackgrounds.UseVisualStyleBackColor = true;
+			//
+			// tabPageActors
+			//
+			this.tabPageActors.Controls.Add(this.checkedListBoxActors);
+			this.tabPageActors.Controls.Add(this.labelActors);
+			this.tabPageActors.Location = new System.Drawing.Point(4, 22);
+			this.tabPageActors.Name = "tabPageActors";
+			this.tabPageActors.Size = new System.Drawing.Size(362, 254);
+			this.tabPageActors.TabIndex = 2;
+			this.tabPageActors.Text = "Actors";
+			this.tabPageActors.UseVisualStyleBackColor = true;
+			//
+			// tabPageWalkBoxes
+			//
+			this.tabPageWalkBoxes.Controls.Add(this.listViewWalkBoxes);
+			this.tabPageWalkBoxes.Controls.Add(this.checkBoxWalkBoxes);
+			this.tabPageWalkBoxes.Controls.Add(this.groupBoxWalkBox);
+			this.tabPageWalkBoxes.Location = new System.Drawing.Point(4, 22);
+			this.tabPageWalkBoxes.Name = "tabPageWalkBoxes";
+			this.tabPageWalkBoxes.Size = new System.Drawing.Size(362, 254);
+			this.tabPageWalkBoxes.TabIndex = 3;
+			this.tabPageWalkBoxes.Text = "Walk boxes";
+			this.tabPageWalkBoxes.UseVisualStyleBackColor = true;
 			//
 			// treeViewSprites
 			//
@@ -478,10 +524,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.treeViewSprites.HideSelection = false;
 			this.treeViewSprites.Location = new System.Drawing.Point(0, 0);
 			this.treeViewSprites.Name = "treeViewSprites";
-			this.treeViewSprites.Size = new System.Drawing.Size(370, 160);
+			this.treeViewSprites.Size = new System.Drawing.Size(362, 254);
 			this.treeViewSprites.TabIndex = 0;
 			this.treeViewSprites.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.HandleTreeAfterCheck);
 			this.treeViewSprites.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.HandleTreeAfterSelect);
+			//
+			// treeViewBackground
+			//
+			this.treeViewBackground.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.treeViewBackground.HideSelection = false;
+			this.treeViewBackground.Location = new System.Drawing.Point(0, 0);
+			this.treeViewBackground.Name = "treeViewBackground";
+			this.treeViewBackground.Size = new System.Drawing.Size(362, 254);
+			this.treeViewBackground.TabIndex = 0;
+			this.treeViewBackground.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.HandleTreeAfterSelect);
 			//
 			// labelActors
 			//
@@ -489,7 +545,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelActors.Location = new System.Drawing.Point(0, 0);
 			this.labelActors.Name = "labelActors";
 			this.labelActors.Padding = new System.Windows.Forms.Padding(3, 3, 3, 0);
-			this.labelActors.Size = new System.Drawing.Size(370, 18);
+			this.labelActors.Size = new System.Drawing.Size(362, 18);
 			this.labelActors.TabIndex = 0;
 			this.labelActors.Text = "Actors (from classic scripts)";
 			//
@@ -502,9 +558,49 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.checkedListBoxActors.IntegralHeight = false;
 			this.checkedListBoxActors.Location = new System.Drawing.Point(0, 18);
 			this.checkedListBoxActors.Name = "checkedListBoxActors";
-			this.checkedListBoxActors.Size = new System.Drawing.Size(370, 98);
+			this.checkedListBoxActors.Size = new System.Drawing.Size(362, 236);
 			this.checkedListBoxActors.TabIndex = 1;
 			this.checkedListBoxActors.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.HandleActorItemCheck);
+			//
+			// listViewWalkBoxes
+			//
+			this.listViewWalkBoxes.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderBoxIndex,
+            this.columnHeaderBoxMask,
+            this.columnHeaderBoxWalkable,
+            this.columnHeaderBoxScale});
+			this.listViewWalkBoxes.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.listViewWalkBoxes.FullRowSelect = true;
+			this.listViewWalkBoxes.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+			this.listViewWalkBoxes.HideSelection = false;
+			this.listViewWalkBoxes.Location = new System.Drawing.Point(0, 24);
+			this.listViewWalkBoxes.MultiSelect = false;
+			this.listViewWalkBoxes.Name = "listViewWalkBoxes";
+			this.listViewWalkBoxes.Size = new System.Drawing.Size(362, 98);
+			this.listViewWalkBoxes.TabIndex = 1;
+			this.listViewWalkBoxes.UseCompatibleStateImageBehavior = false;
+			this.listViewWalkBoxes.View = System.Windows.Forms.View.Details;
+			this.listViewWalkBoxes.SelectedIndexChanged += new System.EventHandler(this.HandleWalkBoxListSelectionChanged);
+			//
+			// columnHeaderBoxIndex
+			//
+			this.columnHeaderBoxIndex.Text = "#";
+			this.columnHeaderBoxIndex.Width = 40;
+			//
+			// columnHeaderBoxMask
+			//
+			this.columnHeaderBoxMask.Text = "Mask";
+			this.columnHeaderBoxMask.Width = 50;
+			//
+			// columnHeaderBoxWalkable
+			//
+			this.columnHeaderBoxWalkable.Text = "Walkable";
+			this.columnHeaderBoxWalkable.Width = 64;
+			//
+			// columnHeaderBoxScale
+			//
+			this.columnHeaderBoxScale.Text = "Scale";
+			this.columnHeaderBoxScale.Width = 50;
 			//
 			// panelProperties
 			//
@@ -541,8 +637,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.numericScaleY);
 			this.panelProperties.Controls.Add(this.checkBoxCalibration);
 			this.panelProperties.Controls.Add(this.checkBoxForeground);
-			this.panelProperties.Controls.Add(this.checkBoxWalkBoxes);
-			this.panelProperties.Controls.Add(this.groupBoxWalkBox);
 			this.panelProperties.Controls.Add(this.labelHint);
 			this.panelProperties.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.panelProperties.Location = new System.Drawing.Point(0, 0);
@@ -848,10 +942,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			//
 			// checkBoxWalkBoxes
 			//
-			this.checkBoxWalkBoxes.Location = new System.Drawing.Point(9, 448);
+			this.checkBoxWalkBoxes.Dock = System.Windows.Forms.DockStyle.Top;
+			this.checkBoxWalkBoxes.Location = new System.Drawing.Point(0, 0);
 			this.checkBoxWalkBoxes.Name = "checkBoxWalkBoxes";
-			this.checkBoxWalkBoxes.Size = new System.Drawing.Size(181, 20);
-			this.checkBoxWalkBoxes.TabIndex = 33;
+			this.checkBoxWalkBoxes.Padding = new System.Windows.Forms.Padding(6, 3, 3, 0);
+			this.checkBoxWalkBoxes.Size = new System.Drawing.Size(362, 24);
+			this.checkBoxWalkBoxes.TabIndex = 0;
 			this.checkBoxWalkBoxes.Text = "Walk boxes (classic)";
 			this.checkBoxWalkBoxes.CheckedChanged += new System.EventHandler(this.HandleWalkBoxesCheckedChanged);
 			//
@@ -863,13 +959,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.groupBoxWalkBox.Controls.Add(this.labelBoxScale);
 			this.groupBoxWalkBox.Controls.Add(this.numericBoxScale);
 			this.groupBoxWalkBox.Controls.Add(this.buttonSaveWalkBoxes);
-			this.groupBoxWalkBox.Location = new System.Drawing.Point(6, 474);
+			this.groupBoxWalkBox.Dock = System.Windows.Forms.DockStyle.Bottom;
+			this.groupBoxWalkBox.Location = new System.Drawing.Point(0, 122);
 			this.groupBoxWalkBox.Name = "groupBoxWalkBox";
-			this.groupBoxWalkBox.Size = new System.Drawing.Size(196, 132);
-			this.groupBoxWalkBox.TabIndex = 34;
+			this.groupBoxWalkBox.Size = new System.Drawing.Size(362, 132);
+			this.groupBoxWalkBox.TabIndex = 2;
 			this.groupBoxWalkBox.TabStop = false;
 			this.groupBoxWalkBox.Text = "Selected walk box";
-			this.groupBoxWalkBox.Visible = false;
 			//
 			// labelBoxMask
 			//
@@ -928,7 +1024,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
-			this.labelHint.Location = new System.Drawing.Point(6, 612);
+			this.labelHint.Location = new System.Drawing.Point(6, 452);
 			this.labelHint.Name = "labelHint";
 			this.labelHint.Size = new System.Drawing.Size(196, 98);
 			this.labelHint.TabIndex = 32;
@@ -982,10 +1078,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitEdit.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.splitEdit)).EndInit();
 			this.splitEdit.ResumeLayout(false);
-			this.splitTree.Panel1.ResumeLayout(false);
-			this.splitTree.Panel2.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.splitTree)).EndInit();
-			this.splitTree.ResumeLayout(false);
+			this.tabControlRoom.ResumeLayout(false);
+			this.tabPageObjects.ResumeLayout(false);
+			this.tabPageBackgrounds.ResumeLayout(false);
+			this.tabPageActors.ResumeLayout(false);
+			this.tabPageWalkBoxes.ResumeLayout(false);
 			this.groupBoxWalkBox.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.numericBoxMask)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numericBoxScale)).EndInit();
@@ -1038,10 +1135,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.ListBox listBoxDiagnostics;
 		private System.Windows.Forms.SplitContainer splitRight;
 		private System.Windows.Forms.SplitContainer splitEdit;
-		private System.Windows.Forms.SplitContainer splitTree;
+		private System.Windows.Forms.TabControl tabControlRoom;
+		private System.Windows.Forms.TabPage tabPageObjects;
+		private System.Windows.Forms.TabPage tabPageBackgrounds;
+		private System.Windows.Forms.TabPage tabPageActors;
+		private System.Windows.Forms.TabPage tabPageWalkBoxes;
 		private System.Windows.Forms.TreeView treeViewSprites;
+		private System.Windows.Forms.TreeView treeViewBackground;
 		private System.Windows.Forms.Label labelActors;
 		private System.Windows.Forms.CheckedListBox checkedListBoxActors;
+		private System.Windows.Forms.ListView listViewWalkBoxes;
+		private System.Windows.Forms.ColumnHeader columnHeaderBoxIndex;
+		private System.Windows.Forms.ColumnHeader columnHeaderBoxMask;
+		private System.Windows.Forms.ColumnHeader columnHeaderBoxWalkable;
+		private System.Windows.Forms.ColumnHeader columnHeaderBoxScale;
 		private System.Windows.Forms.Panel panelProperties;
 		private System.Windows.Forms.Label labelTextureX;
 		private System.Windows.Forms.NumericUpDown numericTextureX;

@@ -183,6 +183,18 @@ namespace Tests
 			Assert.That( limb1!.CelList.Count, Is.EqualTo( 1 ) );
 			Assert.That( limb1.CelList[0]!.Width, Is.EqualTo( 5 ) );
 			Assert.That( limb1.CelList[0]!.RelY, Is.EqualTo( -6 ) );
+
+			// only animation 4 is defined; its limb sequences keep the raw command bytes
+			Assert.That( costume.AnimationList.Count, Is.EqualTo( 1 ) );
+			var animation = costume.AnimationList[0];
+			Assert.That( animation.AnimationNumber, Is.EqualTo( 4 ) );
+			var animationLimb0 = animation.FindLimb( 0 );
+			Assert.That( animationLimb0, Is.Not.Null );
+			Assert.That( animationLimb0!.CommandList, Is.EqualTo( new[] { 0, 1 } ) );
+			Assert.That( animationLimb0.Loop, Is.True, "no high bit on the length byte means the sequence loops" );
+			var animationLimb1 = animation.FindLimb( 1 );
+			Assert.That( animationLimb1, Is.Not.Null );
+			Assert.That( animationLimb1!.CommandList, Is.EqualTo( new[] { 0 } ) );
 		}
 
 		//-------------------------------------------

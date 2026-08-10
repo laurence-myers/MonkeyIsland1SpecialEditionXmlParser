@@ -37,9 +37,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Sprite? selectedSprite;
 		private bool suppressUiEvents;
 		private bool dirty;
-		// "Game placement" defaults to on when a classic costume matched, but only on the first
-		// load - reverting or reloading must not fight a choice the user has since made
-		private bool gamePlacementDefaulted;
 		// the room backdrop bitmaps this form owns and must dispose; the preview only borrows them
 		private Bitmap? backdropBelow;
 		private Bitmap? backdropAbove;
@@ -143,22 +140,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// drop any backdrop from a previous load before the room list is rebuilt
 			this.ClearBackdrop();
 
-			// default "Game placement" on when the game anchors this costume's sprites to their
-			// classic cels, but only the first time - a later reload must keep the user's choice
-			if( !this.gamePlacementDefaulted )
-			{
-				this.gamePlacementDefaulted = true;
-				this.suppressUiEvents = true;
-				try
-				{
-					this.checkBoxGamePlacement.Checked = this.classicCostume != null;
-				}
-				finally
-				{
-					this.suppressUiEvents = false;
-				}
-			}
-			this.costumePreviewControl.AnchorToClassic = this.checkBoxGamePlacement.Checked;
 			this.PopulateRoomBackdropCombo();
 
 			this.PopulateAnimationCombo();
@@ -308,11 +289,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					{
 						this.listBoxDiagnostics.Items.Add( string.Concat( "Group ", spriteGroup.Index, " (limb ", spriteGroup.Identifier, "): no classic limb" ) );
 					}
-					else if( classicLimb.CelList.Count != spriteGroup.SpriteList.Count )
+					// the group's sprites cover cels FirstSpriteIdentifier onward; flag a
+					// mismatch only when that window disagrees with the classic cel table
+					else if( classicLimb.CelList.Count != spriteGroup.FirstSpriteIdentifier + spriteGroup.SpriteList.Count )
 					{
 						this.listBoxDiagnostics.Items.Add( string.Concat(
 							"Group ", spriteGroup.Index, " (limb ", spriteGroup.Identifier, "): ",
-							spriteGroup.SpriteList.Count, " sprites vs ", classicLimb.CelList.Count, " classic cels"
+							spriteGroup.SpriteList.Count, " sprites",
+							spriteGroup.FirstSpriteIdentifier != 0 ? " from cel " + spriteGroup.FirstSpriteIdentifier : "",
+							" vs ", classicLimb.CelList.Count, " classic cels"
 						) );
 					}
 				}
@@ -435,13 +420,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				foreach( var placement in Renderer.ResolveFramePlacements( this.Costume, animation, step, this.classicCostume ) )
 				{
-					// match the preview's draw rect so the origin stays put when Game placement
-					// shifts sprites onto their classic anchors, including the room backdrop's scale
+					// match the preview's draw rect, including the room backdrop's scale
 					var actorScale = this.costumePreviewControl.ActorScale;
-					var drawRect = this.costumePreviewControl.AnchorToClassic
-						? Renderer.GetAnchoredScreenRect( placement, Renderer.DefaultHdScale )
-						: placement.ScreenRect;
-					drawRect = ScaleAboutOrigin( drawRect, actorScale );
+					var drawRect = ScaleAboutOrigin( placement.ScreenRect, actorScale );
 					bounds = bounds == null ? drawRect : RectangleF.Union( bounds.Value, drawRect );
 					if( placement.ClassicCel != null )
 					{
@@ -765,15 +746,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					return;
 			}
 
-			// with Game placement on, a cel-matched sprite is anchored and the game ignores its
-			// Screen X/Y, so nudging it would be a silent no-op - block it and explain instead
-			if( this.costumePreviewControl.AnchorToClassic && this.FindClassicCel( this.selectedSprite ) != null )
-			{
-				args.Handled = true;
-				this.labelScreenAnchored.Visible = true;
-				return;
-			}
-
 			// a left facing preview shows the sprite mirrored; flip the horizontal nudge so
 			// the sprite follows the arrow key on screen
 			var previewSprite = this.costumePreviewControl.SelectedSprite;
@@ -806,25 +778,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				var sprite = this.selectedSprite;
 				var enabled = sprite != null;
 
-				// with Game placement on, a cel-matched sprite is anchored to its classic cel and
-				// the game ignores its Screen X/Y, so the fields are disabled and annotated
-				var anchored = enabled
-					&& this.costumePreviewControl.AnchorToClassic
-					&& this.FindClassicCel( sprite ) != null;
-
 				this.numericTextureX.Enabled = enabled;
 				this.numericTextureY.Enabled = enabled;
 				this.numericTextureWidth.Enabled = enabled;
 				this.numericTextureHeight.Enabled = enabled;
-				this.numericScreenX.Enabled = enabled && !anchored;
-				this.numericScreenY.Enabled = enabled && !anchored;
+				this.numericScreenX.Enabled = enabled;
+				this.numericScreenY.Enabled = enabled;
 				this.numericMoveX.Enabled = enabled;
 				this.numericMoveY.Enabled = enabled;
-				// aligning writes Screen X/Y, which the game ignores while anchored, so gate it too
-				this.buttonAlignToClassic.Enabled = enabled && !anchored && this.FindClassicCel( sprite ) != null;
-				this.labelScreenAnchored.Visible = anchored;
-				this.labelScreenX.Text = anchored ? "Screen X *" : "Screen X";
-				this.labelScreenY.Text = anchored ? "Screen Y *" : "Screen Y";
+				this.buttonAlignToClassic.Enabled = enabled && this.FindClassicCel( sprite ) != null;
 
 				if( sprite != null )
 				{
@@ -842,8 +804,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.buttonPasteTextureXY.Enabled = enabled && this.copiedTextureXY != null;
 				this.buttonCopyTextureSize.Enabled = enabled;
 				this.buttonPasteTextureSize.Enabled = enabled && this.copiedTextureSize != null;
-				this.buttonCopyScreen.Enabled = enabled && !anchored;
-				this.buttonPasteScreen.Enabled = enabled && !anchored && this.copiedScreen != null;
+				this.buttonCopyScreen.Enabled = enabled;
+				this.buttonPasteScreen.Enabled = enabled && this.copiedScreen != null;
 
 				// costume sprites reference a texture by index; -1 shows as "(none)"
 				this.textBoxTextureName.Text = sprite == null ? "" : ( this.GetTextureFileName( sprite.TextureNumber ) ?? "(none)" );
@@ -1054,7 +1016,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		// classic alignment
 
 		/// <summary>
-		/// Finds the classic cel matching a sprite by its index within its group.
+		/// Finds the classic cel matching a sprite: the cel index is the sprite's raw
+		/// identifier (its group index plus the group's FirstSpriteIdentifier), matching how
+		/// the animation frames reference both.
 		/// </summary>
 		private ClassicCel? FindClassicCel( Sprite? sprite )
 		{
@@ -1071,9 +1035,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					continue;
 				}
 				var classicLimb = this.classicCostume.FindLimb( spriteGroup.Identifier );
-				return classicLimb != null && spriteIndex < classicLimb.CelList.Count
-					? classicLimb.CelList[spriteIndex]
-					: null;
+				return Renderer.FindCel( classicLimb, spriteIndex + spriteGroup.FirstSpriteIdentifier );
 			}
 			return null;
 		}
@@ -1207,11 +1169,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			this.costumePreviewControl.AnchorToClassic = this.checkBoxGamePlacement.Checked;
 
-			// the room backdrop is anchored to the actor's game placement, so turning game
-			// placement off drops it rather than leaving the sprites' raw positions floating over
-			// a scene they no longer line up with (selecting a room turns game placement back on)
+			// sprites always draw at their Screen X/Y (the placement the engine honors);
+			// the checkbox only controls the room-backdrop context, so turning it off
+			// drops the backdrop (selecting a room turns it back on)
 			if( !this.checkBoxGamePlacement.Checked && ( this.backdropBelow != null || this.backdropAbove != null ) )
 			{
 				this.suppressUiEvents = true;
@@ -1227,8 +1188,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.UpdateAnimationBounds();
-			this.RefreshPlacements();
-			this.UpdateNumericEditors();
+			this.costumePreviewControl.RefreshContent();
 		}
 
 		/// <summary>
@@ -1298,8 +1258,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
-			// showing a backdrop only makes sense with game placement on
-			this.costumePreviewControl.AnchorToClassic = true;
+			// reflect the backdrop context in the Game placement checkbox
 			this.suppressUiEvents = true;
 			try
 			{

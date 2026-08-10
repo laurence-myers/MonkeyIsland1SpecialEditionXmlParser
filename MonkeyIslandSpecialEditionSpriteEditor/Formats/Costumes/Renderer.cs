@@ -73,6 +73,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes
 
 		/// <summary>
 		/// Gets or sets the matching classic costume cel, when classic data is available.
+		/// The frame's raw sprite identifier is the classic cel index (a group whose
+		/// FirstSpriteIdentifier is non-zero simply has no SE sprites for the leading cels).
+		/// The cel is a calibration reference; the engine positions the sprite by its own
+		/// ScreenX/ScreenY.
 		/// </summary>
 		public ClassicCel? ClassicCel
 		{
@@ -110,9 +114,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes
 
 		/// <summary>
 		/// Resolves the sprites every track of an animation shows at the given step, with
-		/// screen rectangles relative to the actor origin in HD pixels. Tracks whose frame
-		/// list is shorter than the step wrap around (an approximation of the game's
-		/// per-track looping); command frames resolve to no sprite and are skipped.
+		/// screen rectangles relative to the actor origin in HD pixels. A looping track
+		/// (playback flag bit 1, like the classic engine's looping limb sequences) wraps when
+		/// the step passes its end; a one-shot chore track holds its last frame. Command
+		/// frames resolve to no sprite and are skipped.
 		/// </summary>
 		/// <param name="costume">The costume.</param>
 		/// <param name="animation">The animation to resolve.</param>
@@ -139,7 +144,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes
 					continue;
 				}
 
-				var frame = frameList[step % frameList.Count];
+				var loop = ( track.PlaybackFlags & 2 ) != 0;
+				var frame = frameList[loop ? step % frameList.Count : Math.Min( step, frameList.Count - 1 )];
 				var spriteGroup = costume.SpriteGroupList.FirstOrDefault( sg => sg.Identifier == track.SpriteGroupIdentifier );
 				var sprite = spriteGroup?.ResolveSprite( frame );
 				if( spriteGroup == null || sprite == null )
@@ -152,10 +158,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes
 					: new RectangleF( sprite.ScreenX, sprite.ScreenY, sprite.TextureWidth, sprite.TextureHeight );
 
 				var spriteIndex = frame.SpriteIdentifier - spriteGroup.FirstSpriteIdentifier;
+
+				// the frame's raw sprite identifier is the classic cel index: the SE frame
+				// sequences mirror the classic animation command sequences verbatim (verified
+				// against the retail data, e.g. costume 41 HeadBonkFront limb 5), so a group
+				// with a non-zero FirstSpriteIdentifier just lacks sprites for the leading cels
 				var classicLimb = classicCostume?.FindLimb( spriteGroup.Identifier );
-				var classicCel = classicLimb != null && spriteIndex >= 0 && spriteIndex < classicLimb.CelList.Count
-					? classicLimb.CelList[spriteIndex]
-					: null;
+				var classicCel = FindCel( classicLimb, frame.SpriteIdentifier );
 
 				placements.Add( new CostumeSpritePlacement(
 					trackIndex: trackIndex,
@@ -169,6 +178,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes
 			}
 
 			return placements;
+		}
+
+		/// <summary>
+		/// The classic cel a raw SE sprite identifier (= classic cel index) refers to, or null
+		/// when the limb or cel is not present in the classic data.
+		/// </summary>
+		public static ClassicCel? FindCel( ClassicLimb? classicLimb, int celIndex )
+		{
+			return classicLimb != null && celIndex >= 0 && celIndex < classicLimb.CelList.Count
+				? classicLimb.CelList[celIndex]
+				: null;
 		}
 
 		/// <summary>
@@ -198,34 +218,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes
 		}
 
 		/// <summary>
-		/// Returns the rectangle the game actually shows the sprite at, relative to the actor
-		/// origin in HD pixels. The engine follows the classic renderer: each SE sprite is
-		/// anchored bottom-center to the classic cel it replaces, so the sprite's own
-		/// ScreenX/ScreenY only matter when no classic cel is known. (For most costumes the
-		/// two agree, but e.g. the bar's pirate leaders carry ScreenY values ~15 classic
-		/// pixels below their classic cels and would otherwise sink behind their table.)
-		/// </summary>
-		public static RectangleF GetAnchoredScreenRect( CostumeSpritePlacement placement, SizeF hdScale )
-		{
-			var screenRect = placement.ScreenRect;
-			if( placement.ClassicCel == null )
-			{
-				return screenRect;
-			}
-
-			var classicRect = GetClassicScreenRect( placement.ClassicCel, placement.Flipped, hdScale );
-			return new RectangleF(
-				classicRect.Left + ( classicRect.Width - screenRect.Width ) / 2.0f,
-				classicRect.Bottom - screenRect.Height,
-				screenRect.Width,
-				screenRect.Height
-			);
-		}
-
-		/// <summary>
 		/// Renders the first step of the costume's standing animation into a bitmap, the way
-		/// the room preview shows an idle actor. When the matching classic costume is given,
-		/// sprites are anchored to their classic cels (see <see cref="GetAnchoredScreenRect"/>).
+		/// the room preview shows an idle actor. Sprites draw at their own ScreenX/ScreenY -
+		/// the placement the engine honors (per the retail data and the project owner's
+		/// direction); the classic cels are only a calibration reference.
 		/// </summary>
 		/// <param name="costume">The costume to render.</param>
 		/// <param name="directionName">The facing direction ("Left", "Right", "Front", "Back").</param>
@@ -251,13 +247,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes
 				return null;
 			}
 
-			var anchoredRects = placements
-				.Select( p => GetAnchoredScreenRect( p, DefaultHdScale ) )
+			var screenRects = placements
+				.Select( p => p.ScreenRect )
 				.ToList();
-			var bounds = anchoredRects[0];
-			foreach( var anchoredRect in anchoredRects )
+			var bounds = screenRects[0];
+			foreach( var screenRect in screenRects )
 			{
-				bounds = RectangleF.Union( bounds, anchoredRect );
+				bounds = RectangleF.Union( bounds, screenRect );
 			}
 			var width = (int)Math.Ceiling( bounds.Width );
 			var height = (int)Math.Ceiling( bounds.Height );
@@ -280,10 +276,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Costumes
 					}
 
 					var destRect = new RectangleF(
-						anchoredRects[index].X - bounds.X,
-						anchoredRects[index].Y - bounds.Y,
-						anchoredRects[index].Width,
-						anchoredRects[index].Height
+						screenRects[index].X - bounds.X,
+						screenRects[index].Y - bounds.Y,
+						screenRects[index].Width,
+						screenRects[index].Height
 					);
 					var sourceRect = new RectangleF(
 						placement.Sprite.TextureX,

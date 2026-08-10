@@ -84,7 +84,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.labelClassicDelta = new System.Windows.Forms.Label();
 			this.buttonAlignToClassic = new System.Windows.Forms.Button();
 			this.checkBoxCalibration = new System.Windows.Forms.CheckBox();
-			this.labelScreenAnchored = new System.Windows.Forms.Label();
 			this.labelHint = new System.Windows.Forms.Label();
 			this.panelPreviewHost = new System.Windows.Forms.Panel();
 			this.panelPreview = new MonkeyIslandSpecialEditionSpriteEditor.UI.NonScrollingPanel();
@@ -419,7 +418,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.panelProperties.Controls.Add(this.labelClassicDelta);
 			this.panelProperties.Controls.Add(this.buttonAlignToClassic);
 			this.panelProperties.Controls.Add(this.checkBoxCalibration);
-			this.panelProperties.Controls.Add(this.labelScreenAnchored);
 			this.panelProperties.Controls.Add(this.labelHint);
 			this.panelProperties.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.panelProperties.Location = new System.Drawing.Point(0, 0);
@@ -720,16 +718,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.checkBoxCalibration.UseVisualStyleBackColor = true;
 			this.checkBoxCalibration.CheckedChanged += new System.EventHandler(this.HandleCalibrationCheckedChanged);
 			//
-			// labelScreenAnchored
-			//
-			this.labelScreenAnchored.ForeColor = System.Drawing.Color.SaddleBrown;
-			this.labelScreenAnchored.Location = new System.Drawing.Point(6, 442);
-			this.labelScreenAnchored.Name = "labelScreenAnchored";
-			this.labelScreenAnchored.Size = new System.Drawing.Size(220, 44);
-			this.labelScreenAnchored.TabIndex = 33;
-			this.labelScreenAnchored.Text = "This sprite is anchored to its classic cel, so the game ignores Screen X/Y. Turn off Game placement to edit it anyway.";
-			this.labelScreenAnchored.Visible = false;
-			//
 			// labelHint
 			//
 			this.labelHint.ForeColor = System.Drawing.SystemColors.GrayText;
@@ -966,7 +954,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.Label labelClassicDelta;
 		private System.Windows.Forms.Button buttonAlignToClassic;
 		private System.Windows.Forms.CheckBox checkBoxCalibration;
-		private System.Windows.Forms.Label labelScreenAnchored;
 		private System.Windows.Forms.Label labelHint;
 		private System.Windows.Forms.Panel panelPreviewHost;
 		private NonScrollingPanel panelPreview;

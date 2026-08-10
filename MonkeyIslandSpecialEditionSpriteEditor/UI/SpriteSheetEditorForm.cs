@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using MonkeyIslandSpecialEditionSpriteEditor.Commands;
@@ -45,9 +44,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		// the entity whose texture the "Change..." button retargets; equals selectedSprite when
 		// an object sprite is selected, or a background / room-object entity from the tree
 		private ITextureReference? selectedTextureTarget;
-		// the two tree branches whose checkboxes are hidden (static sprites and room objects are
-		// not toggled in the preview); kept so the hidden state can be re-applied after edits
-		private TreeNode? backgroundTreeRoot;
 		private TreeNode? roomObjectsTreeRoot;
 		private bool suppressUiEvents;
 		private bool dirty;
@@ -231,8 +227,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				this.treeViewSprites.BeginUpdate();
 				this.treeViewSprites.Nodes.Clear();
+				this.treeViewBackground.BeginUpdate();
+				this.treeViewBackground.Nodes.Clear();
 
-				this.backgroundTreeRoot = this.AddBackgroundNodes();
+				this.AddBackgroundNodes();
 
 				for( var groupIndex = 0; groupIndex < this.Room!.SpriteHeaderList.Count && groupIndex < this.Room.SpriteGroupList.Count; groupIndex++ )
 				{
@@ -277,17 +275,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 				this.roomObjectsTreeRoot = this.AddRoomObjectNodes();
 
+				this.treeViewBackground.EndUpdate();
 				this.treeViewSprites.EndUpdate();
 			}
 			finally
 			{
 				this.suppressUiEvents = false;
 			}
-
-			// static sprites are baked into the background/foreground bitmaps, so their
-			// checkboxes would do nothing; suppress them (after EndUpdate, when the node
-			// handles exist). Room object checkboxes stay: they toggle the preview overlays.
-			this.ReapplyHiddenCheckBoxes();
 		}
 
 		private static string DescribeSprite( int spriteIndex, Sprite sprite )
@@ -309,18 +303,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
-		/// Adds a "Background" root whose leaves are the room's static sprites, grouped by layer
-		/// (layer 0 is the background, later layers are foreground overlays). Selecting a leaf lets
-		/// the user retarget that static sprite's texture.
+		/// Fills the Backgrounds tab's tree with the room's static sprites, grouped by layer
+		/// (layer 0 is the background, later layers are foreground overlays). Selecting a leaf
+		/// lets the user retarget that static sprite's texture; there are no checkboxes because
+		/// the static sprites are baked into the background/foreground bitmaps.
 		/// </summary>
-		private TreeNode? AddBackgroundNodes()
+		private void AddBackgroundNodes()
 		{
 			if( this.Room!.StaticSpriteList == null || this.Room.StaticSpriteList.All( layer => layer.Count == 0 ) )
 			{
-				return null;
+				return;
 			}
-
-			var backgroundNode = new TreeNode { Text = "Background", Checked = true };
 
 			for( var layerIndex = 0; layerIndex < this.Room.StaticSpriteList.Count; layerIndex++ )
 			{
@@ -333,7 +326,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				var layerNode = new TreeNode
 				{
 					Text = string.Concat( "Layer ", layerIndex, layerIndex == 0 ? " (background)" : " (foreground)" ),
-					Checked = true,
 				};
 
 				for( var staticIndex = 0; staticIndex < layer.Count; staticIndex++ )
@@ -343,15 +335,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					{
 						Text = string.Concat( "Static ", staticIndex, ": ", staticSprite.Width, "x", staticSprite.Height, " @ ", staticSprite.X, ";", staticSprite.Y, " - ", TextureTail( staticSprite.TextureFileName ) ),
 						Tag = staticSprite,
-						Checked = true,
 					} );
 				}
 
-				backgroundNode.Nodes.Add( layerNode );
+				layerNode.Expand();
+				this.treeViewBackground.Nodes.Add( layerNode );
 			}
-
-			this.treeViewSprites.Nodes.Add( backgroundNode );
-			return backgroundNode;
 		}
 
 		/// <summary>
@@ -792,7 +781,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.suppressUiEvents = false;
 			}
 
-			this.splitTree.Panel2Collapsed = this.roomPreviewControl.Actors.Count == 0;
+			var actorCount = this.roomPreviewControl.Actors.Count;
+			this.tabPageActors.Text = actorCount == 0 ? "Actors" : string.Concat( "Actors (", actorCount, ")" );
 		}
 
 		private void HandleActorItemCheck( object sender, ItemCheckEventArgs args )
@@ -1140,9 +1130,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.SyncVisibilityFromTree();
-			// a keyboard toggle can re-show a hidden checkbox (its state image is rewritten), so
-			// re-hide the non-functional branches
-			this.ReapplyHiddenCheckBoxes();
 		}
 
 		private void SyncVisibilityFromTree()
@@ -1255,8 +1242,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.SyncVisibilityFromTree();
-			// re-checking nodes re-shows their state image, so re-hide the non-functional ones
-			this.ReapplyHiddenCheckBoxes();
 		}
 
 		private void ShowAllNodes()
@@ -1277,7 +1262,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.SyncVisibilityFromTree();
-			this.ReapplyHiddenCheckBoxes();
 		}
 
 		private static void SetCheckedRecursive( TreeNode node, bool value )
@@ -1286,59 +1270,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			foreach( TreeNode child in node.Nodes )
 			{
 				SetCheckedRecursive( child, value );
-			}
-		}
-
-		//-------------------------------------------
-		// hiding checkboxes on non-functional nodes
-
-		// WinForms only exposes CheckBoxes tree-wide, so hiding the checkbox on individual nodes
-		// (the static sprite and room object branches, whose checkboxes would do nothing) is done
-		// through the Win32 tree-item state image: index 0 draws no checkbox.
-		private const int TvifState = 0x8;
-		private const int TvisStateImageMask = 0xF000;
-		private const int TvmSetItem = 0x1100 + 63;
-
-		[StructLayout( LayoutKind.Sequential, CharSet = CharSet.Auto )]
-		private struct TvItem
-		{
-			public int mask;
-			public IntPtr hItem;
-			public int state;
-			public int stateMask;
-			public IntPtr lpszText;
-			public int cchTextMax;
-			public int iImage;
-			public int iSelectedImage;
-			public int cChildren;
-			public IntPtr lParam;
-		}
-
-		[DllImport( "user32.dll", CharSet = CharSet.Auto )]
-		private static extern IntPtr SendMessage( IntPtr hWnd, int msg, IntPtr wParam, ref TvItem lParam );
-
-		private void ReapplyHiddenCheckBoxes()
-		{
-			if( this.backgroundTreeRoot != null )
-			{
-				HideCheckBoxesRecursive( this.treeViewSprites, this.backgroundTreeRoot );
-			}
-		}
-
-		private static void HideCheckBoxesRecursive( TreeView treeView, TreeNode node )
-		{
-			var item = new TvItem
-			{
-				hItem = node.Handle,
-				mask = TvifState,
-				stateMask = TvisStateImageMask,
-				state = 0,
-			};
-			SendMessage( treeView.Handle, TvmSetItem, IntPtr.Zero, ref item );
-
-			foreach( TreeNode child in node.Nodes )
-			{
-				HideCheckBoxesRecursive( treeView, child );
 			}
 		}
 
@@ -1357,7 +1288,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			this.SetSelectedSprite( this.roomPreviewControl.SelectedSprite?.Placement.Sprite );
+			var sprite = this.roomPreviewControl.SelectedSprite?.Placement.Sprite;
+			this.SetSelectedSprite( sprite );
+			if( sprite != null )
+			{
+				// reveal the tree selection the preview click just made
+				this.tabControlRoom.SelectedTab = this.tabPageObjects;
+			}
 		}
 
 		private void HandlePreviewRoomObjectSelectionChanged( object? sender, EventArgs args )
@@ -1398,6 +1335,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				this.SetSelectedRoomObjectInstance( entry.RoomObject );
 			}
+			// reveal the tree selection the preview click just made
+			this.tabControlRoom.SelectedTab = this.tabPageObjects;
 		}
 
 		//-------------------------------------------
@@ -1924,7 +1863,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			// capture the tree node now: on undo/redo the selection may be elsewhere, and the
 			// leaf label (background, room object chunk) has no lookup helper to find it again
-			var node = this.treeViewSprites.SelectedNode;
+			var node = this.treeViewBackground.SelectedNode?.Tag == target
+				? this.treeViewBackground.SelectedNode
+				: this.treeViewSprites.SelectedNode;
 			target.TextureFileName = resourcePath;
 
 			this.RecordEdit( new UndoableEdit
@@ -1936,9 +1877,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				Redo = () => target.TextureFileName = resourcePath,
 				Select = () =>
 				{
-					if( node != null )
+					if( node?.TreeView != null )
 					{
-						this.treeViewSprites.SelectedNode = node;
+						node.TreeView.SelectedNode = node;
 					}
 				},
 				ExtraRefresh = () => this.RefreshAfterTextureTargetChange( target, node ),
@@ -2430,9 +2371,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			if( this.buttonSaveWalkBoxes != null )
 			{
 				this.buttonSaveWalkBoxes.Enabled = this.walkBoxesDirty;
-				// keep the group (and its Save button) reachable while there are unsaved box
-				// edits, even if the overlay was toggled off
-				this.groupBoxWalkBox.Visible = this.checkBoxWalkBoxes.Checked || this.walkBoxesDirty;
 			}
 
 			// the menu acts on whichever domain Ctrl+Z/Y would target
@@ -2500,8 +2438,76 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.roomPreviewControl.ShowWalkBoxes = this.checkBoxWalkBoxes.Checked;
-			this.groupBoxWalkBox.Visible = this.checkBoxWalkBoxes.Checked;
+			this.PopulateWalkBoxList();
 			this.UpdateWalkBoxEditors();
+			this.roomPreviewControl.Invalidate();
+		}
+
+		private void PopulateWalkBoxList()
+		{
+			this.suppressUiEvents = true;
+			try
+			{
+				this.listViewWalkBoxes.BeginUpdate();
+				this.listViewWalkBoxes.Items.Clear();
+				for( var index = 0; index < this.workingBoxes.Count; index++ )
+				{
+					var item = new ListViewItem( new[] { "", "", "", "" } );
+					ApplyWalkBoxListValues( item, index, this.workingBoxes[index] );
+					this.listViewWalkBoxes.Items.Add( item );
+				}
+				this.listViewWalkBoxes.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.tabPageWalkBoxes.Text = this.workingBoxes.Count == 0
+				? "Walk boxes"
+				: string.Concat( "Walk boxes (", this.workingBoxes.Count, ")" );
+		}
+
+		private static void ApplyWalkBoxListValues( ListViewItem item, int index, ClassicBox box )
+		{
+			item.SubItems[0].Text = index.ToString();
+			item.SubItems[1].Text = box.Mask.ToString();
+			item.SubItems[2].Text = box.IsWalkable ? "yes" : "no";
+			item.SubItems[3].Text = box.Scale.ToString();
+		}
+
+		/// <summary>
+		/// Rewrites the list rows in place after a box attribute changed (an edit or an
+		/// undo/redo); the row count never changes outside <see cref="BuildWalkBoxes"/>.
+		/// </summary>
+		private void RefreshWalkBoxListValues()
+		{
+			for( var index = 0; index < this.listViewWalkBoxes.Items.Count && index < this.workingBoxes.Count; index++ )
+			{
+				ApplyWalkBoxListValues( this.listViewWalkBoxes.Items[index], index, this.workingBoxes[index] );
+			}
+		}
+
+		/// <summary>
+		/// Selects the clicked walk box in the preview, turning the overlay on first so the
+		/// selection is visible.
+		/// </summary>
+		private void HandleWalkBoxListSelectionChanged( object sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+
+			var index = this.listViewWalkBoxes.SelectedIndices.Count > 0 ? this.listViewWalkBoxes.SelectedIndices[0] : -1;
+			var walkBox = index >= 0 && index < this.roomPreviewControl.WalkBoxes.Count
+				? this.roomPreviewControl.WalkBoxes[index]
+				: null;
+			if( walkBox != null && this.checkBoxWalkBoxes.Enabled && !this.checkBoxWalkBoxes.Checked )
+			{
+				this.checkBoxWalkBoxes.Checked = true;
+			}
+			this.roomPreviewControl.SelectedWalkBox = walkBox;
 			this.roomPreviewControl.Invalidate();
 		}
 
@@ -2513,7 +2519,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 			var on = this.checkBoxWalkBoxes.Checked;
 			this.roomPreviewControl.ShowWalkBoxes = on;
-			this.groupBoxWalkBox.Visible = on || this.walkBoxesDirty;
 			if( !on )
 			{
 				// don't leave a hidden box selected, eating arrow keys
@@ -2526,11 +2531,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			this.walkBoxUndoStack.BreakCoalescing();
 			this.UpdateWalkBoxEditors();
+			if( this.roomPreviewControl.SelectedWalkBox != null )
+			{
+				// reveal the list selection the preview click just made
+				this.tabControlRoom.SelectedTab = this.tabPageWalkBoxes;
+			}
 		}
 
 		private void UpdateWalkBoxEditors()
 		{
-			var box = this.roomPreviewControl.SelectedWalkBox?.Box;
+			var selectedWalkBox = this.roomPreviewControl.SelectedWalkBox;
+			var box = selectedWalkBox?.Box;
 			this.suppressUiEvents = true;
 			try
 			{
@@ -2543,6 +2554,18 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					this.numericBoxMask.Value = Clamp( box.Mask, this.numericBoxMask );
 					this.checkBoxBoxWalkable.Checked = box.IsWalkable;
 					this.numericBoxScale.Value = Clamp( box.Scale, this.numericBoxScale );
+				}
+
+				// keep the list selection in step with the preview selection
+				var selectedIndex = selectedWalkBox?.Index ?? -1;
+				if( selectedIndex >= 0 && selectedIndex < this.listViewWalkBoxes.Items.Count )
+				{
+					this.listViewWalkBoxes.Items[selectedIndex].Selected = true;
+					this.listViewWalkBoxes.EnsureVisible( selectedIndex );
+				}
+				else
+				{
+					this.listViewWalkBoxes.SelectedItems.Clear();
 				}
 			}
 			finally
@@ -2596,6 +2619,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.RecordWalkBoxEdit( box, "BoxScale", "walk box scale", () => box.Scale = oldValue, () => box.Scale = newValue );
 			}
 
+			this.RefreshWalkBoxListValues();
 			this.RecomputeActorLayering();
 			this.roomPreviewControl.Invalidate();
 		}
@@ -2666,7 +2690,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 							this.suppressUiEvents = false;
 						}
 						this.roomPreviewControl.ShowWalkBoxes = true;
-						this.groupBoxWalkBox.Visible = true;
 					}
 					if( selectedIndex != null && selectedIndex.Value >= 0 && selectedIndex.Value < this.roomPreviewControl.WalkBoxes.Count )
 					{
@@ -2679,6 +2702,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private void RefreshAfterWalkBoxUndoRedo()
 		{
 			this.UpdateWalkBoxEditors();
+			this.RefreshWalkBoxListValues();
 			this.RecomputeActorLayering();
 			this.roomPreviewControl.Invalidate();
 		}
