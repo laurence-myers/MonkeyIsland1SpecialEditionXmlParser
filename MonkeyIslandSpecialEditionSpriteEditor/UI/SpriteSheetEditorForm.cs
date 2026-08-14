@@ -183,6 +183,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.BuildWalkBoxes();
 			this.RefreshPlacements();
 			this.RefreshRoomObjectPreviews();
+
+			// open on the game's default composite rather than every object state at once: the
+			// static background already paints each object's baked default state, so hide the
+			// object frames (the alternate states) and show the named room object overlays
+			this.ShowGameDefaultView();
+
 			this.UpdateNumericEditors();
 		}
 
