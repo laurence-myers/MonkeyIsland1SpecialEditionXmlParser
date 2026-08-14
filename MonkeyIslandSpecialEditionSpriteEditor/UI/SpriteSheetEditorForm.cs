@@ -174,9 +174,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.warningLabel.Visible = false;
 			}
 
-			this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room, this.LoadTexture );
-			this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room, this.LoadTexture );
-			this.checkBoxForeground.Enabled = this.roomPreviewControl.Foreground != null;
+			this.RebuildStaticLayers();
 
 			this.PopulateTextureCombo();
 			this.PopulateSpriteTree();
@@ -460,6 +458,31 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		//-------------------------------------------
 		// placement refresh
+
+		/// <summary>
+		/// Rebuilds the preview's static imagery from the room: the background (static layer 0)
+		/// and one bitmap per foreground static layer. The preview interleaves the object
+		/// sprites between these layers by the sprite's Layer, so an object state can paint over
+		/// the foreground the way the game composites it.
+		/// </summary>
+		private void RebuildStaticLayers()
+		{
+			if( this.Room == null )
+			{
+				return;
+			}
+
+			this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room, this.LoadTexture );
+
+			var layerCount = Renderer.GetStaticLayerCount( this.Room );
+			var foregroundLayers = new List<Bitmap?>();
+			for( var layer = 1; layer < layerCount; layer++ )
+			{
+				foregroundLayers.Add( Renderer.RenderStaticLayer( this.Room, this.LoadTexture, layer ) );
+			}
+			this.roomPreviewControl.ForegroundLayers = foregroundLayers;
+			this.checkBoxForeground.Enabled = this.roomPreviewControl.HasForeground;
+		}
 
 		private void RefreshPlacements()
 		{
@@ -1971,9 +1994,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			if( target is StaticSprite )
 			{
 				// the background/foreground bitmaps bake in the static sprites, so rebuild them
-				this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room!, this.LoadTexture );
-				this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room!, this.LoadTexture );
-				this.checkBoxForeground.Enabled = this.roomPreviewControl.Foreground != null;
+				this.RebuildStaticLayers();
 			}
 			else if( target is RoomObjectSprite || target is RoomObjectImageChunk )
 			{
@@ -2171,8 +2192,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			// reload everything that may show the replaced texture
 			this.textureCache.Clear();
-			this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room!, this.LoadTexture );
-			this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room!, this.LoadTexture );
+			this.RebuildStaticLayers();
 			this.UpdateAtlas();
 			this.RefreshPlacements();
 		}
@@ -2267,8 +2287,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			// some textures may have imported even when others failed, so always reload
 			this.textureCache.Clear();
-			this.roomPreviewControl.Background = Renderer.RenderBackground( this.Room, this.LoadTexture );
-			this.roomPreviewControl.Foreground = Renderer.RenderForeground( this.Room, this.LoadTexture );
+			this.RebuildStaticLayers();
 			this.UpdateAtlas();
 			this.RefreshPlacements();
 		}

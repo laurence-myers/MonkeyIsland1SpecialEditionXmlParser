@@ -297,6 +297,40 @@ namespace Tests
 		}
 
 		[Test]
+		public void RenderStaticLayer_RendersOnlyTheRequestedLayer()
+		{
+			// Arrange: layer 0 red at 0,0; layer 1 blue at 10,0
+			var room = MakeRoomWithTwoStaticLayers();
+			var textures = new Dictionary<string, Image>
+			{
+				{ "red.dxt", MakeSolidBitmap( Color.Red ) },
+				{ "blue.dxt", MakeSolidBitmap( Color.Blue ) },
+			};
+			Image? Loader( string? fileName ) => fileName != null && textures.ContainsKey( fileName ) ? textures[fileName] : null;
+
+			// Act
+			var layer0 = Renderer.RenderStaticLayer( room, Loader, 0 );
+			var layer1 = Renderer.RenderStaticLayer( room, Loader, 1 );
+
+			// Assert: each bitmap is background-sized but carries only its own layer
+			Assert.That( Renderer.GetStaticLayerCount( room ), Is.EqualTo( 2 ) );
+			Assert.That( layer0, Is.Not.Null );
+			Assert.That( layer0!.GetPixel( 5, 5 ).ToArgb(), Is.EqualTo( Color.Red.ToArgb() ) );
+			Assert.That( layer0.GetPixel( 15, 5 ).A, Is.EqualTo( 0 ) );
+			Assert.That( layer1, Is.Not.Null );
+			Assert.That( layer1!.GetPixel( 15, 5 ).ToArgb(), Is.EqualTo( Color.Blue.ToArgb() ) );
+			Assert.That( layer1.GetPixel( 5, 5 ).A, Is.EqualTo( 0 ) );
+		}
+
+		[Test]
+		public void RenderStaticLayer_OutOfRange_ReturnsNull()
+		{
+			var room = MakeRoomWithTwoStaticLayers();
+			Assert.That( Renderer.RenderStaticLayer( room, fileName => null, -1 ), Is.Null );
+			Assert.That( Renderer.RenderStaticLayer( room, fileName => null, 5 ), Is.Null );
+		}
+
+		[Test]
 		public void RenderForeground_WithoutForegroundLayers_ReturnsNull()
 		{
 			// Arrange: a single static layer only

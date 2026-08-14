@@ -212,6 +212,31 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Rooms
 			return RenderStaticLayers( room, textureLoader, firstLayer: 1, lastLayer: int.MaxValue );
 		}
 
+		/// <summary>
+		/// The number of static sprite layers the room has. Layer 0 is the painted background;
+		/// the rest are the near foreground the game bands object sprites behind (or between).
+		/// </summary>
+		public static int GetStaticLayerCount( Room room )
+		{
+			return room.StaticSpriteList?.Count ?? 0;
+		}
+
+		/// <summary>
+		/// Renders a single static sprite layer into a background-sized bitmap, or null when the
+		/// layer is empty or out of range. The preview draws these one at a time so it can
+		/// interleave the object sprites between them by the sprite's Layer, the way the game
+		/// composites an object's current state into its z-band (e.g. room 27's "banana picker"
+		/// state paints over the hut wall painted into static layer 1, rather than under it).
+		/// </summary>
+		public static Bitmap? RenderStaticLayer( Room room, Func<string?, Image?> textureLoader, int layerIndex )
+		{
+			if( layerIndex < 0 )
+			{
+				return null;
+			}
+			return RenderStaticLayers( room, textureLoader, firstLayer: layerIndex, lastLayer: layerIndex );
+		}
+
 		private static Bitmap? RenderStaticLayers( Room room, Func<string?, Image?> textureLoader, int firstLayer, int lastLayer )
 		{
 			var size = GetBackgroundSize( room );

@@ -20,7 +20,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private readonly CanvasMouseNavigation mouseNavigation;
 		private float zoom = 0.5f;
 		private Bitmap? background;
-		private Bitmap? foreground;
+		private IReadOnlyList<Bitmap?> foregroundLayers = System.Array.Empty<Bitmap?>();
 		private bool showForeground = true;
 		private RoomPreviewControlSprite? selectedSprite;
 		private RoomPreviewControlRoomObject? selectedRoomObject;
@@ -79,19 +79,34 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
-		/// Gets or sets the composited foreground image, drawn above all sprites the way the
-		/// game draws its foreground static layers.
+		/// Gets or sets the foreground static layers (static layer 1 upward), each sized like
+		/// the background so they overlay 1:1. The preview interleaves the object sprites
+		/// between these layers by the sprite's Layer, the way the game bands an object's
+		/// current state - a Layer 1 sprite draws over foreground layer 1, a Layer 0 sprite
+		/// under it. Null entries are layers with no drawable textures.
 		/// </summary>
-		public Bitmap? Foreground
+		public IReadOnlyList<Bitmap?> ForegroundLayers
 		{
 			get
 			{
-				return this.foreground;
+				return this.foregroundLayers;
 			}
 			set
 			{
-				this.foreground = value;
+				this.foregroundLayers = value ?? System.Array.Empty<Bitmap?>();
 				this.Invalidate();
+			}
+		}
+
+		/// <summary>
+		/// Gets whether the room has any drawable foreground layer (controls whether the
+		/// "foreground" toggle does anything).
+		/// </summary>
+		public bool HasForeground
+		{
+			get
+			{
+				return this.foregroundLayers.Any( layer => layer != null );
 			}
 		}
 
@@ -565,33 +580,31 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				}
 			}
 
-			foreach( var sprite in this.GetDrawOrder() )
-			{
-				if( !sprite.Visible || sprite.Texture == null )
-				{
-					continue;
-				}
+			// object sprites interleave with the foreground static layers by their Layer: a
+			// sprite with Layer L composites just after static layer L (foreground layer L),
+			// the way the game bands an object's current state between the painted background
+			// and the near foreground props. Band 0 (Layer 0) draws under every foreground
+			// layer; a Layer at or past the last one draws over them all.
+			var orderedSprites = this.GetDrawOrder().Where( s => s.Visible && s.Texture != null ).ToList();
+			var foregroundCount = this.foregroundLayers.Count;
 
-				var screenRect = sprite.Placement.ScreenRect;
-				var destRect = new RectangleF(
-					screenRect.X * this.zoom,
-					screenRect.Y * this.zoom,
-					screenRect.Width * this.zoom,
-					screenRect.Height * this.zoom
-				);
-				graphics.DrawImage( sprite.Texture, destRect, (RectangleF)sprite.SourceRect, GraphicsUnit.Pixel );
-			}
+			this.PaintSpriteBand( graphics, orderedSprites, band: 0, foregroundCount );
 
 			// actors on masked walkboxes go behind the foreground props, the others in front
 			// (that is where their art expects the props: the pirate leaders' hands rest on
 			// their table)
 			this.PaintActors( graphics, drawAboveForeground: false );
 
-			if( this.foreground != null && this.showForeground )
+			for( var layer = 0; layer < foregroundCount; layer++ )
 			{
-				var destRect = new RectangleF( 0, 0, this.foreground.Width * this.zoom, this.foreground.Height * this.zoom );
-				var srcRect = new RectangleF( 0, 0, this.foreground.Width, this.foreground.Height );
-				graphics.DrawImage( this.foreground, destRect, srcRect, GraphicsUnit.Pixel );
+				var foregroundLayer = this.foregroundLayers[layer];
+				if( this.showForeground && foregroundLayer != null )
+				{
+					var destRect = new RectangleF( 0, 0, foregroundLayer.Width * this.zoom, foregroundLayer.Height * this.zoom );
+					var srcRect = new RectangleF( 0, 0, foregroundLayer.Width, foregroundLayer.Height );
+					graphics.DrawImage( foregroundLayer, destRect, srcRect, GraphicsUnit.Pixel );
+				}
+				this.PaintSpriteBand( graphics, orderedSprites, band: layer + 1, foregroundCount );
 			}
 
 			this.PaintActors( graphics, drawAboveForeground: true );
@@ -681,6 +694,38 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private IEnumerable<RoomPreviewControlSprite> GetDrawOrder()
 		{
 			return this.Sprites.OrderBy( s => s.Placement.Sprite.Layer );
+		}
+
+		/// <summary>
+		/// Draws the ordered sprites that fall in one z-band (see <see cref="SpriteBand"/>).
+		/// </summary>
+		private void PaintSpriteBand( Graphics graphics, List<RoomPreviewControlSprite> orderedSprites, int band, int foregroundLayerCount )
+		{
+			foreach( var sprite in orderedSprites )
+			{
+				if( SpriteBand( sprite, foregroundLayerCount ) != band )
+				{
+					continue;
+				}
+				var screenRect = sprite.Placement.ScreenRect;
+				var destRect = new RectangleF(
+					screenRect.X * this.zoom,
+					screenRect.Y * this.zoom,
+					screenRect.Width * this.zoom,
+					screenRect.Height * this.zoom
+				);
+				graphics.DrawImage( sprite.Texture!, destRect, (RectangleF)sprite.SourceRect, GraphicsUnit.Pixel );
+			}
+		}
+
+		/// <summary>
+		/// The z-band an object sprite composites into: its Layer clamped to the number of
+		/// foreground static layers. Layer 0 draws under every foreground layer (band 0); a
+		/// Layer at or past the last foreground layer draws over them all (band = count).
+		/// </summary>
+		internal static int SpriteBand( RoomPreviewControlSprite sprite, int foregroundLayerCount )
+		{
+			return Math.Max( 0, Math.Min( sprite.Placement.Sprite.Layer, foregroundLayerCount ) );
 		}
 
 		//-------------------------------------------
