@@ -293,6 +293,114 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				.ToList();
 		}
 
+		/// <summary>
+		/// Finds the entry script (ENCD) byte range of a room, for the entry evaluator.
+		/// </summary>
+		internal static (int Start, int End)? FindEntryScript( byte[] data, int roomNumber )
+		{
+			foreach( var script in HarvestScripts( data ) )
+			{
+				if( script.Kind == ScriptKind.Entry && script.RoomNumber == roomNumber )
+				{
+					return ( script.Start, script.End );
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Finds the global script (SCRP) byte ranges from the script directory (DSCR) in the
+		/// index file, keyed by script number. The directory maps each script to a room and an
+		/// offset from that room's block, the same way the costume directory does.
+		/// </summary>
+		internal static Dictionary<int, (int Start, int End)> FindGlobalScripts( byte[] data, byte[] decodedIndex )
+		{
+			var globalScripts = new Dictionary<int, (int Start, int End)>();
+
+			// the room offsets (LOFF) turn the directory's room-relative offsets into positions
+			var offsetByRoomNumber = new Dictionary<int, int>();
+			foreach( var lecf in ReadBlocks( data, 0, data.Length ) )
+			{
+				if( lecf.Tag != "LECF" )
+				{
+					continue;
+				}
+				foreach( var child in ReadBlocks( data, lecf.Position + 8, lecf.Position + lecf.Size ) )
+				{
+					if( child.Tag != "LOFF" )
+					{
+						continue;
+					}
+					var position = child.Position + 8;
+					int count = data[position];
+					position++;
+					for( var index = 0; index < count; index++ )
+					{
+						offsetByRoomNumber[data[position]] = BitConverter.ToInt32( data, position + 1 );
+						position += 5;
+					}
+				}
+			}
+
+			foreach( var block in ReadBlocks( decodedIndex, 0, decodedIndex.Length ) )
+			{
+				if( block.Tag != "DSCR" )
+				{
+					continue;
+				}
+
+				var position = block.Position + 8;
+				int count = decodedIndex[position] | ( decodedIndex[position + 1] << 8 );
+				position += 2;
+				for( var scriptId = 0; scriptId < count; scriptId++ )
+				{
+					int roomNumber = decodedIndex[position + scriptId];
+					var offset = BitConverter.ToInt32( decodedIndex, position + count + scriptId * 4 );
+					int roomOffset;
+					if( roomNumber == 0 || !offsetByRoomNumber.TryGetValue( roomNumber, out roomOffset ) )
+					{
+						continue;
+					}
+
+					// the entry must point at a SCRP block; anything else is a stale slot
+					var scriptPosition = roomOffset + offset;
+					if( scriptPosition < 0 || scriptPosition + 8 > data.Length
+						|| Encoding.ASCII.GetString( data, scriptPosition, 4 ) != "SCRP" )
+					{
+						continue;
+					}
+					var size = ( data[scriptPosition + 4] << 24 ) | ( data[scriptPosition + 5] << 16 )
+						| ( data[scriptPosition + 6] << 8 ) | data[scriptPosition + 7];
+					if( size < 8 || scriptPosition + size > data.Length )
+					{
+						continue;
+					}
+					globalScripts[scriptId] = ( scriptPosition + 8, scriptPosition + size );
+				}
+				break;
+			}
+
+			return globalScripts;
+		}
+
+		/// <summary>
+		/// Finds the local script (LSCR) byte ranges of a room, keyed by script number, so the
+		/// entry evaluator can follow startScript calls into them.
+		/// </summary>
+		internal static Dictionary<int, (int Start, int End)> FindLocalScripts( byte[] data, int roomNumber )
+		{
+			var localScripts = new Dictionary<int, (int Start, int End)>();
+			foreach( var script in HarvestScripts( data ) )
+			{
+				if( script.Kind == ScriptKind.Local && script.RoomNumber == roomNumber
+					&& !localScripts.ContainsKey( script.ScriptId ) )
+				{
+					localScripts[script.ScriptId] = ( script.Start, script.End );
+				}
+			}
+			return localScripts;
+		}
+
 		private static void HarvestLflfScripts( byte[] data, BlockInfo lflf, Dictionary<int, int> roomNumberByOffset, List<ScriptInfo> scripts )
 		{
 			int? roomNumber = null;
@@ -600,6 +708,49 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		DrawObject,
 		PickupObject,
 		SetOwnerOf,
+
+		/// <summary>move: variable A gets the value of operand B.</summary>
+		SetVariable,
+
+		/// <summary>add: variable A gets its value plus operand B.</summary>
+		AddVariable,
+
+		/// <summary>subtract: variable A gets its value minus operand B.</summary>
+		SubtractVariable,
+
+		/// <summary>increment: variable A gets its value plus one.</summary>
+		IncrementVariable,
+
+		/// <summary>decrement: variable A gets its value minus one.</summary>
+		DecrementVariable,
+
+		/// <summary>
+		/// Variable A gets a value this decoder does not compute (an expression, a random
+		/// number, an actor query). An evaluator must drop what it knew about the variable.
+		/// A VariableId of -1 means an indexed write whose target is not known; an evaluator
+		/// must then drop everything it knew.
+		/// </summary>
+		InvalidateVariable,
+
+		/// <summary>getObjectState: variable A gets the state of object B.</summary>
+		GetObjectState,
+
+		/// <summary>getObjectOwner: variable A gets the owner of object B.</summary>
+		GetObjectOwner,
+
+		/// <summary>
+		/// startScript or chainScript: the script with number A starts. chainScript also stops
+		/// the current script, but the decoder does not mark that; the evaluator treats both as
+		/// a call.
+		/// </summary>
+		StartScript,
+
+		/// <summary>
+		/// One argument of the startScript call that follows: operand A is the value, literal B
+		/// is the argument position. The engine copies the arguments into the local variables of
+		/// the started script.
+		/// </summary>
+		StartScriptArg,
 	}
 
 	/// <summary>
@@ -734,9 +885,33 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			return variable;
 		}
 
+		/// <summary>
+		/// Reads a result variable reference without an event. Only the assignment opcodes the
+		/// evaluator understands use this; everything else goes through
+		/// <see cref="ReadResultVariable"/> so the write is never silent.
+		/// </summary>
+		private int ReadResultVariableId()
+		{
+			return this.ReadVariable();
+		}
+
+		/// <summary>
+		/// Reads a result variable reference for an opcode whose value this decoder does not
+		/// compute, and records that the variable now holds an unknown value.
+		/// </summary>
 		private void ReadResultVariable()
 		{
-			this.ReadVariable();
+			var variableId = this.ReadVariable();
+			this.AddEvent( ScriptEventKind.InvalidateVariable, VariableOperand( variableId ) );
+		}
+
+		private static Operand VariableOperand( int variableId )
+		{
+			return new Operand
+			{
+				VariableId = variableId,
+				IsLiteral = false,
+			};
 		}
 
 		/// <summary>getVarOrDirectByte: a literal byte, or a variable when the mask bit is set.</summary>
@@ -778,6 +953,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// <summary>A 0xFF terminated list of word values, each prefixed by its own parameter byte.</summary>
 		private void VarArgList()
 		{
+			this.VarArgList( null );
+		}
+
+		/// <summary>
+		/// Reads an argument list and, when a list is given, collects the operands so the
+		/// caller can record them.
+		/// </summary>
+		private void VarArgList( List<Operand>? collected )
+		{
 			for( var count = 0; count < 33; count++ )
 			{
 				var aux = this.ReadByte();
@@ -785,7 +969,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				{
 					return;
 				}
-				this.VarOrWord( aux, 0x80 );
+				var operand = this.VarOrWord( aux, 0x80 );
+				collected?.Add( operand );
 			}
 			throw new DecodeException( "unterminated argument list" );
 		}
@@ -835,7 +1020,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// </summary>
 		private static ScriptCondition VariableCondition( int variableId, ScriptComparison comparison, Operand value )
 		{
-			return new ScriptCondition( ScriptConditionKind.Variable, variableId, comparison, value.Value, value.IsLiteral );
+			return new ScriptCondition( ScriptConditionKind.Variable, variableId, comparison, value.Value, value.IsLiteral, value.VariableId );
 		}
 
 		/// <summary>
@@ -865,6 +1050,24 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		private void AddEvent( ScriptEventKind kind, Operand a, Operand b = default, Operand c = default )
 		{
 			this.Events.Add( new ScriptEvent( kind, a, b, c ) );
+		}
+
+		/// <summary>
+		/// Reads a startScript/chainScript argument list and records the arguments before the
+		/// call itself, so an evaluator sees the values first and the call last.
+		/// </summary>
+		private void EmitStartScript( Operand script )
+		{
+			var arguments = new List<Operand>();
+			this.VarArgList( arguments );
+			for( var index = 0; index < arguments.Count; index++ )
+			{
+				this.AddEvent(
+					ScriptEventKind.StartScriptArg,
+					arguments[index],
+					new Operand { Value = index, IsLiteral = true, VariableId = -1 } );
+			}
+			this.AddEvent( ScriptEventKind.StartScript, script );
 		}
 
 		//-------------------------------------------
@@ -955,7 +1158,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				case 0xC0:                                        // endCutscene
 					return;
 				case 0xC6:                                        // decrement
-					this.ReadResultVariable();
+					this.AddEvent( ScriptEventKind.DecrementVariable, VariableOperand( this.ReadResultVariableId() ) );
 					return;
 				case 0xCC:                                        // pseudoRoom
 					this.PseudoRoom();
@@ -1004,9 +1207,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					this.VarOrByte( opcode, 0x80 );
 					return;
 				case 0x42:                                        // chainScript
-					this.VarOrByte( opcode, 0x80 );
-					this.VarArgList();
+				{
+					var script = this.VarOrByte( opcode, 0x80 );
+					this.EmitStartScript( script );
 					return;
+				}
 				case 0x62:                                        // stopScript
 					this.VarOrByte( opcode, 0x80 );
 					return;
@@ -1067,7 +1272,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					this.SetVarRange( opcode );
 					return;
 				case 0x46:                                        // increment
-					this.ReadResultVariable();
+					this.AddEvent( ScriptEventKind.IncrementVariable, VariableOperand( this.ReadResultVariableId() ) );
 					return;
 				case 0x66:                                        // getClosestObjActor (takes a word)
 					this.ReadResultVariable();
@@ -1120,9 +1325,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				case 0x2A:
 				case 0x4A:
 				case 0x6A:
-					this.VarOrByte( opcode, 0x80 );
-					this.VarArgList();
+				{
+					var script = this.VarOrByte( opcode, 0x80 );
+					this.EmitStartScript( script );
 					return;
+				}
 
 				case 0x0B:                                        // getVerbEntrypoint
 				case 0x4B:
@@ -1181,9 +1388,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					return;
 
 				case 0x0F:                                        // getObjectState
-					this.ReadResultVariable();
-					this.VarOrWord( opcode, 0x80 );
+				{
+					var target = this.ReadResultVariableId();
+					var stateObject = this.VarOrWord( opcode, 0x80 );
+					this.AddEvent( ScriptEventKind.GetObjectState, VariableOperand( target ), stateObject );
 					return;
+				}
 				case 0x2F:                                        // ifNotState
 				case 0x4F:                                        // ifState
 				case 0x6F:                                        // ifNotState
@@ -1197,15 +1407,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 						stateObject.IsLiteral ? stateObject.Value : -1,
 						equals ? ScriptComparison.Equal : ScriptComparison.NotEqual,
 						state.Value,
-						state.IsLiteral && stateObject.IsLiteral
+						state.IsLiteral,
+						state.VariableId
 					) );
 					return;
 				}
 
 				case 0x10:                                        // getObjectOwner
-					this.ReadResultVariable();
-					this.VarOrWord( opcode, 0x80 );
+				{
+					var target = this.ReadResultVariableId();
+					var ownedObject = this.VarOrWord( opcode, 0x80 );
+					this.AddEvent( ScriptEventKind.GetObjectOwner, VariableOperand( target ), ownedObject );
 					return;
+				}
 				case 0x30:                                        // matrixOps
 					this.MatrixOps();
 					return;
@@ -1294,14 +1508,33 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 				case 0x17:                                        // and
 				case 0x57:                                        // or
-				case 0x1A:                                        // move
-				case 0x3A:                                        // subtract
-				case 0x5A:                                        // add
 				case 0x1B:                                        // multiply
 				case 0x5B:                                        // divide
 					this.ReadResultVariable();
 					this.VarOrWord( opcode, 0x80 );
 					return;
+
+				case 0x1A:                                        // move
+				{
+					var target = this.ReadResultVariableId();
+					var value = this.VarOrWord( opcode, 0x80 );
+					this.AddEvent( ScriptEventKind.SetVariable, VariableOperand( target ), value );
+					return;
+				}
+				case 0x3A:                                        // subtract
+				{
+					var target = this.ReadResultVariableId();
+					var value = this.VarOrWord( opcode, 0x80 );
+					this.AddEvent( ScriptEventKind.SubtractVariable, VariableOperand( target ), value );
+					return;
+				}
+				case 0x5A:                                        // add
+				{
+					var target = this.ReadResultVariableId();
+					var value = this.VarOrWord( opcode, 0x80 );
+					this.AddEvent( ScriptEventKind.AddVariable, VariableOperand( target ), value );
+					return;
+				}
 				case 0x37:                                        // startObject
 				case 0x77:
 					this.VarOrWord( opcode, 0x80 );
@@ -1393,7 +1626,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			var drawnObject = this.VarOrWord( opcode, 0x80 );
 			var subOpcode = this.ReadByte();
-			var state = default( Operand );
+
+			// the engine sets state 1 unless the "set state" form carries another value
+			var state = new Operand { Value = 1, IsLiteral = true, VariableId = -1 };
 			switch( subOpcode & 0x1F )
 			{
 				case 1:                                           // draw at position
@@ -1408,23 +1643,23 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				default:
 					throw new DecodeException( "unhandled drawObject sub-opcode" );
 			}
-			// drawObject makes the object visible (state carried when the "set state" form is used)
 			this.AddEvent( ScriptEventKind.DrawObject, drawnObject, state );
 		}
 
 		private void SetVarRange( int opcode )
 		{
-			this.ReadResultVariable();
+			// assigns literal values to consecutive variables, starting at the result variable
+			var baseVariableId = this.ReadResultVariableId();
 			int count = this.ReadByte();
 			for( var index = 0; index < count; index++ )
 			{
-				if( ( opcode & 0x80 ) != 0 )
+				var value = ( opcode & 0x80 ) != 0 ? this.ReadWord() : this.ReadByte();
+				if( baseVariableId >= 0 )
 				{
-					this.ReadWord();
-				}
-				else
-				{
-					this.ReadByte();
+					this.AddEvent(
+						ScriptEventKind.SetVariable,
+						VariableOperand( baseVariableId + index ),
+						new Operand { Value = value, IsLiteral = true, VariableId = -1 } );
 				}
 			}
 		}

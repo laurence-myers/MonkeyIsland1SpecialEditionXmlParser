@@ -56,9 +56,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		int subject,
 		ScriptComparison comparison,
 		int value,
-		bool valueIsLiteral
+		bool valueIsLiteral,
+		int valueVariableId = -1
 	)
 	{
+		/// <summary>
+		/// Gets the variable the compared value comes from when it is not a literal, or -1.
+		/// An evaluator that knows that variable can still close the test.
+		/// </summary>
+		public int ValueVariableId
+		{
+			get;
+		} = valueVariableId;
+
 		/// <summary>Gets the kind of test.</summary>
 		public ScriptConditionKind Kind
 		{
@@ -100,7 +110,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// </summary>
 		public ScriptCondition Negate()
 		{
-			return new ScriptCondition( this.Kind, this.Subject, Opposite( this.Comparison ), this.Value, this.ValueIsLiteral );
+			return new ScriptCondition( this.Kind, this.Subject, Opposite( this.Comparison ), this.Value, this.ValueIsLiteral, this.ValueVariableId );
 		}
 
 		private static ScriptComparison Opposite( ScriptComparison comparison )
@@ -126,9 +136,32 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			var name = this.Kind == ScriptConditionKind.ObjectState
 				? "state(obj " + this.Subject + ")"
-				: this.Kind == ScriptConditionKind.Variable ? "var " + this.Subject : "?";
-			var operand = this.ValueIsLiteral ? this.Value.ToString() : "(a variable)";
+				: this.Kind == ScriptConditionKind.Variable ? VariableName( this.Subject ) : "?";
+			var operand = this.ValueIsLiteral
+				? this.Value.ToString()
+				: this.ValueVariableId >= 0 ? VariableName( this.ValueVariableId ) : "(a variable)";
 			return string.Concat( name, " ", Symbol( this.Comparison ), " ", operand );
+		}
+
+		/// <summary>
+		/// Names a variable the way the engine addresses it: the 0x8000 flag marks a bit
+		/// variable and the 0x4000 flag a script-local variable.
+		/// </summary>
+		internal static string VariableName( int variableId )
+		{
+			if( variableId < 0 )
+			{
+				return "an indexed variable";
+			}
+			if( ( variableId & 0x8000 ) != 0 )
+			{
+				return "bit " + ( variableId & 0x7FFF );
+			}
+			if( ( variableId & 0x4000 ) != 0 )
+			{
+				return "local " + ( variableId & 0x0FFF );
+			}
+			return "var " + variableId;
 		}
 
 		private static string Symbol( ScriptComparison comparison )
