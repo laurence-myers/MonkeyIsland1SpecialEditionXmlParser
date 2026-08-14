@@ -1188,11 +1188,21 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			var menu = new ContextMenuStrip();
 			var soloItem = new ToolStripMenuItem( "Solo (hide the rest)" );
 			soloItem.Click += delegate { this.SoloSelectedNode(); };
+			var soloFrameItem = new ToolStripMenuItem( "Show only this frame in its group" );
+			soloFrameItem.Click += delegate { this.SoloSelectedFrameInGroup(); };
 			var showAllItem = new ToolStripMenuItem( "Show all" );
 			showAllItem.Click += delegate { this.ShowAllNodes(); };
+			var gameDefaultItem = new ToolStripMenuItem( "Game default view" );
+			gameDefaultItem.Click += delegate { this.ShowGameDefaultView(); };
 			menu.Items.Add( soloItem );
+			menu.Items.Add( soloFrameItem );
 			menu.Items.Add( showAllItem );
-			menu.Opening += delegate { soloItem.Enabled = this.treeViewSprites.SelectedNode != null; };
+			menu.Items.Add( gameDefaultItem );
+			menu.Opening += delegate
+			{
+				soloItem.Enabled = this.treeViewSprites.SelectedNode != null;
+				soloFrameItem.Enabled = this.treeViewSprites.SelectedNode?.Tag is Sprite;
+			};
 
 			this.treeViewSprites.ContextMenuStrip = menu;
 			// a right-click does not move the tree selection on its own, so do it here to solo the
@@ -1233,6 +1243,64 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				for( var ancestor = node.Parent; ancestor != null; ancestor = ancestor.Parent )
 				{
 					ancestor.Checked = true;
+				}
+				this.treeViewSprites.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
+		}
+
+		/// <summary>
+		/// Checks the selected frame and unchecks its group siblings, so the group shows one
+		/// object state at a time the way the game does. Other groups are left alone.
+		/// </summary>
+		private void SoloSelectedFrameInGroup()
+		{
+			var node = this.treeViewSprites.SelectedNode;
+			if( node?.Tag is not Sprite || node.Parent == null )
+			{
+				return;
+			}
+
+			this.suppressUiEvents = true;
+			try
+			{
+				this.treeViewSprites.BeginUpdate();
+				foreach( TreeNode sibling in node.Parent.Nodes )
+				{
+					sibling.Checked = sibling == node;
+				}
+				node.Parent.Checked = true;
+				this.treeViewSprites.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
+		}
+
+		/// <summary>
+		/// Approximates the game's default composite: every object sprite frame hidden and
+		/// every named room object overlay shown. The static background already paints each
+		/// object's default state (room 30's safe is painted closed), the frames are the
+		/// alternate states scripts switch to, and the overlays (like that safe's lever) are
+		/// drawn by the game on top.
+		/// </summary>
+		private void ShowGameDefaultView()
+		{
+			this.suppressUiEvents = true;
+			try
+			{
+				this.treeViewSprites.BeginUpdate();
+				foreach( TreeNode root in this.treeViewSprites.Nodes )
+				{
+					SetCheckedRecursive( root, root == this.roomObjectsTreeRoot );
 				}
 				this.treeViewSprites.EndUpdate();
 			}
