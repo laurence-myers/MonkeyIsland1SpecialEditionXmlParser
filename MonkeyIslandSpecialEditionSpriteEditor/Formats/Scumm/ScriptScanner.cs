@@ -473,6 +473,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			ref int order )
 		{
 			var sourceKind = ToSourceKind( script.Kind );
+
+			// a global script is stored inside some room's LFLF, but that room does not own it, so
+			// its changes must not decide that room's default (same guard the actor path uses); drop
+			// the room to null for globals, matching ObjectDrawChange.SourceRoom's contract
+			var sourceRoom = sourceKind == ScriptSourceKind.Global ? (int?)null : script.RoomNumber;
+
 			foreach( var scriptEvent in events )
 			{
 				if( !scriptEvent.A.IsLiteral )
@@ -486,20 +492,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					case ScriptEventKind.SetObjectState:
 						if( scriptEvent.B.IsLiteral )
 						{
-							changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.SetState, scriptEvent.B.Value, sourceKind, script.RoomNumber, script.ScriptId, order++ ) );
+							changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.SetState, scriptEvent.B.Value, sourceKind, sourceRoom, script.ScriptId, order++ ) );
 						}
 						break;
 					case ScriptEventKind.DrawObject:
 						// drawObject shows the object; a literal "set state" form carries the state, else treat as drawn (1)
-						changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.Draw, scriptEvent.B.IsLiteral ? scriptEvent.B.Value : 1, sourceKind, script.RoomNumber, script.ScriptId, order++ ) );
+						changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.Draw, scriptEvent.B.IsLiteral ? scriptEvent.B.Value : 1, sourceKind, sourceRoom, script.ScriptId, order++ ) );
 						break;
 					case ScriptEventKind.PickupObject:
-						changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.Pickup, 0, sourceKind, script.RoomNumber, script.ScriptId, order++ ) );
+						changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.Pickup, 0, sourceKind, sourceRoom, script.ScriptId, order++ ) );
 						break;
 					case ScriptEventKind.SetOwnerOf:
 						if( scriptEvent.B.IsLiteral )
 						{
-							changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.SetOwner, scriptEvent.B.Value, sourceKind, script.RoomNumber, script.ScriptId, order++ ) );
+							changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.SetOwner, scriptEvent.B.Value, sourceKind, sourceRoom, script.ScriptId, order++ ) );
 						}
 						break;
 				}

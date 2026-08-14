@@ -50,9 +50,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			var verdicts = new Dictionary<int, Verdict>();
 
-			// only this room's own scripts speak to its default appearance
+			// only this room's own entry/local/exit scripts speak to its default appearance; a
+			// global script is merely stored in some room's LFLF and must never decide a room
 			var ownChanges = changes
-				.Where( c => c.SourceRoom == roomNumber )
+				.Where( c => c.SourceKind != ScriptSourceKind.Global && c.SourceRoom == roomNumber )
 				.GroupBy( c => c.ObjectId )
 				.ToDictionary( g => g.Key, g => g.OrderBy( c => c.Order ).ToList() );
 
@@ -87,11 +88,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			}
 
 			// otherwise weigh the local/exit scripts: only-shows -> visible, only-hides -> hidden,
-			// both -> a plot-conditional object we cannot resolve statically
+			// both -> a plot-conditional object we cannot resolve statically. Both setState 0 and
+			// the rare drawObject with an explicit state 0 hide, mirroring MakesVisible.
 			var anyShows = objectChanges.Any( c =>
 				( c.Kind == ObjectDrawKind.SetState || c.Kind == ObjectDrawKind.Draw ) && c.MakesVisible );
 			var anyHides = objectChanges.Any( c =>
-				c.Kind == ObjectDrawKind.SetState && !c.MakesVisible );
+				( c.Kind == ObjectDrawKind.SetState || c.Kind == ObjectDrawKind.Draw ) && !c.MakesVisible );
 
 			if( anyShows && anyHides )
 			{

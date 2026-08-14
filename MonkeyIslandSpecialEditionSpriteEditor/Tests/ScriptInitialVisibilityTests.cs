@@ -75,10 +75,21 @@ namespace Tests
 		[Test]
 		public void GlobalScriptChange_DoesNotDecideRoomDefault()
 		{
-			// a give/take handler in a global script must not read a takeable mug as hidden
-			var globalHide = new ObjectDrawChange( 362, ObjectDrawKind.SetState, 0, ScriptSourceKind.Global, sourceRoom: null, sourceScriptId: 0, order: 0 );
+			// a give/take handler in a global script must not read a takeable mug as hidden - even
+			// when the global is physically stored in this room's LFLF, so it carries this room's
+			// number (which is how the scanner actually attributes globals)
+			var globalHide = new ObjectDrawChange( 362, ObjectDrawKind.SetState, 0, ScriptSourceKind.Global, sourceRoom: Room, sourceScriptId: 0, order: 0 );
 			var verdicts = Compute( new[] { 362 }, globalHide );
 			Assert.That( verdicts[362], Is.EqualTo( ScriptInitialVisibility.Verdict.Visible ) );
+		}
+
+		[Test]
+		public void DrawObjectWithLiteralStateZero_Hides()
+		{
+			// the rare drawObject "set state" form with state 0 hides, like setState 0
+			var verdicts = Compute( new[] { 403 },
+				new ObjectDrawChange( 403, ObjectDrawKind.Draw, 0, ScriptSourceKind.Local, Room, 200, 0 ) );
+			Assert.That( verdicts[403], Is.EqualTo( ScriptInitialVisibility.Verdict.Hidden ) );
 		}
 
 		[Test]
