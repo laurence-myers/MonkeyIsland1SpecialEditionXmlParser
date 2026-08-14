@@ -343,6 +343,68 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			return null;
 		}
 
+		/// <summary>
+		/// Selects the item under the point the way repeated clicks burrow through a stack:
+		/// the topmost hit when the current selection is not in the stack, otherwise the hit
+		/// below the current selection, wrapping back to the top. The stack is the draw
+		/// order top-down - sprites first, then the room object overlays under them - so
+		/// items completely covered by other items stay reachable by clicking again.
+		/// Nothing under the point clears the selection. Returns the selected item, or null.
+		/// </summary>
+		public object? CycleSelectionAt( Point clientPoint )
+		{
+			var stack = this.BuildHitStack( clientPoint );
+			if( stack.Count == 0 )
+			{
+				this.SelectedRoomObject = null;
+				this.SelectedSprite = null;
+				return null;
+			}
+
+			var current = this.selectedSprite != null ? (object)this.selectedSprite : this.selectedRoomObject;
+			var currentIndex = current == null ? -1 : stack.IndexOf( current );
+			var next = stack[currentIndex < 0 ? 0 : ( currentIndex + 1 ) % stack.Count];
+
+			if( next is RoomPreviewControlSprite sprite )
+			{
+				this.SelectedRoomObject = null;
+				this.SelectedSprite = sprite;
+			}
+			else
+			{
+				this.SelectedSprite = null;
+				this.SelectedRoomObject = (RoomPreviewControlRoomObject)next;
+			}
+			this.SelectedWalkBox = null;
+			return next;
+		}
+
+		/// <summary>
+		/// Collects every item whose painted pixels lie under the client point, topmost
+		/// first: sprites in reverse draw order, then room object overlays.
+		/// </summary>
+		private List<object> BuildHitStack( Point clientPoint )
+		{
+			var roomPoint = new PointF( clientPoint.X / this.zoom, clientPoint.Y / this.zoom );
+
+			var stack = new List<object>();
+			foreach( var sprite in this.GetDrawOrder().Reverse() )
+			{
+				if( HitsSprite( sprite, roomPoint ) )
+				{
+					stack.Add( sprite );
+				}
+			}
+			for( var index = this.RoomObjects.Count - 1; index >= 0; index-- )
+			{
+				if( HitsRoomObject( this.RoomObjects[index], roomPoint ) )
+				{
+					stack.Add( this.RoomObjects[index] );
+				}
+			}
+			return stack;
+		}
+
 		private static bool HitsSprite( RoomPreviewControlSprite sprite, PointF roomPoint )
 		{
 			return sprite.Visible
@@ -413,24 +475,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					return;
 				}
 
-				// sprites draw above the room object overlays, so they get first pick
-				var sprite = this.HitTest( args.Location );
-				if( sprite != null )
-				{
-					this.SelectedRoomObject = null;
-					this.SelectedSprite = sprite;
-					this.SelectedWalkBox = null;
-				}
-				else
-				{
-					var roomObject = this.HitTestRoomObject( args.Location );
-					this.SelectedRoomObject = roomObject;
-					this.SelectedSprite = null;
-					if( roomObject != null )
-					{
-						this.SelectedWalkBox = null;
-					}
-				}
+				this.CycleSelectionAt( args.Location );
 			}
 		}
 
