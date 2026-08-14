@@ -61,6 +61,26 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.mouseNavigation = new CanvasMouseNavigation( this );
 		}
 
+		protected override void Dispose( bool disposing )
+		{
+			if( disposing )
+			{
+				// the control owns the composited background and foreground layer bitmaps
+				// (rebuilt on every load/edit), so free them rather than leaving them for the GC
+				this.background?.Dispose();
+				DisposeForegroundLayers( this.foregroundLayers );
+			}
+			base.Dispose( disposing );
+		}
+
+		private static void DisposeForegroundLayers( IReadOnlyList<Bitmap?> layers )
+		{
+			foreach( var layer in layers )
+			{
+				layer?.Dispose();
+			}
+		}
+
 		/// <summary>
 		/// Gets or sets the composited background image, drawn below all sprites.
 		/// </summary>
@@ -72,6 +92,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 			set
 			{
+				if( this.background != value )
+				{
+					this.background?.Dispose();
+				}
 				this.background = value;
 				this.UpdateContentSize();
 				this.Invalidate();
@@ -93,7 +117,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 			set
 			{
-				this.foregroundLayers = value ?? System.Array.Empty<Bitmap?>();
+				var newLayers = value ?? System.Array.Empty<Bitmap?>();
+				if( !ReferenceEquals( newLayers, this.foregroundLayers ) )
+				{
+					DisposeForegroundLayers( this.foregroundLayers );
+				}
+				this.foregroundLayers = newLayers;
 				this.Invalidate();
 			}
 		}
