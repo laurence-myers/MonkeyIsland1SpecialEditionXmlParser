@@ -751,6 +751,22 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// the started script.
 		/// </summary>
 		StartScriptArg,
+
+		/// <summary>Puts operand A on the expression stack.</summary>
+		ExpressionPush,
+
+		/// <summary>
+		/// Applies an operation to the top two values of the expression stack: literal A is 2
+		/// for add, 3 for subtract, 4 for multiply and 5 for divide.
+		/// </summary>
+		ExpressionApply,
+
+		/// <summary>
+		/// Ends an expression: the top of the stack goes into the variable of operand A. A
+		/// literal B of 0 marks an expression this decoder cannot compute, and the variable then
+		/// becomes unknown.
+		/// </summary>
+		ExpressionStore,
 	}
 
 	/// <summary>
@@ -2022,33 +2038,55 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			this.VarOrByte( subOpcode, 0x20 );
 		}
 
+		/// <summary>
+		/// A small stack machine that computes one value: it pushes literals and variables,
+		/// applies the four arithmetic operations, and writes the result to a variable. The
+		/// classic scripts use it to compute object numbers, for example the bar crowd loop
+		/// that computes "330 + counter * 3".
+		/// </summary>
 		private void Expression()
 		{
-			this.ReadResultVariable();
+			var target = this.ReadResultVariableId();
+			var steps = new List<ScriptEvent>();
+			var computable = true;
+
 			while( true )
 			{
 				var subOpcode = this.ReadByte();
 				if( subOpcode == 0xFF )
 				{
-					return;
+					break;
 				}
 				switch( subOpcode & 0x1F )
 				{
 					case 1:                                       // push value
-						this.VarOrWord( subOpcode, 0x80 );
+						steps.Add( new ScriptEvent( ScriptEventKind.ExpressionPush, this.VarOrWord( subOpcode, 0x80 ), default, default ) );
 						break;
 					case 2:                                       // add
 					case 3:                                       // subtract
 					case 4:                                       // multiply
 					case 5:                                       // divide
+						steps.Add( new ScriptEvent(
+							ScriptEventKind.ExpressionApply,
+							new Operand { Value = subOpcode & 0x1F, IsLiteral = true, VariableId = -1 },
+							default, default ) );
 						break;
-					case 6:                                       // a nested regular instruction
+					case 6:
+						// a nested instruction whose result the engine takes from variable 0;
+						// this decoder does not follow that, so the whole expression is unknown
 						this.DecodeInstruction();
+						computable = false;
 						break;
 					default:
 						throw new DecodeException( "unhandled expression sub-opcode" );
 				}
 			}
+
+			this.Events.AddRange( steps );
+			this.AddEvent(
+				ScriptEventKind.ExpressionStore,
+				VariableOperand( target ),
+				new Operand { Value = computable ? 1 : 0, IsLiteral = true, VariableId = -1 } );
 		}
 
 		private void Wait()

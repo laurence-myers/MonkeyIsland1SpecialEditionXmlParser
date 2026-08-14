@@ -96,7 +96,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 	public static class RoomEntryEvaluator
 	{
 		/// <summary>The most script paths a walk may fork into.</summary>
-		public const int MaxPaths = 128;
+		public const int MaxPaths = 512;
 
 		/// <summary>The most instructions one path may execute (a guard against endless loops).</summary>
 		public const int MaxStepsPerPath = 20000;
@@ -335,6 +335,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			/// </summary>
 			public bool InBootScript;
 
+			/// <summary>
+			/// The working stack of the expression that is being computed. A null entry is a
+			/// value the walk could not compute.
+			/// </summary>
+			public List<int?> ExpressionStack = new List<int?>();
+
 			public Path Fork()
 			{
 				return new Path
@@ -354,6 +360,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					PendingArgs = new List<int?>( this.PendingArgs ),
 					ClobberedVariables = new HashSet<int>( this.ClobberedVariables ),
 					InBootScript = this.InBootScript,
+					ExpressionStack = new List<int?>( this.ExpressionStack ),
 				};
 			}
 
@@ -705,6 +712,37 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					path.PendingArgs.Add( Resolve( scriptEvent.A, path ) );
 					break;
 
+				case ScriptEventKind.ExpressionPush:
+					path.ExpressionStack.Add( Resolve( scriptEvent.A, path ) );
+					break;
+
+				case ScriptEventKind.ExpressionApply:
+				{
+					var stack = path.ExpressionStack;
+					if( stack.Count < 2 )
+					{
+						// a malformed expression: give up on it, but keep the stack usable
+						stack.Clear();
+						stack.Add( null );
+						break;
+					}
+					var right = stack[stack.Count - 1];
+					var left = stack[stack.Count - 2];
+					stack.RemoveAt( stack.Count - 1 );
+					stack[stack.Count - 1] = Arithmetic( scriptEvent.A.Value, left, right );
+					break;
+				}
+
+				case ScriptEventKind.ExpressionStore:
+				{
+					var stack = path.ExpressionStack;
+					var computable = scriptEvent.B.Value != 0;
+					var result = computable && stack.Count > 0 ? stack[stack.Count - 1] : null;
+					stack.Clear();
+					WriteVariable( scriptEvent.A.VariableId, result, path );
+					break;
+				}
+
 				case ScriptEventKind.GetObjectState:
 				{
 					var objectId = Resolve( scriptEvent.B, path );
@@ -827,6 +865,31 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		private static int? NullWhenUnknown( int value )
 		{
 			return value == Unknown ? (int?)null : value;
+		}
+
+		/// <summary>
+		/// One arithmetic step of an expression: 2 adds, 3 subtracts, 4 multiplies and 5
+		/// divides. A value the walk does not know, or a division by zero, gives null.
+		/// </summary>
+		private static int? Arithmetic( int operation, int? left, int? right )
+		{
+			if( left == null || right == null )
+			{
+				return null;
+			}
+			switch( operation )
+			{
+				case 2:
+					return left.Value + right.Value;
+				case 3:
+					return left.Value - right.Value;
+				case 4:
+					return left.Value * right.Value;
+				case 5:
+					return right.Value == 0 ? (int?)null : left.Value / right.Value;
+				default:
+					return null;
+			}
 		}
 
 		/// <summary>

@@ -199,6 +199,59 @@ namespace Tests
 			Assert.That( scenarios[0].ObjectStates[301], Is.EqualTo( 1 ) );
 		}
 
+		[Test]
+		public void Expression_ComputesTheObjectNumber()
+		{
+			// the bar crowd pattern from room 28, local script 204:
+			//   local 0 = 2; local 1 = 330 + local 0 * 3; setState(local 1, 1)
+			// 330 + 2 * 3 = 336, which is one of the pirates
+			var scenarios = Evaluate( new[] { 333, 336 }, NoSeeds(),
+				Move( 0x4000, 2 ),
+				CrowdExpression(),
+				SetStateVariableObject( 0x4001, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[336], Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[333], Is.EqualTo( 0 ) );
+			Assert.That( scenarios[0].HasUnknownWrites, Is.False );
+		}
+
+		[Test]
+		public void Expression_InALoop_ResolvesTheWholeCrowd()
+		{
+			// the whole loop: local 0 counts 0..3 and the expression names each object
+			var scenarios = Evaluate( new[] { 330, 333, 336, 339, 342 }, NoSeeds(),
+				Move( 0x4000, 0 ),
+				CrowdExpression(),
+				SetStateVariableObject( 0x4001, 1 ),
+				Increment( 0x4000 ),
+				CrowdLoopTest( jumpBackTo: 5 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[330], Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[333], Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[336], Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[339], Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[342], Is.EqualTo( 0 ), "the loop stops before this object" );
+		}
+
+		[Test]
+		public void Expression_WithANestedInstruction_MakesTheTargetUnknown()
+		{
+			// sub-opcode 6 runs another instruction whose result the walk does not follow
+			var scenarios = Evaluate( new[] { 200 }, NoSeeds(),
+				Move( 0x4001, 200 ),
+				NestedExpression(),
+				SetStateVariableObject( 0x4001, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].HasUnknownWrites, Is.True );
+			Assert.That( scenarios[0].ObjectStates[200], Is.EqualTo( 0 ) );
+		}
+
 		//-------------------------------------------
 		// helpers
 
@@ -290,6 +343,47 @@ namespace Tests
 		private static byte[] IsEqual( int variableId, int value, int jumpOverBytes )
 		{
 			return Bytes( new byte[] { 0x48 }, Word( variableId ), Word( value ), Word( jumpOverBytes ) );
+		}
+
+		/// <summary>
+		/// The expression from room 28: local 1 = 330 + local 0 * 3. These are the exact retail
+		/// bytes. 15 bytes.
+		/// </summary>
+		private static byte[] CrowdExpression()
+		{
+			return new byte[]
+			{
+				0xAC, 0x01, 0x40,       // expression, result = local 1
+				0x01, 0x4A, 0x01,       // push literal 330
+				0x81, 0x00, 0x40,       // push local 0
+				0x01, 0x03, 0x00,       // push literal 3
+				0x04,                   // multiply
+				0x02,                   // add
+				0xFF,
+			};
+		}
+
+		/// <summary>An expression whose sub-opcode 6 runs a nested instruction. 8 bytes.</summary>
+		private static byte[] NestedExpression()
+		{
+			return new byte[]
+			{
+				0xAC, 0x01, 0x40,       // expression, result = local 1
+				0x01, 0x0A, 0x00,       // push literal 10
+				0x06, 0x80,             // a nested instruction (breakHere)
+				0xFF,
+			};
+		}
+
+		/// <summary>
+		/// isLess (0x44) on local 0 against 3: the walk leaves the loop when local 0 is greater
+		/// than 3, and jumps back otherwise. 7 bytes, placed after a 15 byte expression, a
+		/// 4 byte setState and a 3 byte increment.
+		/// </summary>
+		private static byte[] CrowdLoopTest( int jumpBackTo )
+		{
+			var offset = jumpBackTo - ( 5 + 15 + 4 + 3 + 7 );
+			return Bytes( new byte[] { 0x44 }, Word( 0x4000 ), Word( 3 ), Word( offset & 0xFFFF ) );
 		}
 
 		/// <summary>startScript (0x0A): literal script byte, empty argument list. 3 bytes.</summary>
