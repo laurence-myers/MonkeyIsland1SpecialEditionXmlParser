@@ -60,6 +60,26 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				get;
 				set;
 			}
+
+			/// <summary>
+			/// Gets or sets the number of blocks in the control flow graphs of all the scripts.
+			/// </summary>
+			public int BlockCount
+			{
+				get;
+				set;
+			}
+
+			/// <summary>
+			/// Gets or sets the number of jumps whose target did not land on the first byte of an
+			/// instruction. A correct decode of correct scripts gives 0, so this is the health
+			/// check of the jump decoding.
+			/// </summary>
+			public int BadJumpTargetCount
+			{
+				get;
+				set;
+			}
 		}
 
 		/// <summary>
@@ -94,6 +114,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				}
 				ScanEvents( decoder.Events, script, placements, assignments, ref order );
 				CollectObjectDrawChanges( decoder.Events, script, result.ObjectDrawChanges, ref objectOrder );
+
+				var graph = ScriptControlFlowGraph.Build( decoder.Instructions );
+				result.BlockCount += graph.Blocks.Count;
+				result.BadJumpTargetCount += graph.BadJumpTargetCount;
 			}
 
 			ResolveCostumeFallbacks( placements, assignments );
@@ -608,6 +632,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			public int Value;
 			public bool IsLiteral;
+
+			/// <summary>
+			/// The variable number when the operand reads a variable, or -1 when it is a literal
+			/// or an indexed variable the decoder cannot resolve.
+			/// </summary>
+			public int VariableId;
 		}
 
 		private class DecodeException( string message ) : Exception( message );
@@ -620,6 +650,21 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			get;
 		} = new List<ScriptEvent>();
+
+		/// <summary>
+		/// Gets the instructions the decoder read, in file order. Each one keeps its position, its
+		/// length and, for a jump, the target and the test. A control flow graph uses this list.
+		/// </summary>
+		public List<ScriptInstruction> Instructions
+		{
+			get;
+		} = new List<ScriptInstruction>();
+
+		// state the current top level instruction collects
+		private int decodeDepth;
+		private ScriptFlowKind pendingFlowKind;
+		private int pendingJumpTarget = -1;
+		private ScriptCondition? pendingCondition;
 
 		/// <summary>
 		/// Decodes the whole script. Returns true when every instruction decoded and the
@@ -674,13 +719,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// extra word: the engine clears the bit before resolving the index, so the chain
 		/// never continues.
 		/// </summary>
-		private void ReadVariable()
+		/// <summary>
+		/// Reads a variable reference and returns its number, or -1 for an indexed variable whose
+		/// index the decoder cannot resolve.
+		/// </summary>
+		private int ReadVariable()
 		{
 			var variable = this.ReadWord();
 			if( ( variable & 0x2000 ) != 0 )
 			{
 				this.ReadWord();
+				return -1;
 			}
+			return variable;
 		}
 
 		private void ReadResultVariable()
@@ -693,13 +744,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			if( ( opcode & mask ) != 0 )
 			{
-				this.ReadVariable();
-				return new Operand();
+				return new Operand
+				{
+					VariableId = this.ReadVariable(),
+				};
 			}
 			return new Operand
 			{
 				Value = this.ReadByte(),
 				IsLiteral = true,
+				VariableId = -1,
 			};
 		}
 
@@ -708,13 +762,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			if( ( opcode & mask ) != 0 )
 			{
-				this.ReadVariable();
-				return new Operand();
+				return new Operand
+				{
+					VariableId = this.ReadVariable(),
+				};
 			}
 			return new Operand
 			{
 				Value = this.ReadSignedWord(),
 				IsLiteral = true,
+				VariableId = -1,
 			};
 		}
 
@@ -755,9 +812,54 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			}
 		}
 
-		private void ReadJumpOffset()
+		/// <summary>
+		/// Reads a jump offset and records where the jump goes. The offset counts from the byte
+		/// after the offset word.
+		/// </summary>
+		private void ReadJumpOffset( bool unconditional = false )
 		{
-			this.ReadSignedWord();
+			var offset = this.ReadSignedWord();
+			this.pendingJumpTarget = this.position + offset;
+			this.pendingFlowKind = unconditional ? ScriptFlowKind.Jump : ScriptFlowKind.ConditionalJump;
+		}
+
+		private void SetCondition( ScriptCondition condition )
+		{
+			this.pendingCondition = condition;
+		}
+
+		/// <summary>
+		/// Makes the test of a variable comparison. The classic engine reads the variable first
+		/// and the value second, and it jumps only when the test fails, so the test recorded here
+		/// is the one that holds on the path that continues with the next instruction.
+		/// </summary>
+		private static ScriptCondition VariableCondition( int variableId, ScriptComparison comparison, Operand value )
+		{
+			return new ScriptCondition( ScriptConditionKind.Variable, variableId, comparison, value.Value, value.IsLiteral );
+		}
+
+		/// <summary>
+		/// The test that keeps the next instruction, for each comparison opcode. The engine
+		/// computes "value OP variable" and jumps when that is false, so the test is written here
+		/// with the variable on the left and the comparison turned around.
+		/// </summary>
+		private static ScriptComparison ComparisonFor( int maskedOpcode )
+		{
+			switch( maskedOpcode )
+			{
+				case 0x48:                                        // isEqual
+					return ScriptComparison.Equal;
+				case 0x08:                                        // isNotEqual
+					return ScriptComparison.NotEqual;
+				case 0x04:                                        // isGreaterEqual: value >= variable
+					return ScriptComparison.LessOrEqual;
+				case 0x44:                                        // isLess: value < variable
+					return ScriptComparison.Greater;
+				case 0x38:                                        // lessOrEqual: value <= variable
+					return ScriptComparison.GreaterOrEqual;
+				default:                                          // 0x78 isGreater: value > variable
+					return ScriptComparison.Less;
+			}
 		}
 
 		private void AddEvent( ScriptEventKind kind, Operand a, Operand b = default, Operand c = default )
@@ -768,7 +870,55 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		//-------------------------------------------
 		// dispatch
 
+		/// <summary>
+		/// Decodes one instruction and records it. An instruction that holds another instruction
+		/// (an expression) records only the outer one.
+		/// </summary>
 		private void DecodeInstruction()
+		{
+			var start = this.position;
+			var eventCount = this.Events.Count;
+
+			var savedFlowKind = this.pendingFlowKind;
+			var savedJumpTarget = this.pendingJumpTarget;
+			var savedCondition = this.pendingCondition;
+			this.pendingFlowKind = ScriptFlowKind.Normal;
+			this.pendingJumpTarget = -1;
+			this.pendingCondition = null;
+
+			this.decodeDepth++;
+			try
+			{
+				this.DecodeInstructionCore();
+			}
+			finally
+			{
+				this.decodeDepth--;
+			}
+
+			if( this.decodeDepth == 0 )
+			{
+				var events = this.Events.GetRange( eventCount, this.Events.Count - eventCount );
+				this.Instructions.Add( new ScriptInstruction(
+					position: start,
+					length: this.position - start,
+					opcode: this.data[start],
+					flowKind: this.pendingFlowKind,
+					jumpTarget: this.pendingJumpTarget,
+					condition: this.pendingCondition,
+					events: events
+				) );
+			}
+			else
+			{
+				// keep what the instruction that holds this one had collected
+				this.pendingFlowKind = savedFlowKind;
+				this.pendingJumpTarget = savedJumpTarget;
+				this.pendingCondition = savedCondition;
+			}
+		}
+
+		private void DecodeInstructionCore()
 		{
 			var opcode = this.ReadByte();
 
@@ -782,13 +932,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					this.ReadByte();
 					return;
 				case 0xA0:                                        // stopObjectCode
+					this.pendingFlowKind = ScriptFlowKind.Stop;
 					return;
 				case 0xA7:                                        // dummy
 					return;
 				case 0xA8:                                        // notEqualZero
-					this.ReadVariable();
+				{
+					var variableId = this.ReadVariable();
 					this.ReadJumpOffset();
+					this.SetCondition( new ScriptCondition( ScriptConditionKind.Variable, variableId, ScriptComparison.NotEqual, 0, true ) );
 					return;
+				}
 				case 0xAB:                                        // saveRestoreVerbs
 					this.SaveRestoreVerbs();
 					return;
@@ -820,6 +974,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					if( ( opcode & 0x7F ) == 0x40 )
 					{
 						this.VarArgList();
+					}
+					else if( ( opcode & 0x7F ) == 0x00 )
+					{
+						this.pendingFlowKind = ScriptFlowKind.Stop;
 					}
 					return;
 				case 0x60:                                        // freezeScripts
@@ -870,10 +1028,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				case 0x48:                                        // isEqual
 				case 0x38:                                        // lessOrEqual
 				case 0x78:                                        // isGreater
-					this.ReadVariable();
-					this.VarOrWord( opcode, 0x80 );
+				{
+					// the engine reads the variable, then the value, and jumps only when the
+					// test fails; the names below are the test that keeps the next instruction
+					var variableId = this.ReadVariable();
+					var value = this.VarOrWord( opcode, 0x80 );
 					this.ReadJumpOffset();
+					this.SetCondition( VariableCondition( variableId, ComparisonFor( opcode & 0x7F ), value ) );
 					return;
+				}
 
 				case 0x24:                                        // loadRoomWithEgo
 				case 0x64:
@@ -928,9 +1091,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					return;
 
 				case 0x28:                                        // equalZero
-					this.ReadVariable();
+				{
+					var variableId = this.ReadVariable();
 					this.ReadJumpOffset();
+					this.SetCondition( new ScriptCondition( ScriptConditionKind.Variable, variableId, ScriptComparison.Equal, 0, true ) );
 					return;
+				}
 				case 0x68:                                        // isScriptRunning
 					this.ReadResultVariable();
 					this.VarOrByte( opcode, 0x80 );
@@ -1021,10 +1187,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				case 0x2F:                                        // ifNotState
 				case 0x4F:                                        // ifState
 				case 0x6F:                                        // ifNotState
-					this.VarOrWord( opcode, 0x80 );
-					this.VarOrByte( opcode, 0x40 );
+				{
+					var stateObject = this.VarOrWord( opcode, 0x80 );
+					var state = this.VarOrByte( opcode, 0x40 );
 					this.ReadJumpOffset();
+					var equals = ( opcode & 0x7F ) == 0x4F;
+					this.SetCondition( new ScriptCondition(
+						ScriptConditionKind.ObjectState,
+						stateObject.IsLiteral ? stateObject.Value : -1,
+						equals ? ScriptComparison.Equal : ScriptComparison.NotEqual,
+						state.Value,
+						state.IsLiteral && stateObject.IsLiteral
+					) );
 					return;
+				}
 
 				case 0x10:                                        // getObjectOwner
 					this.ReadResultVariable();
@@ -1134,7 +1310,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					return;
 
 				case 0x18:                                        // jumpRelative
-					this.ReadJumpOffset();
+					this.ReadJumpOffset( unconditional: true );
 					return;
 				case 0x58:                                        // beginOverride / endOverride
 					this.ReadByte();
