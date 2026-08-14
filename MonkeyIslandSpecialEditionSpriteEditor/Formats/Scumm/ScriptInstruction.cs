@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 {
@@ -45,6 +46,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 		/// <summary>The test compares the state of an object with a value.</summary>
 		ObjectState,
+
+		/// <summary>
+		/// The test asks whether an object has a set of classes. Each value in
+		/// <see cref="ScriptCondition.ClassValues"/> that has the 0x80 flag must be present, and
+		/// each value without it must be absent.
+		/// </summary>
+		ObjectClass,
 	}
 
 	/// <summary>
@@ -57,9 +65,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		ScriptComparison comparison,
 		int value,
 		bool valueIsLiteral,
-		int valueVariableId = -1
+		int valueVariableId = -1,
+		int[]? classValues = null
 	)
 	{
+		/// <summary>
+		/// The class values of an <see cref="ScriptConditionKind.ObjectClass"/> test, or null.
+		/// A value with the 0x80 flag asks for a class the object must have; a value without it
+		/// asks for a class the object must not have.
+		/// </summary>
+		public int[]? ClassValues
+		{
+			get;
+		} = classValues;
+
 		/// <summary>
 		/// Gets the variable the compared value comes from when it is not a literal, or -1.
 		/// An evaluator that knows that variable can still close the test.
@@ -110,7 +129,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// </summary>
 		public ScriptCondition Negate()
 		{
-			return new ScriptCondition( this.Kind, this.Subject, Opposite( this.Comparison ), this.Value, this.ValueIsLiteral, this.ValueVariableId );
+			return new ScriptCondition( this.Kind, this.Subject, Opposite( this.Comparison ), this.Value, this.ValueIsLiteral, this.ValueVariableId, this.ClassValues );
 		}
 
 		private static ScriptComparison Opposite( ScriptComparison comparison )
@@ -134,6 +153,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 		public override string ToString()
 		{
+			if( this.Kind == ScriptConditionKind.ObjectClass )
+			{
+				var wanted = this.ClassValues == null
+					? "?"
+					: string.Join( " and ", this.ClassValues.Select( c =>
+						( ( c & 0x80 ) != 0 ? "" : "not " ) + "class " + ( c & 0x7F ) ).ToArray() );
+				var negated = this.Comparison == ScriptComparison.NotEqual ? "not " : "";
+				return string.Concat( "obj ", this.Subject, " is ", negated, wanted );
+			}
+
 			var name = this.Kind == ScriptConditionKind.ObjectState
 				? "state(obj " + this.Subject + ")"
 				: this.Kind == ScriptConditionKind.Variable ? VariableName( this.Subject ) : "?";
@@ -161,7 +190,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			{
 				return "local " + ( variableId & 0x0FFF );
 			}
-			return "var " + variableId;
+			return ScummEngineVariables.GetName( variableId ) ?? "var " + variableId;
 		}
 
 		private static string Symbol( ScriptComparison comparison )

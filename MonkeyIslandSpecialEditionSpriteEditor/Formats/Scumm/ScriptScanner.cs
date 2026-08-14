@@ -718,6 +718,24 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// <summary>subtract: variable A gets its value minus operand B.</summary>
 		SubtractVariable,
 
+		/// <summary>multiply: variable A gets its value times operand B.</summary>
+		MultiplyVariable,
+
+		/// <summary>divide: variable A gets its value divided by operand B.</summary>
+		DivideVariable,
+
+		/// <summary>and: variable A gets its value combined with operand B by a bitwise and.</summary>
+		AndVariable,
+
+		/// <summary>or: variable A gets its value combined with operand B by a bitwise or.</summary>
+		OrVariable,
+
+		/// <summary>
+		/// getRandomNr: variable A gets a value from 0 to literal B. The exact value is not
+		/// known, but the range is, and that answers a comparison against a value outside it.
+		/// </summary>
+		SetVariableToRandom,
+
 		/// <summary>increment: variable A gets its value plus one.</summary>
 		IncrementVariable,
 
@@ -737,6 +755,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 		/// <summary>getObjectOwner: variable A gets the owner of object B.</summary>
 		GetObjectOwner,
+
+		/// <summary>
+		/// setClass: the classes of object A change, so the values in the object directory no
+		/// longer describe it.
+		/// </summary>
+		ChangeObjectClass,
 
 		/// <summary>
 		/// startScript or chainScript: the script with number A starts. chainScript also stops
@@ -828,6 +852,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		} = new List<ScriptInstruction>();
 
 		// state the current top level instruction collects
+		private byte currentOpcode;
 		private int decodeDepth;
 		private ScriptFlowKind pendingFlowKind;
 		private int pendingJumpTarget = -1;
@@ -893,12 +918,21 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		private int ReadVariable()
 		{
 			var variable = this.ReadWord();
-			if( ( variable & 0x2000 ) != 0 )
+			if( ( variable & 0x2000 ) == 0 )
 			{
-				this.ReadWord();
+				return variable;
+			}
+
+			// an indexed reference: the next word is the index. The engine adds the index to the
+			// base and clears the 0x2000 flag (ScummVM readVar). A literal index gives a plain
+			// variable number here; an index that comes from another variable is only known when
+			// the game runs, so this decoder reports it as unknown.
+			var index = this.ReadWord();
+			if( ( index & 0x2000 ) != 0 )
+			{
 				return -1;
 			}
-			return variable;
+			return ( variable + ( index & 0xFFF ) ) & ~0x2000;
 		}
 
 		/// <summary>
@@ -913,12 +947,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 		/// <summary>
 		/// Reads a result variable reference for an opcode whose value this decoder does not
-		/// compute, and records that the variable now holds an unknown value.
+		/// compute, and records that the variable now holds an unknown value. Operand B keeps
+		/// the opcode, so a caller can see which operations it would gain most from modelling.
 		/// </summary>
 		private void ReadResultVariable()
 		{
 			var variableId = this.ReadVariable();
-			this.AddEvent( ScriptEventKind.InvalidateVariable, VariableOperand( variableId ) );
+			this.AddEvent(
+				ScriptEventKind.InvalidateVariable,
+				VariableOperand( variableId ),
+				new Operand { Value = this.currentOpcode, IsLiteral = true, VariableId = -1 } );
 		}
 
 		private static Operand VariableOperand( int variableId )
@@ -1039,6 +1077,21 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			return new ScriptCondition( ScriptConditionKind.Variable, variableId, comparison, value.Value, value.IsLiteral, value.VariableId );
 		}
 
+		private static ScriptEventKind ApplyKindFor( int maskedOpcode )
+		{
+			switch( maskedOpcode )
+			{
+				case 0x17:
+					return ScriptEventKind.AndVariable;
+				case 0x57:
+					return ScriptEventKind.OrVariable;
+				case 0x1B:
+					return ScriptEventKind.MultiplyVariable;
+				default:
+					return ScriptEventKind.DivideVariable;
+			}
+		}
+
 		/// <summary>
 		/// The test that keeps the next instruction, for each comparison opcode. The engine
 		/// computes "value OP variable" and jumps when that is false, so the test is written here
@@ -1140,6 +1193,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		private void DecodeInstructionCore()
 		{
 			var opcode = this.ReadByte();
+			this.currentOpcode = opcode;
 
 			// full-byte slots where the 0x80 half hosts a different operation than the
 			// (opcode & 0x7F) table entry
@@ -1512,6 +1566,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					return;
 
 				case 0x16:                                        // getRandomNr
+				{
+					var target = this.ReadResultVariableId();
+					var maximum = this.VarOrByte( opcode, 0x80 );
+					this.AddEvent( ScriptEventKind.SetVariableToRandom, VariableOperand( target ), maximum );
+					return;
+				}
 				case 0x56:                                        // getActorMoving
 					this.ReadResultVariable();
 					this.VarOrByte( opcode, 0x80 );
@@ -1526,9 +1586,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				case 0x57:                                        // or
 				case 0x1B:                                        // multiply
 				case 0x5B:                                        // divide
-					this.ReadResultVariable();
-					this.VarOrWord( opcode, 0x80 );
+				{
+					var target = this.ReadResultVariableId();
+					var value = this.VarOrWord( opcode, 0x80 );
+					this.AddEvent( ApplyKindFor( opcode & 0x7F ), VariableOperand( target ), value );
 					return;
+				}
 
 				case 0x1A:                                        // move
 				{
@@ -1591,10 +1654,24 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					return;
 
 				case 0x1D:                                        // ifClassOfIs
-					this.VarOrWord( opcode, 0x80 );
-					this.VarArgList();
+				{
+					var classObject = this.VarOrWord( opcode, 0x80 );
+					var values = new List<Operand>();
+					this.VarArgList( values );
 					this.ReadJumpOffset();
+
+					// the test can only be answered when the object and every class are literal
+					var allLiteral = classObject.IsLiteral && values.All( v => v.IsLiteral );
+					this.SetCondition( new ScriptCondition(
+						ScriptConditionKind.ObjectClass,
+						classObject.IsLiteral ? classObject.Value : -1,
+						ScriptComparison.Equal,
+						0,
+						allLiteral,
+						-1,
+						values.Select( v => v.Value ).ToArray() ) );
 					return;
+				}
 				case 0x3D:                                        // findInventory
 				case 0x7D:
 					this.ReadResultVariable();
@@ -1602,9 +1679,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					this.VarOrByte( opcode, 0x40 );
 					return;
 				case 0x5D:                                        // setClass
-					this.VarOrWord( opcode, 0x80 );
+				{
+					var classObject = this.VarOrWord( opcode, 0x80 );
 					this.VarArgList();
+					// the classes of this object are no longer the ones the directory gives
+					this.AddEvent( ScriptEventKind.ChangeObjectClass, classObject );
 					return;
+				}
 
 				case 0x1E:                                        // walkActorTo
 				case 0x3E:

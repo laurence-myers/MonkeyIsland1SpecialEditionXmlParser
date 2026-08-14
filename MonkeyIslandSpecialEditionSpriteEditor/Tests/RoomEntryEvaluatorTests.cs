@@ -45,19 +45,79 @@ namespace Tests
 		}
 
 		[Test]
-		public void UnknownVariableTest_ForksIntoTwoScenarios()
+		public void EngineVariableTest_ForksIntoTwoScenarios()
 		{
-			// if var 60 == 0 then setState(200, 1); stop
+			// variable 6 is VAR_MACHINE_SPEED, which the engine writes itself, so its value is
+			// not known and the walk must offer both answers
 			var scenarios = Evaluate( new[] { 200 }, NoSeeds(),
-				EqualZero( 60, jumpOverBytes: 4 ),
+				EqualZero( 6, jumpOverBytes: 4 ),
 				SetStateLiteral( 200, 1 ),
 				Stop() );
 
 			Assert.That( scenarios.Count, Is.EqualTo( 2 ) );
 			var shown = scenarios.Single( s => s.ObjectStates[200] == 1 );
 			var hidden = scenarios.Single( s => s.ObjectStates[200] == 0 );
-			Assert.That( shown.Conditions, Is.EqualTo( new[] { "var 60 == 0" } ) );
-			Assert.That( hidden.Conditions, Is.EqualTo( new[] { "var 60 != 0" } ) );
+			Assert.That( shown.Conditions, Is.EqualTo( new[] { "VAR_MACHINE_SPEED == 0" } ) );
+			Assert.That( hidden.Conditions, Is.EqualTo( new[] { "VAR_MACHINE_SPEED != 0" } ) );
+		}
+
+		[Test]
+		public void UnwrittenGameVariable_ReadsAsZeroAndDoesNotFork()
+		{
+			// variable 196 is a plot variable no script wrote. A new game clears the whole
+			// variable table, so it holds 0 and the test has one answer.
+			var scenarios = Evaluate( new[] { 200 }, NoSeeds(),
+				EqualZero( 196, jumpOverBytes: 4 ),
+				SetStateLiteral( 200, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].Conditions, Is.Empty );
+			Assert.That( scenarios[0].ObjectStates[200], Is.EqualTo( 1 ) );
+		}
+
+		[Test]
+		public void UnwrittenBitVariable_ReadsAsZero()
+		{
+			// a bit variable belongs to the game, so it is cleared too
+			var scenarios = Evaluate( new[] { 200 }, NoSeeds(),
+				EqualZero( 0x8000 | 453, jumpOverBytes: 4 ),
+				SetStateLiteral( 200, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[200], Is.EqualTo( 1 ) );
+		}
+
+		[Test]
+		public void MultiplyAndDivide_AreComputed()
+		{
+			// local 0 = 100; local 0 = local 0 * 3; local 0 = local 0 / 2  -> 150
+			var scenarios = Evaluate( new[] { 150 }, NoSeeds(),
+				Move( 0x4000, 100 ),
+				Arithmetic( 0x1B, 0x4000, 3 ),
+				Arithmetic( 0x5B, 0x4000, 2 ),
+				SetStateVariableObject( 0x4000, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[150], Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].HasUnknownWrites, Is.False );
+		}
+
+		[Test]
+		public void RandomNumber_KeepsItsRangeAndAnswersATestOutsideIt()
+		{
+			// getRandomNr(v, 5) then "if v < 10": the exact value is unknown but the range is
+			// 0 to 5, so the test has one answer
+			var scenarios = Evaluate( new[] { 200 }, NoSeeds(),
+				GetRandomNumber( 0x4000, maximum: 5 ),
+				IsLessThan( 0x4000, 10, jumpOverBytes: 4 ),
+				SetStateLiteral( 200, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[200], Is.EqualTo( 1 ) );
 		}
 
 		[Test]
@@ -327,10 +387,25 @@ namespace Tests
 			return Bytes( new byte[] { 0x05 }, Word( objectId ), new byte[] { 0x1F } );
 		}
 
-		/// <summary>getRandomNr (0x16): result variable, literal seed byte. 4 bytes.</summary>
-		private static byte[] GetRandomNumber( int variableId )
+		/// <summary>getRandomNr (0x16): result variable, literal maximum byte. 4 bytes.</summary>
+		private static byte[] GetRandomNumber( int variableId, byte maximum = 10 )
 		{
-			return Bytes( new byte[] { 0x16 }, Word( variableId ), new byte[] { 10 } );
+			return Bytes( new byte[] { 0x16 }, Word( variableId ), new[] { maximum } );
+		}
+
+		/// <summary>and (0x17), multiply (0x1B), or (0x57), divide (0x5B): result variable, literal word.</summary>
+		private static byte[] Arithmetic( byte opcode, int variableId, int value )
+		{
+			return Bytes( new[] { opcode }, Word( variableId ), Word( value ) );
+		}
+
+		/// <summary>
+		/// isGreater (0x78): the walk keeps the next instruction when the variable is less than
+		/// the value. 7 bytes.
+		/// </summary>
+		private static byte[] IsLessThan( int variableId, int value, int jumpOverBytes )
+		{
+			return Bytes( new byte[] { 0x78 }, Word( variableId ), Word( value ), Word( jumpOverBytes ) );
 		}
 
 		/// <summary>equalZero (0x28): variable, jump offset. 5 bytes.</summary>

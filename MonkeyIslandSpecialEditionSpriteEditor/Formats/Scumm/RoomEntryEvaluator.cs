@@ -341,6 +341,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			/// </summary>
 			public List<int?> ExpressionStack = new List<int?>();
 
+			/// <summary>The objects whose classes a script changed, so the directory no longer describes them.</summary>
+			public HashSet<int> ChangedClasses = new HashSet<int>();
+
 			public Path Fork()
 			{
 				return new Path
@@ -361,6 +364,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					ClobberedVariables = new HashSet<int>( this.ClobberedVariables ),
 					InBootScript = this.InBootScript,
 					ExpressionStack = new List<int?>( this.ExpressionStack ),
+					ChangedClasses = new HashSet<int>( this.ChangedClasses ),
 				};
 			}
 
@@ -673,19 +677,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				}
 				case ScriptEventKind.AddVariable:
 				case ScriptEventKind.SubtractVariable:
+				case ScriptEventKind.MultiplyVariable:
+				case ScriptEventKind.DivideVariable:
+				case ScriptEventKind.AndVariable:
+				case ScriptEventKind.OrVariable:
 				{
 					var target = scriptEvent.A.VariableId;
-					var delta = Resolve( scriptEvent.B, path );
+					var operand = Resolve( scriptEvent.B, path );
 					var current = target >= 0 ? ResolveVariable( target, path ) : null;
-					if( current != null && delta != null )
+					WriteVariable( target, Combine( scriptEvent.Kind, current, operand ), path );
+					break;
+				}
+
+				case ScriptEventKind.SetVariableToRandom:
+				{
+					// the value is not known, but the engine keeps it from 0 to the maximum
+					var target = scriptEvent.A.VariableId;
+					var maximum = Resolve( scriptEvent.B, path );
+					WriteVariable( target, null, path );
+					if( target >= 0 && maximum != null && maximum.Value >= 0 )
 					{
-						WriteVariable( target, scriptEvent.Kind == ScriptEventKind.AddVariable
-							? current.Value + delta.Value
-							: current.Value - delta.Value, path );
-					}
-					else
-					{
-						WriteVariable( target, null, path );
+						path.Ranges[target] = ( 0, maximum.Value );
 					}
 					break;
 				}
@@ -711,6 +723,20 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				case ScriptEventKind.StartScriptArg:
 					path.PendingArgs.Add( Resolve( scriptEvent.A, path ) );
 					break;
+
+				case ScriptEventKind.ChangeObjectClass:
+				{
+					var objectId = Resolve( scriptEvent.A, path );
+					if( objectId == null )
+					{
+						path.HasUnknownWrites = true;
+					}
+					else
+					{
+						path.ChangedClasses.Add( objectId.Value );
+					}
+					break;
+				}
 
 				case ScriptEventKind.ExpressionPush:
 					path.ExpressionStack.Add( Resolve( scriptEvent.A, path ) );
@@ -814,9 +840,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		{
 			if( variableId < 0 )
 			{
-				path.Variables.Clear();
-				path.Ranges.Clear();
-				path.ClobberedVariables.Add( -1 );
+				// A write whose target is only known when the game runs. The scripts use these
+				// to fill their own tables, which sit apart from the plot variables a room test
+				// reads, so the walk keeps what it knows and reports the write instead. Making
+				// every variable unknown here would make almost every later test unanswerable.
+				path.HasUnknownWrites = true;
 				return;
 			}
 			path.Ranges.Remove( variableId );
@@ -842,9 +870,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
-		/// The value of a variable: the tracked value, or 0 during the boot pre-run for a
-		/// variable nothing has touched (the engine zeroes the tables before the boot script),
-		/// or null.
+		/// The value of a variable: the tracked value, or 0 for a variable that nothing has
+		/// written, or null when the value cannot be known.
+		///
+		/// The zero default is what a new game gives: the engine clears the whole variable table
+		/// before the boot script runs, so a game variable no script has written still holds 0.
+		/// It does not apply to the variables the engine writes itself (the timers, the mouse,
+		/// the room number), and it does not apply once an operation this walk cannot compute
+		/// has written the variable.
 		/// </summary>
 		private static int? ResolveVariable( int variableId, Path path )
 		{
@@ -853,18 +886,58 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			{
 				return value;
 			}
-			if( path.InBootScript
-				&& !path.ClobberedVariables.Contains( variableId )
-				&& !path.ClobberedVariables.Contains( -1 ) )
+			if( !path.ClobberedVariables.Contains( variableId ) && !IsEngineOwned( variableId ) )
 			{
 				return 0;
 			}
 			return null;
 		}
 
+		/// <summary>
+		/// Whether the engine writes the variable itself. A bit variable (the 0x8000 flag) and a
+		/// script's local variable (the 0x4000 flag) always belong to the game.
+		/// </summary>
+		private static bool IsEngineOwned( int variableId )
+		{
+			if( ( variableId & 0xC000 ) != 0 )
+			{
+				return false;
+			}
+			return ScummEngineVariables.IsEngineVariable( variableId );
+		}
+
 		private static int? NullWhenUnknown( int value )
 		{
 			return value == Unknown ? (int?)null : value;
+		}
+
+		/// <summary>
+		/// Applies an arithmetic or bitwise operation to a variable. A value the walk does not
+		/// know gives null. The engine gives 0 for a division by zero.
+		/// </summary>
+		private static int? Combine( ScriptEventKind kind, int? current, int? operand )
+		{
+			if( current == null || operand == null )
+			{
+				return null;
+			}
+			switch( kind )
+			{
+				case ScriptEventKind.AddVariable:
+					return current.Value + operand.Value;
+				case ScriptEventKind.SubtractVariable:
+					return current.Value - operand.Value;
+				case ScriptEventKind.MultiplyVariable:
+					return current.Value * operand.Value;
+				case ScriptEventKind.DivideVariable:
+					return operand.Value == 0 ? 0 : current.Value / operand.Value;
+				case ScriptEventKind.AndVariable:
+					return current.Value & operand.Value;
+				case ScriptEventKind.OrVariable:
+					return current.Value | operand.Value;
+				default:
+					return null;
+			}
 		}
 
 		/// <summary>
@@ -907,6 +980,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			{
 				return null;
 			}
+			if( condition.Kind == ScriptConditionKind.ObjectClass )
+			{
+				return condition.ValueIsLiteral ? EvaluateClassCondition( condition, path, startStates ) : null;
+			}
+
 			var value = ResolveConditionValue( condition, path );
 			if( value == null )
 			{
@@ -946,7 +1024,54 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				return state == Unknown ? (bool?)null : Compare( state, condition.Comparison, value.Value );
 			}
 
+			if( condition.Kind == ScriptConditionKind.ObjectClass )
+			{
+				return EvaluateClassCondition( condition, path, startStates );
+			}
+
 			return null;
+		}
+
+		/// <summary>
+		/// Answers an "is this object of these classes" test from the class flags in the object
+		/// directory. A class value with the 0x80 flag asks for a class the object must have,
+		/// and one without it asks for a class the object must not have (ScummVM o5_ifClassOfIs).
+		/// An object whose classes a script changed cannot be answered.
+		/// </summary>
+		private static bool? EvaluateClassCondition(
+			ScriptCondition condition,
+			Path path,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates )
+		{
+			if( condition.Subject < 0 || condition.ClassValues == null || path.ChangedClasses.Contains( condition.Subject ) )
+			{
+				return null;
+			}
+			ClassicObjectStartState startState;
+			if( !startStates.TryGetValue( condition.Subject, out startState ) )
+			{
+				return null;
+			}
+
+			var holds = true;
+			foreach( var classValue in condition.ClassValues )
+			{
+				var classNumber = classValue & 0x7F;
+				if( classNumber < 1 || classNumber > 32 )
+				{
+					return null;
+				}
+				var hasClass = ( startState.ClassFlags & ( 1u << ( classNumber - 1 ) ) ) != 0;
+				var wanted = ( classValue & 0x80 ) != 0;
+				if( hasClass != wanted )
+				{
+					holds = false;
+					break;
+				}
+			}
+
+			// the recorded comparison is Equal for the test as read, and Negate turns it around
+			return condition.Comparison == ScriptComparison.Equal ? holds : !holds;
 		}
 
 		/// <summary>
