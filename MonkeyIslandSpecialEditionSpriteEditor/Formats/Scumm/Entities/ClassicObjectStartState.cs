@@ -47,7 +47,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 			set;
 		} = owner;
 
-		/// <summary>Gets or sets the 24 bit class flags of the object.</summary>
+		/// <summary>Gets or sets the class flags of the object (setClass bits).</summary>
 		public uint ClassFlags
 		{
 			get;

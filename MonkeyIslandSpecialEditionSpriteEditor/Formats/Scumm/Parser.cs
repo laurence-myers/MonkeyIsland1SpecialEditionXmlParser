@@ -228,10 +228,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// Reads the object directory (DOBJ) from an already decoded index stream: the state and
 		/// the owner every object has when a new game starts, keyed by object number.
 		///
-		/// The block holds a 16 bit object count, then one 5 byte record per object: 4 bytes of
-		/// class flags followed by one byte that packs the state in the high nibble and the owner
-		/// in the low nibble. The engine keeps these two tables (its object state and object owner
-		/// tables) and the room scripts change them with setState/setOwnerOf as the game goes on.
+		/// The layout is planar, the way ScummVM's readGlobalObjects reads it: a 16 bit object
+		/// count, then one owner+state byte per object (the state in the high nibble, the owner
+		/// in the low nibble), then one 32 bit class flags value per object. The two nibble
+		/// arrays fill the engine's object state and object owner tables; the room scripts then
+		/// change them with setState/setOwnerOf as the game goes on.
 		/// </summary>
 		public static Dictionary<int, ClassicObjectStartState> ReadObjectStartStates( BinaryReader reader )
 		{
@@ -246,19 +247,26 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 				reader.BaseStream.Position = block.PayloadPosition;
 				int count = reader.ReadUInt16();
-				for( var objectId = 0; objectId < count; objectId++ )
+
+				// a truncated block keeps the owner+state bytes that fit; missing class data reads as 0
+				var available = (int)System.Math.Min( count, block.EndPosition - reader.BaseStream.Position );
+				var ownerStates = reader.ReadBytes( available );
+				var classDataPosition = block.PayloadPosition + 2 + count;
+
+				for( var objectId = 0; objectId < ownerStates.Length; objectId++ )
 				{
-					if( reader.BaseStream.Position + 5 > block.EndPosition )
+					uint classFlags = 0;
+					var classPosition = classDataPosition + objectId * 4L;
+					if( classPosition + 4 <= block.EndPosition )
 					{
-						break;
+						reader.BaseStream.Position = classPosition;
+						classFlags = reader.ReadUInt32();
 					}
-					var classFlags = reader.ReadUInt32();
-					var ownerState = reader.ReadByte();
 					startStates[objectId] = new ClassicObjectStartState(
 						objectId: objectId,
-						state: ownerState >> 4,
-						owner: ownerState & 0x0F,
-						classFlags: classFlags & 0xFFFFFF
+						state: ownerStates[objectId] >> 4,
+						owner: ownerStates[objectId] & 0x0F,
+						classFlags: classFlags
 					);
 				}
 				break;

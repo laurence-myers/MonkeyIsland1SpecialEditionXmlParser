@@ -114,13 +114,17 @@ namespace Tests
 		[Test]
 		public void ReadObjectStartStates_ReadsStateAndOwnerFromDobj()
 		{
-			// Arrange: three objects. The byte packs the state in the high nibble and the
-			// owner in the low nibble, the way the engine reads its object tables.
+			// Arrange: three objects, in the planar layout ScummVM's readGlobalObjects reads:
+			// the count, then one owner+state byte per object (state high nibble, owner low
+			// nibble), then one 32 bit class flags value per object
 			var payload = new List<byte>();
 			payload.AddRange( System.BitConverter.GetBytes( (ushort)3 ) );
-			payload.AddRange( DobjEntry( classFlags: 0x000102, state: 0, owner: 0 ) );
-			payload.AddRange( DobjEntry( classFlags: 0x000000, state: 1, owner: 0 ) );
-			payload.AddRange( DobjEntry( classFlags: 0x123456, state: 2, owner: 5 ) );
+			payload.Add( OwnerStateByte( state: 0, owner: 0 ) );
+			payload.Add( OwnerStateByte( state: 1, owner: 0 ) );
+			payload.Add( OwnerStateByte( state: 2, owner: 5 ) );
+			payload.AddRange( System.BitConverter.GetBytes( 0x000102u ) );
+			payload.AddRange( System.BitConverter.GetBytes( 0x000000u ) );
+			payload.AddRange( System.BitConverter.GetBytes( 0x123456u ) );
 
 			var bytes = Block( "DOBJ", payload.ToArray() );
 			ScummParser.XorDecode( bytes, ScummParser.XorKey ); // encode
@@ -136,6 +140,7 @@ namespace Tests
 			Assert.That( startStates[1].State, Is.EqualTo( 1 ) );
 			Assert.That( startStates[2].State, Is.EqualTo( 2 ) );
 			Assert.That( startStates[2].Owner, Is.EqualTo( 5 ) );
+			Assert.That( startStates[2].ClassFlags, Is.EqualTo( 0x123456u ) );
 			Assert.That( startStates[2].ObjectId, Is.EqualTo( 2 ) );
 		}
 
@@ -151,11 +156,12 @@ namespace Tests
 		[Test]
 		public void ReadObjectStartStates_TruncatedBlock_KeepsTheEntriesItRead()
 		{
-			// Arrange: the count says three objects but only two records follow
+			// Arrange: the count says three objects but only two owner+state bytes follow,
+			// and the class data is missing completely
 			var payload = new List<byte>();
 			payload.AddRange( System.BitConverter.GetBytes( (ushort)3 ) );
-			payload.AddRange( DobjEntry( classFlags: 0, state: 1, owner: 0 ) );
-			payload.AddRange( DobjEntry( classFlags: 0, state: 1, owner: 0 ) );
+			payload.Add( OwnerStateByte( state: 1, owner: 0 ) );
+			payload.Add( OwnerStateByte( state: 1, owner: 0 ) );
 
 			var bytes = Block( "DOBJ", payload.ToArray() );
 			ScummParser.XorDecode( bytes, ScummParser.XorKey );
@@ -163,8 +169,10 @@ namespace Tests
 			// Act
 			var startStates = ScummParser.ReadObjectStartStatesFromEncodedBytes( bytes );
 
-			// Assert
+			// Assert: the states it read are kept, the missing class data reads as 0
 			Assert.That( startStates.Count, Is.EqualTo( 2 ) );
+			Assert.That( startStates[0].State, Is.EqualTo( 1 ) );
+			Assert.That( startStates[0].ClassFlags, Is.EqualTo( 0u ) );
 		}
 
 		[Test]
@@ -405,12 +413,9 @@ namespace Tests
 			return bytes.ToArray();
 		}
 
-		private static byte[] DobjEntry( uint classFlags, int state, int owner )
+		private static byte OwnerStateByte( int state, int owner )
 		{
-			var bytes = new List<byte>();
-			bytes.AddRange( System.BitConverter.GetBytes( classFlags ) );
-			bytes.Add( (byte)( ( state << 4 ) | ( owner & 0x0F ) ) );
-			return bytes.ToArray();
+			return (byte)( ( state << 4 ) | ( owner & 0x0F ) );
 		}
 
 		private static byte[] CdhdPayload( int objectId, byte xStrips, byte yStrips, byte widthStrips, byte heightStrips )
