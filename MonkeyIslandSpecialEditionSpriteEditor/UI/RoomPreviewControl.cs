@@ -297,7 +297,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
-		/// Returns the topmost visible sprite at the given client point, or null.
+		/// The minimum texture alpha for a pixel to take a click. Keeps faint antialiased
+		/// fringes from swallowing clicks meant for the art below.
+		/// </summary>
+		private const int HitTestMinimumAlpha = 16;
+
+		/// <summary>
+		/// Returns the topmost visible sprite at the given client point, or null. Hits test
+		/// against the texture's alpha, not the bounding rectangle: a large, mostly
+		/// transparent sprite (room 30's railing re-paint) does not swallow clicks meant
+		/// for the art visible through it.
 		/// </summary>
 		public RoomPreviewControlSprite? HitTest( Point clientPoint )
 		{
@@ -306,7 +315,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// walk from the topmost drawn sprite down; skip sprites that aren't painted
 			foreach( var sprite in this.GetDrawOrder().Reverse() )
 			{
-				if( sprite.Visible && sprite.Texture != null && sprite.Placement.ScreenRect.Contains( roomPoint ) )
+				if( HitsSprite( sprite, roomPoint ) )
 				{
 					return sprite;
 				}
@@ -315,7 +324,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
-		/// Returns the topmost visible room object overlay at the given client point, or null.
+		/// Returns the topmost visible room object overlay at the given client point, or
+		/// null. Like sprites, the overlay's draws are hit-tested against their texture
+		/// alpha, so only painted pixels take the click.
 		/// </summary>
 		public RoomPreviewControlRoomObject? HitTestRoomObject( Point clientPoint )
 		{
@@ -324,12 +335,65 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			for( var index = this.RoomObjects.Count - 1; index >= 0; index-- )
 			{
 				var roomObject = this.RoomObjects[index];
-				if( roomObject.Visible && roomObject.ScreenRect.Contains( roomPoint ) )
+				if( HitsRoomObject( roomObject, roomPoint ) )
 				{
 					return roomObject;
 				}
 			}
 			return null;
+		}
+
+		private static bool HitsSprite( RoomPreviewControlSprite sprite, PointF roomPoint )
+		{
+			return sprite.Visible
+				&& sprite.Texture != null
+				&& sprite.Placement.ScreenRect.Contains( roomPoint )
+				&& IsOpaqueAt( sprite.Texture, sprite.SourceRect, sprite.Placement.ScreenRect, roomPoint );
+		}
+
+		private static bool HitsRoomObject( RoomPreviewControlRoomObject roomObject, PointF roomPoint )
+		{
+			if( !roomObject.Visible )
+			{
+				return false;
+			}
+			foreach( var draw in roomObject.Draws )
+			{
+				if( !draw.Visible || draw.Texture == null )
+				{
+					continue;
+				}
+				var destRect = draw.RelativeRect;
+				destRect.Offset( roomObject.RoomObject.OffsetX, roomObject.RoomObject.OffsetY );
+				if( destRect.Contains( roomPoint ) && IsOpaqueAt( draw.Texture, draw.SourceRect, destRect, roomPoint ) )
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// Samples the texture pixel a room point lands on and reports whether it is opaque
+		/// enough to take a click. A texture that cannot be sampled (not a bitmap) counts
+		/// as opaque, falling back to the plain rectangle test.
+		/// </summary>
+		private static bool IsOpaqueAt( Image texture, RectangleF sourceRect, RectangleF destRect, PointF roomPoint )
+		{
+			if( texture is not Bitmap bitmap || destRect.Width <= 0 || destRect.Height <= 0 )
+			{
+				return true;
+			}
+
+			var textureX = (int)( sourceRect.X + ( roomPoint.X - destRect.X ) * sourceRect.Width / destRect.Width );
+			var textureY = (int)( sourceRect.Y + ( roomPoint.Y - destRect.Y ) * sourceRect.Height / destRect.Height );
+			if( textureX < 0 || textureY < 0 || textureX >= bitmap.Width || textureY >= bitmap.Height )
+			{
+				// power-of-two padded textures can be smaller than the placement rect; the
+				// out-of-texture region is never painted, so it takes no clicks
+				return false;
+			}
+			return bitmap.GetPixel( textureX, textureY ).A >= HitTestMinimumAlpha;
 		}
 
 		protected override void OnMouseDown( MouseEventArgs args )
