@@ -112,6 +112,62 @@ namespace Tests
 		}
 
 		[Test]
+		public void ReadObjectStartStates_ReadsStateAndOwnerFromDobj()
+		{
+			// Arrange: three objects. The byte packs the state in the high nibble and the
+			// owner in the low nibble, the way the engine reads its object tables.
+			var payload = new List<byte>();
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)3 ) );
+			payload.AddRange( DobjEntry( classFlags: 0x000102, state: 0, owner: 0 ) );
+			payload.AddRange( DobjEntry( classFlags: 0x000000, state: 1, owner: 0 ) );
+			payload.AddRange( DobjEntry( classFlags: 0x123456, state: 2, owner: 5 ) );
+
+			var bytes = Block( "DOBJ", payload.ToArray() );
+			ScummParser.XorDecode( bytes, ScummParser.XorKey ); // encode
+
+			// Act
+			var startStates = ScummParser.ReadObjectStartStatesFromEncodedBytes( bytes );
+
+			// Assert
+			Assert.That( startStates.Count, Is.EqualTo( 3 ) );
+			Assert.That( startStates[0].State, Is.EqualTo( 0 ) );
+			Assert.That( startStates[0].Owner, Is.EqualTo( 0 ) );
+			Assert.That( startStates[0].ClassFlags, Is.EqualTo( 0x000102u ) );
+			Assert.That( startStates[1].State, Is.EqualTo( 1 ) );
+			Assert.That( startStates[2].State, Is.EqualTo( 2 ) );
+			Assert.That( startStates[2].Owner, Is.EqualTo( 5 ) );
+			Assert.That( startStates[2].ObjectId, Is.EqualTo( 2 ) );
+		}
+
+		[Test]
+		public void ReadObjectStartStates_WithoutDobjBlock_IsEmpty()
+		{
+			var bytes = Block( "RNAM", new byte[] { 0 } );
+			ScummParser.XorDecode( bytes, ScummParser.XorKey );
+
+			Assert.That( ScummParser.ReadObjectStartStatesFromEncodedBytes( bytes ), Is.Empty );
+		}
+
+		[Test]
+		public void ReadObjectStartStates_TruncatedBlock_KeepsTheEntriesItRead()
+		{
+			// Arrange: the count says three objects but only two records follow
+			var payload = new List<byte>();
+			payload.AddRange( System.BitConverter.GetBytes( (ushort)3 ) );
+			payload.AddRange( DobjEntry( classFlags: 0, state: 1, owner: 0 ) );
+			payload.AddRange( DobjEntry( classFlags: 0, state: 1, owner: 0 ) );
+
+			var bytes = Block( "DOBJ", payload.ToArray() );
+			ScummParser.XorDecode( bytes, ScummParser.XorKey );
+
+			// Act
+			var startStates = ScummParser.ReadObjectStartStatesFromEncodedBytes( bytes );
+
+			// Assert
+			Assert.That( startStates.Count, Is.EqualTo( 2 ) );
+		}
+
+		[Test]
 		public void ReadRoomNamesFromIndexFile_ReadsRnamTable()
 		{
 			// Arrange
@@ -346,6 +402,14 @@ namespace Tests
 			bytes.Add( (byte)( ( size >> 8 ) & 0xFF ) );
 			bytes.Add( (byte)( size & 0xFF ) );
 			bytes.AddRange( payload );
+			return bytes.ToArray();
+		}
+
+		private static byte[] DobjEntry( uint classFlags, int state, int owner )
+		{
+			var bytes = new List<byte>();
+			bytes.AddRange( System.BitConverter.GetBytes( classFlags ) );
+			bytes.Add( (byte)( ( state << 4 ) | ( owner & 0x0F ) ) );
 			return bytes.ToArray();
 		}
 

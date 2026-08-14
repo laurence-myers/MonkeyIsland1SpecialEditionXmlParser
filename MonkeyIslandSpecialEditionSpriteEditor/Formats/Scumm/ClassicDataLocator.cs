@@ -202,12 +202,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 				var roomNames = new Dictionary<int, string>();
 				var costumeList = new List<ClassicCostume>();
+				var objectStartStates = new Dictionary<int, Entities.ClassicObjectStartState>();
 				var indexIndex = lpakFile.FindEntryIndex( name => name.EndsWith( ".000", StringComparison.OrdinalIgnoreCase ) );
 				if( indexIndex >= 0 && lpakFile.PakFileEntries[indexIndex].IsCompressed == 0 )
 				{
 					roomNames = Parser.ReadRoomNamesFromEncodedBytes( lpakFile.ReadEntryBytes( indexIndex ) );
 					costumeList = ReadCostumesSafely(
 						() => Parser.ReadCostumesFromEncodedBytes( lpakFile.ReadEntryBytes( dataIndex ), lpakFile.ReadEntryBytes( indexIndex ) ) );
+					objectStartStates = ReadObjectStartStatesSafely(
+						() => Parser.ReadObjectStartStatesFromEncodedBytes( lpakFile.ReadEntryBytes( indexIndex ) ) );
 				}
 
 				var data = new ClassicData(
@@ -217,6 +220,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					source: string.Concat( Path.GetFileName( lpakFile.FileNameOnDisk ), ":", lpakFile.PakFileNames[dataIndex].FileName )
 				)
 				{
+					ObjectStartStates = objectStartStates,
 					PakDataEntryName = lpakFile.PakFileNames[dataIndex].FileName,
 					PakIndexEntryName = indexIndex >= 0 ? lpakFile.PakFileNames[indexIndex].FileName : null,
 				};
@@ -248,6 +252,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					? ReadCostumesSafely( () => Parser.ReadCostumesFromFiles( files.DataFileName, files.IndexFileName! ) )
 					: new List<ClassicCostume>();
 
+				var objectStartStates = files.IndexFileName != null
+					? ReadObjectStartStatesSafely( () => Parser.ReadObjectStartStatesFromEncodedBytes( File.ReadAllBytes( files.IndexFileName! ) ) )
+					: new Dictionary<int, Entities.ClassicObjectStartState>();
+
 				var data = new ClassicData(
 					roomList: roomList,
 					roomNames: roomNames,
@@ -255,6 +263,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					source: files.DataFileName
 				)
 				{
+					ObjectStartStates = objectStartStates,
 					LooseDataFilePath = files.DataFileName,
 					LooseIndexFilePath = files.IndexFileName,
 				};
@@ -280,6 +289,21 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			catch( Exception )
 			{
 				return new List<ClassicCostume>();
+			}
+		}
+
+		/// <summary>
+		/// The object start states are optional extra data; a parse failure must not lose the rooms.
+		/// </summary>
+		private static Dictionary<int, Entities.ClassicObjectStartState> ReadObjectStartStatesSafely( Func<Dictionary<int, Entities.ClassicObjectStartState>> read )
+		{
+			try
+			{
+				return read();
+			}
+			catch( Exception )
+			{
+				return new Dictionary<int, Entities.ClassicObjectStartState>();
 			}
 		}
 

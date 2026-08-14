@@ -50,6 +50,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 		} = costumeList;
 
 		/// <summary>
+		/// Gets or sets the state and owner every object has when a new game starts (DOBJ),
+		/// keyed by object number. Empty when the index file was not available.
+		/// </summary>
+		public Dictionary<int, ClassicObjectStartState> ObjectStartStates
+		{
+			get;
+			set;
+		} = new Dictionary<int, ClassicObjectStartState>();
+
+		/// <summary>
 		/// Gets or sets a human readable description of where the data was loaded from.
 		/// </summary>
 		public string Source

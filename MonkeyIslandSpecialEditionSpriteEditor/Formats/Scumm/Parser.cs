@@ -212,6 +212,62 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
+		/// Reads the object directory (DOBJ) from the still XOR encoded contents of an index file.
+		/// </summary>
+		public static Dictionary<int, ClassicObjectStartState> ReadObjectStartStatesFromEncodedBytes( byte[] bytes )
+		{
+			XorDecode( bytes, Parser.XorKey );
+			using( var stream = new MemoryStream( bytes ) )
+			using( var reader = new BinaryReader( stream ) )
+			{
+				return ReadObjectStartStates( reader );
+			}
+		}
+
+		/// <summary>
+		/// Reads the object directory (DOBJ) from an already decoded index stream: the state and
+		/// the owner every object has when a new game starts, keyed by object number.
+		///
+		/// The block holds a 16 bit object count, then one 5 byte record per object: 4 bytes of
+		/// class flags followed by one byte that packs the state in the high nibble and the owner
+		/// in the low nibble. The engine keeps these two tables (its object state and object owner
+		/// tables) and the room scripts change them with setState/setOwnerOf as the game goes on.
+		/// </summary>
+		public static Dictionary<int, ClassicObjectStartState> ReadObjectStartStates( BinaryReader reader )
+		{
+			var startStates = new Dictionary<int, ClassicObjectStartState>();
+
+			foreach( var block in ReadBlocks( reader, 0, reader.BaseStream.Length ) )
+			{
+				if( block.Tag != "DOBJ" )
+				{
+					continue;
+				}
+
+				reader.BaseStream.Position = block.PayloadPosition;
+				int count = reader.ReadUInt16();
+				for( var objectId = 0; objectId < count; objectId++ )
+				{
+					if( reader.BaseStream.Position + 5 > block.EndPosition )
+					{
+						break;
+					}
+					var classFlags = reader.ReadUInt32();
+					var ownerState = reader.ReadByte();
+					startStates[objectId] = new ClassicObjectStartState(
+						objectId: objectId,
+						state: ownerState >> 4,
+						owner: ownerState & 0x0F,
+						classFlags: classFlags & 0xFFFFFF
+					);
+				}
+				break;
+			}
+
+			return startStates;
+		}
+
+		/// <summary>
 		/// Reads all costumes from classic data files (monkey1.001 resource file plus
 		/// monkey1.000 index file; the index is required because only its DCOS directory
 		/// maps costume numbers to rooms and offsets).
