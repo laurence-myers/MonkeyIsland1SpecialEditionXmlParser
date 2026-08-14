@@ -1138,14 +1138,35 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
+			// Defer the propagation out of the AfterCheck handler. Changing other nodes' Checked
+			// state synchronously from inside AfterCheck desyncs the TreeView's internal checkbox
+			// tracking - the symptom the user hit is a checkbox click that lands as a bare
+			// selection and needs a second click. Running it once the click has settled avoids that.
+			var node = args.Node;
+			this.BeginInvoke( (Action)( () => this.PropagateCheckState( node ) ) );
+		}
+
+		/// <summary>
+		/// Mirrors a node's new checkbox state through the tree in both directions: its whole
+		/// subtree follows it (checking a group checks every frame under it), and every ancestor
+		/// becomes checked exactly when at least one of its own children is checked. So checking
+		/// the only frame in a group checks the group and the branch above it, and unchecking the
+		/// last checked child clears them again.
+		/// </summary>
+		private void PropagateCheckState( TreeNode node )
+		{
+			// the tree may have been rebuilt (a reload) between the click and this deferred call
+			if( node.TreeView == null )
+			{
+				return;
+			}
+
 			this.suppressUiEvents = true;
 			try
 			{
-				// checking a node toggles its whole subtree
-				foreach( TreeNode child in args.Node.Nodes )
-				{
-					SetCheckedRecursive( child, args.Node.Checked );
-				}
+				this.treeViewSprites.BeginUpdate();
+				TreeCheckPropagation.Apply( node );
+				this.treeViewSprites.EndUpdate();
 			}
 			finally
 			{
@@ -1357,11 +1378,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private static void SetCheckedRecursive( TreeNode node, bool value )
 		{
-			node.Checked = value;
-			foreach( TreeNode child in node.Nodes )
-			{
-				SetCheckedRecursive( child, value );
-			}
+			TreeCheckPropagation.SetCheckedRecursive( node, value );
 		}
 
 		private void HandleAtlasSelectionChanged( object? sender, EventArgs args )
