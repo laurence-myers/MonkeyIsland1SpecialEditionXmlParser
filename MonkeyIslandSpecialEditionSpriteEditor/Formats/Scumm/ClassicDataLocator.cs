@@ -284,8 +284,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
-		/// Actor placements are optional extra data; a script scan failure must not lose
-		/// the rooms.
+		/// Actor placements and object visibility changes are optional extra data recovered from
+		/// the scripts; a scan failure must not lose the rooms.
 		/// </summary>
 		private static void ApplyActorPlacementsSafely( ClassicData data, Func<ScriptScanner.ScanResult> scan )
 		{
@@ -300,9 +300,40 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 						room.ActorPlacementList = placements;
 					}
 				}
+
+				ApplyObjectDrawChanges( data, result );
 			}
 			catch( Exception )
 			{
+			}
+		}
+
+		/// <summary>
+		/// Attributes each object draw change to the room that defines the object (so a global
+		/// script's setState reaches the right room), keeping the changes on that room for the
+		/// script-derived "initial state" view.
+		/// </summary>
+		private static void ApplyObjectDrawChanges( ClassicData data, ScriptScanner.ScanResult result )
+		{
+			var roomByObjectId = new Dictionary<int, Entities.ClassicRoom>();
+			foreach( var room in data.RoomList )
+			{
+				foreach( var classicObject in room.ObjectList )
+				{
+					if( !roomByObjectId.ContainsKey( classicObject.ObjectId ) )
+					{
+						roomByObjectId[classicObject.ObjectId] = room;
+					}
+				}
+			}
+
+			foreach( var change in result.ObjectDrawChanges )
+			{
+				Entities.ClassicRoom owningRoom;
+				if( roomByObjectId.TryGetValue( change.ObjectId, out owningRoom ) )
+				{
+					owningRoom.ObjectDrawChanges.Add( change );
+				}
 			}
 		}
 

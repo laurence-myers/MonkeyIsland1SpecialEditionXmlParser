@@ -73,6 +73,18 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 		} = new List<ClassicActorPlacement>();
 
 		/// <summary>
+		/// Gets or sets the object visibility changes the scripts make to this room's objects
+		/// (see <see cref="ScriptScanner"/>), attributed by object number. Includes changes made
+		/// by global scripts. Empty when the scripts were not scanned. Feeds the script-derived
+		/// "initial state" view via <see cref="ScriptInitialVisibility"/>.
+		/// </summary>
+		public List<ObjectDrawChange> ObjectDrawChanges
+		{
+			get;
+			set;
+		} = new List<ObjectDrawChange>();
+
+		/// <summary>
 		/// Gets or sets the walkboxes (BOXD).
 		/// </summary>
 		public List<ClassicBox> BoxList

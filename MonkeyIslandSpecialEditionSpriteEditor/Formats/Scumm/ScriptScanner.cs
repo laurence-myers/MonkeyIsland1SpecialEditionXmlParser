@@ -32,6 +32,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			} = new Dictionary<int, List<ClassicActorPlacement>>();
 
 			/// <summary>
+			/// Gets the object visibility changes found in the scripts (setState/drawObject/
+			/// pickup/setOwner with literal operands), in scan order. Attributing them to rooms
+			/// and reducing them to an initial-visibility set is left to the caller, which has the
+			/// object-to-room map. Control-flow blind, so an object may carry conflicting changes.
+			/// </summary>
+			public List<ObjectDrawChange> ObjectDrawChanges
+			{
+				get;
+			} = new List<ObjectDrawChange>();
+
+			/// <summary>
 			/// Gets or sets the total number of scripts found.
 			/// </summary>
 			public int ScriptCount
@@ -73,6 +84,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			var placements = new List<PlacementRecord>();
 			var assignments = new List<CostumeAssignment>();
 			var order = 0;
+			var objectOrder = 0;
 			foreach( var script in scripts )
 			{
 				var decoder = new ScriptDecoder( data, script.Start, script.End );
@@ -81,6 +93,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					result.FailedScriptCount++;
 				}
 				ScanEvents( decoder.Events, script, placements, assignments, ref order );
+				CollectObjectDrawChanges( decoder.Events, script, result.ObjectDrawChanges, ref objectOrder );
 			}
 
 			ResolveCostumeFallbacks( placements, assignments );
@@ -449,6 +462,66 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
+		/// Records one script's object visibility opcodes (setState/drawObject/pickup/setOwner)
+		/// as <see cref="ObjectDrawChange"/> records, keeping only the ones with literal object
+		/// operands. Control flow is ignored, so both branches of a conditional are recorded.
+		/// </summary>
+		private static void CollectObjectDrawChanges(
+			List<ScriptEvent> events,
+			ScriptInfo script,
+			List<ObjectDrawChange> changes,
+			ref int order )
+		{
+			var sourceKind = ToSourceKind( script.Kind );
+			foreach( var scriptEvent in events )
+			{
+				if( !scriptEvent.A.IsLiteral )
+				{
+					continue;
+				}
+				var objectId = scriptEvent.A.Value;
+
+				switch( scriptEvent.Kind )
+				{
+					case ScriptEventKind.SetObjectState:
+						if( scriptEvent.B.IsLiteral )
+						{
+							changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.SetState, scriptEvent.B.Value, sourceKind, script.RoomNumber, script.ScriptId, order++ ) );
+						}
+						break;
+					case ScriptEventKind.DrawObject:
+						// drawObject shows the object; a literal "set state" form carries the state, else treat as drawn (1)
+						changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.Draw, scriptEvent.B.IsLiteral ? scriptEvent.B.Value : 1, sourceKind, script.RoomNumber, script.ScriptId, order++ ) );
+						break;
+					case ScriptEventKind.PickupObject:
+						changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.Pickup, 0, sourceKind, script.RoomNumber, script.ScriptId, order++ ) );
+						break;
+					case ScriptEventKind.SetOwnerOf:
+						if( scriptEvent.B.IsLiteral )
+						{
+							changes.Add( new ObjectDrawChange( objectId, ObjectDrawKind.SetOwner, scriptEvent.B.Value, sourceKind, script.RoomNumber, script.ScriptId, order++ ) );
+						}
+						break;
+				}
+			}
+		}
+
+		private static ScriptSourceKind ToSourceKind( ScriptKind kind )
+		{
+			switch( kind )
+			{
+				case ScriptKind.Entry:
+					return ScriptSourceKind.Entry;
+				case ScriptKind.Exit:
+					return ScriptSourceKind.Exit;
+				case ScriptKind.Local:
+					return ScriptSourceKind.Local;
+				default:
+					return ScriptSourceKind.Global;
+			}
+		}
+
+		/// <summary>
 		/// Fills in costumes for placements whose script never assigned one: an assignment
 		/// from another script of the same room wins, then a globally unambiguous one.
 		/// </summary>
@@ -493,6 +566,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		SetCostume,
 		SetElevation,
 		AnimateActor,
+		SetObjectState,
+		DrawObject,
+		PickupObject,
+		SetOwnerOf,
 	}
 
 	/// <summary>
@@ -806,9 +883,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					return;
 				case 0x25:                                        // pickupObject
 				case 0x65:
-					this.VarOrWord( opcode, 0x80 );
+				{
+					var pickedObject = this.VarOrWord( opcode, 0x80 );
 					this.VarOrByte( opcode, 0x40 );
+					this.AddEvent( ScriptEventKind.PickupObject, pickedObject );
 					return;
+				}
 
 				case 0x06:                                        // getActorElevation
 					this.ReadResultVariable();
@@ -827,9 +907,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 				case 0x07:                                        // setState
 				case 0x47:
-					this.VarOrWord( opcode, 0x80 );
-					this.VarOrByte( opcode, 0x40 );
+				{
+					var stateObject = this.VarOrWord( opcode, 0x80 );
+					var state = this.VarOrByte( opcode, 0x40 );
+					this.AddEvent( ScriptEventKind.SetObjectState, stateObject, state );
 					return;
+				}
 				case 0x27:                                        // stringOps
 					this.StringOps();
 					return;
@@ -854,9 +937,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					return;
 				case 0x29:                                        // setOwnerOf
 				case 0x69:
-					this.VarOrWord( opcode, 0x80 );
-					this.VarOrByte( opcode, 0x40 );
+				{
+					var ownedObject = this.VarOrWord( opcode, 0x80 );
+					var owner = this.VarOrByte( opcode, 0x40 );
+					this.AddEvent( ScriptEventKind.SetOwnerOf, ownedObject, owner );
 					return;
+				}
 
 				case 0x0A:                                        // startScript
 				case 0x2A:
@@ -942,8 +1028,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					this.MatrixOps();
 					return;
 				case 0x50:                                        // pickupObjectOld
-					this.VarOrWord( opcode, 0x80 );
+				{
+					var pickedObject = this.VarOrWord( opcode, 0x80 );
+					this.AddEvent( ScriptEventKind.PickupObject, pickedObject );
 					return;
+				}
 				case 0x70:                                        // lights
 					this.VarOrByte( opcode, 0x80 );
 					this.ReadByte();
@@ -1120,22 +1209,25 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 		private void DrawObject( int opcode )
 		{
-			this.VarOrWord( opcode, 0x80 );
+			var drawnObject = this.VarOrWord( opcode, 0x80 );
 			var subOpcode = this.ReadByte();
+			var state = default( Operand );
 			switch( subOpcode & 0x1F )
 			{
 				case 1:                                           // draw at position
 					this.VarOrWord( subOpcode, 0x80 );
 					this.VarOrWord( subOpcode, 0x40 );
-					return;
+					break;
 				case 2:                                           // set state
-					this.VarOrWord( subOpcode, 0x80 );
-					return;
+					state = this.VarOrWord( subOpcode, 0x80 );
+					break;
 				case 0x1F:                                        // no parameters
-					return;
+					break;
 				default:
 					throw new DecodeException( "unhandled drawObject sub-opcode" );
 			}
+			// drawObject makes the object visible (state carried when the "set state" form is used)
+			this.AddEvent( ScriptEventKind.DrawObject, drawnObject, state );
 		}
 
 		private void SetVarRange( int opcode )
