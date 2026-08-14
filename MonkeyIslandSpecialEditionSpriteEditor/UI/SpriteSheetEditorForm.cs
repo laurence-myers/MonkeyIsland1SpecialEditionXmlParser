@@ -36,6 +36,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private ClassicData? classicData;
 		private ClassicRoom? classicRoom;
 		private Dictionary<int, ClassicObject>? classicObjects;
+
+		/// <summary>
+		/// The script-derived initial visibility verdict per object number for the current room,
+		/// or null when the classic data (and thus the scripts) was not available.
+		/// </summary>
+		private IReadOnlyDictionary<int, ScriptInitialVisibility.Verdict>? scriptVisibility;
 		private readonly HashSet<Sprite> hiddenSprites = new HashSet<Sprite>();
 		private Sprite? selectedSprite;
 		// the room object instance whose screen offset the numeric editors apply to; set for
@@ -184,10 +190,22 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.RefreshPlacements();
 			this.RefreshRoomObjectPreviews();
 
-			// open on the game's default composite rather than every object state at once: the
-			// static background already paints each object's baked default state, so hide the
-			// object frames (the alternate states) and show the named room object overlays
-			this.ShowGameDefaultView();
+			// open on the best available view: the script-derived initial state when the classic
+			// scripts were read (shows the objects the game leaves drawn, e.g. the bar's pirates),
+			// otherwise the baked-background default
+			this.ComputeScriptVisibility();
+			this.PopulateViewModes();
+			var defaultMode = this.scriptVisibility != null ? RoomViewMode.ScriptInitial : RoomViewMode.BakedDefault;
+			this.suppressUiEvents = true;
+			try
+			{
+				this.comboBoxViewMode.SelectedIndex = (int)defaultMode;
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+			this.ApplyViewMode( defaultMode );
 
 			this.UpdateNumericEditors();
 		}
@@ -1360,6 +1378,144 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.SyncVisibilityFromTree();
+		}
+
+		//-------------------------------------------
+		// view mode selector
+
+		/// <summary>
+		/// The preview's object view presets, matching the order of the view-mode combo box.
+		/// </summary>
+		private enum RoomViewMode
+		{
+			AllStates = 0,
+			BakedDefault = 1,
+			ScriptInitial = 2,
+		}
+
+		private void PopulateViewModes()
+		{
+			if( this.comboBoxViewMode.Items.Count > 0 )
+			{
+				return;
+			}
+
+			this.comboBoxViewMode.Items.Add( "All object states" );
+			this.comboBoxViewMode.Items.Add( "Baked background only" );
+			this.comboBoxViewMode.Items.Add( "Game start (from scripts)" );
+
+			var toolTip = new ToolTip();
+			toolTip.SetToolTip( this.comboBoxViewMode,
+				"How the preview chooses which object states to show:\r\n"
+				+ "• All object states – every object sprite at once\r\n"
+				+ "• Baked background only – only what the room art paints, plus named overlays\r\n"
+				+ "• Game start (from scripts) – the objects the classic scripts leave drawn when the room is first entered" );
+		}
+
+		/// <summary>
+		/// Computes the script-derived initial visibility for the current room, or clears it when
+		/// the classic scripts were not available.
+		/// </summary>
+		private void ComputeScriptVisibility()
+		{
+			this.scriptVisibility = null;
+			if( this.Room == null || this.classicRoom == null )
+			{
+				return;
+			}
+
+			var objectIds = this.Room.SpriteHeaderList.Select( header => header.Identifier );
+			this.scriptVisibility = ScriptInitialVisibility.Compute( this.classicRoom.RoomNumber, objectIds, this.classicRoom.ObjectDrawChanges );
+		}
+
+		private void HandleViewModeChanged( object sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+			var index = this.comboBoxViewMode.SelectedIndex;
+			if( index >= 0 )
+			{
+				this.ApplyViewMode( (RoomViewMode)index );
+			}
+		}
+
+		private void ApplyViewMode( RoomViewMode mode )
+		{
+			switch( mode )
+			{
+				case RoomViewMode.AllStates:
+					this.ShowAllNodes();
+					break;
+				case RoomViewMode.BakedDefault:
+					this.ShowGameDefaultView();
+					break;
+				case RoomViewMode.ScriptInitial:
+					this.ShowScriptInitialView();
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Checks each object sprite group whose object the classic scripts leave drawn when the
+		/// room is first entered, and unchecks the ones a room script hides (the closed safe, the
+		/// un-thrown lever) or leaves plot-conditional. Named room object overlays are shown, like
+		/// the baked default. Falls back to the baked default when no scripts were read.
+		/// </summary>
+		private void ShowScriptInitialView()
+		{
+			if( this.scriptVisibility == null || this.Room == null )
+			{
+				this.ShowGameDefaultView();
+				return;
+			}
+
+			this.suppressUiEvents = true;
+			try
+			{
+				this.treeViewSprites.BeginUpdate();
+				foreach( TreeNode groupNode in this.treeViewSprites.Nodes )
+				{
+					if( groupNode == this.roomObjectsTreeRoot )
+					{
+						// named overlays are shown like the baked default
+						SetCheckedRecursive( groupNode, true );
+						continue;
+					}
+					if( groupNode.Tag is int groupIndex && groupIndex < this.Room.SpriteHeaderList.Count )
+					{
+						var objectId = this.Room.SpriteHeaderList[groupIndex].Identifier;
+						SetCheckedRecursive( groupNode, this.IsScriptInitiallyVisible( objectId ) );
+					}
+				}
+				this.treeViewSprites.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
+		}
+
+		/// <summary>
+		/// Whether an object is drawn in the script-derived initial view. Only a clear Visible
+		/// verdict shows it; Hidden and Ambiguous (plot-conditional) objects are hidden. Objects
+		/// with no verdict (no classic match) are shown.
+		/// </summary>
+		private bool IsScriptInitiallyVisible( int objectId )
+		{
+			if( this.scriptVisibility == null )
+			{
+				return true;
+			}
+			ScriptInitialVisibility.Verdict verdict;
+			if( this.scriptVisibility.TryGetValue( objectId, out verdict ) )
+			{
+				return verdict == ScriptInitialVisibility.Verdict.Visible;
+			}
+			return true;
 		}
 
 		private void ShowAllNodes()

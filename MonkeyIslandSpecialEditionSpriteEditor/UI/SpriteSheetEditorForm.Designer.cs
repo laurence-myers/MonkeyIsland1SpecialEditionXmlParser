@@ -63,6 +63,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.tabPageActors = new System.Windows.Forms.TabPage();
 			this.tabPageWalkBoxes = new System.Windows.Forms.TabPage();
 			this.treeViewSprites = new System.Windows.Forms.TreeView();
+			this.panelObjectView = new System.Windows.Forms.Panel();
+			this.labelViewMode = new System.Windows.Forms.Label();
+			this.comboBoxViewMode = new System.Windows.Forms.ComboBox();
 			this.treeViewBackground = new System.Windows.Forms.TreeView();
 			this.labelActors = new System.Windows.Forms.Label();
 			this.checkedListBoxActors = new System.Windows.Forms.CheckedListBox();
@@ -130,6 +133,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitEdit.SuspendLayout();
 			this.tabControlRoom.SuspendLayout();
 			this.tabPageObjects.SuspendLayout();
+			this.panelObjectView.SuspendLayout();
 			this.tabPageBackgrounds.SuspendLayout();
 			this.tabPageActors.SuspendLayout();
 			this.tabPageWalkBoxes.SuspendLayout();
@@ -477,12 +481,42 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// tabPageObjects
 			//
 			this.tabPageObjects.Controls.Add(this.treeViewSprites);
+			this.tabPageObjects.Controls.Add(this.panelObjectView);
 			this.tabPageObjects.Location = new System.Drawing.Point(4, 22);
 			this.tabPageObjects.Name = "tabPageObjects";
 			this.tabPageObjects.Size = new System.Drawing.Size(362, 254);
 			this.tabPageObjects.TabIndex = 0;
 			this.tabPageObjects.Text = "Room objects";
 			this.tabPageObjects.UseVisualStyleBackColor = true;
+			//
+			// panelObjectView
+			//
+			this.panelObjectView.Controls.Add(this.comboBoxViewMode);
+			this.panelObjectView.Controls.Add(this.labelViewMode);
+			this.panelObjectView.Dock = System.Windows.Forms.DockStyle.Top;
+			this.panelObjectView.Location = new System.Drawing.Point(0, 0);
+			this.panelObjectView.Name = "panelObjectView";
+			this.panelObjectView.Size = new System.Drawing.Size(362, 30);
+			this.panelObjectView.TabIndex = 1;
+			//
+			// labelViewMode
+			//
+			this.labelViewMode.AutoSize = true;
+			this.labelViewMode.Location = new System.Drawing.Point(3, 8);
+			this.labelViewMode.Name = "labelViewMode";
+			this.labelViewMode.Size = new System.Drawing.Size(35, 13);
+			this.labelViewMode.TabIndex = 0;
+			this.labelViewMode.Text = "View:";
+			//
+			// comboBoxViewMode
+			//
+			this.comboBoxViewMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.comboBoxViewMode.FormattingEnabled = true;
+			this.comboBoxViewMode.Location = new System.Drawing.Point(44, 4);
+			this.comboBoxViewMode.Name = "comboBoxViewMode";
+			this.comboBoxViewMode.Size = new System.Drawing.Size(230, 21);
+			this.comboBoxViewMode.TabIndex = 1;
+			this.comboBoxViewMode.SelectedIndexChanged += new System.EventHandler(this.HandleViewModeChanged);
 			//
 			// tabPageBackgrounds
 			//
@@ -1080,6 +1114,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.splitEdit.ResumeLayout(false);
 			this.tabControlRoom.ResumeLayout(false);
 			this.tabPageObjects.ResumeLayout(false);
+			this.panelObjectView.ResumeLayout(false);
+			this.panelObjectView.PerformLayout();
 			this.tabPageBackgrounds.ResumeLayout(false);
 			this.tabPageActors.ResumeLayout(false);
 			this.tabPageWalkBoxes.ResumeLayout(false);
@@ -1141,6 +1177,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private System.Windows.Forms.TabPage tabPageActors;
 		private System.Windows.Forms.TabPage tabPageWalkBoxes;
 		private System.Windows.Forms.TreeView treeViewSprites;
+		private System.Windows.Forms.Panel panelObjectView;
+		private System.Windows.Forms.Label labelViewMode;
+		private System.Windows.Forms.ComboBox comboBoxViewMode;
 		private System.Windows.Forms.TreeView treeViewBackground;
 		private System.Windows.Forms.Label labelActors;
 		private System.Windows.Forms.CheckedListBox checkedListBoxActors;
