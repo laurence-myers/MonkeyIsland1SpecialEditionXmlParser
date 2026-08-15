@@ -124,6 +124,38 @@ namespace Tests
 		/// Builds an encoded resource file with one room carrying the given entry script
 		/// (and optionally one local script, number 200).
 		/// </summary>
+		[Test]
+		public void FindObjectVerbScripts_MapsTheLocalAVerbStartsToItsObject_WithoutReadingTheName()
+		{
+			// object 140's verb 8 runs startScript(200); the OBNA that follows the VERB block holds
+			// bytes that look like startScript(201). The decode must stop at the VERB block end, so
+			// 200 maps to object 140 and the name bytes never leak in as a phantom 201.
+			const int objectId = 140;
+			var cdhd = Block( "CDHD", new byte[] { objectId & 0xFF, ( objectId >> 8 ) & 0xFF, 0, 0, 0, 0 } );
+
+			var verbCode = new byte[] { 0x0A, 200, 0xFF, 0x00 };   // startScript(200); stopObjectCode
+			// offset from the OBCD start to the code: OBCD header 8 + CDHD block + VERB header 8 + table 4
+			var offset = 8 + cdhd.Length + 8 + 4;
+			var verbTable = new byte[] { 8, (byte)( offset & 0xFF ), (byte)( ( offset >> 8 ) & 0xFF ), 0 };
+			var verb = Block( "VERB", verbTable, verbCode );
+			var obna = Block( "OBNA", new byte[] { 0x0A, 201, 0xFF, 0 } );  // "name" that decodes to startScript(201)
+			var obcd = Block( "OBCD", cdhd, verb, obna );
+
+			var room = Block( "ROOM", Block( "RMHD", RmhdPayload( 320, 200, 1 ) ), obcd );
+			var lflf = Block( "LFLF", room );
+			var loffLength = 8 + 1 + 5;
+			var roomPosition = 8 + loffLength + 8;
+			var loffPayload = new List<byte> { 1, 10 };
+			loffPayload.AddRange( System.BitConverter.GetBytes( (uint)roomPosition ) );
+			var data = Block( "LECF", Block( "LOFF", loffPayload.ToArray() ), lflf );
+
+			var result = ScriptScanner.FindObjectVerbScripts( data, 10 );
+
+			Assert.That( result.ContainsKey( 200 ), Is.True );
+			Assert.That( result[200], Does.Contain( objectId ) );
+			Assert.That( result.ContainsKey( 201 ), Is.False, "the OBNA name bytes must not be decoded as verb code" );
+		}
+
 		private static byte[] BuildEncodedResourceFile( int roomNumber, byte[] entryScript, byte[]? localScript = null )
 		{
 			var roomPayload = new List<byte[]>();

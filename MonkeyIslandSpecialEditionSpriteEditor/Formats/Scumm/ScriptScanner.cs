@@ -499,17 +499,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				position += 3;
 			}
 
+			// the verb code lives inside the VERB block, after the table; bound the last verb by the
+			// VERB block end, not the whole OBCD end, so its decode does not run on into the OBNA
+			// object-name block and read the name string as bytecode (a phantom startScript)
 			var sortedBounds = offsets.Distinct().OrderBy( o => o ).ToList();
-			var obcdEnd = obcd.Position + obcd.Size;
 			foreach( var offset in offsets )
 			{
 				var codeStart = obcd.Position + offset;
-				if( codeStart < obcd.Position || codeStart >= obcdEnd )
+				if( codeStart < verb.Value.Position + 8 || codeStart >= tableEnd )
 				{
 					continue;
 				}
 				var next = sortedBounds.FirstOrDefault( o => o > offset );
-				var codeEnd = next > offset ? obcd.Position + next : obcdEnd;
+				var codeEnd = next > offset ? obcd.Position + next : tableEnd;
 
 				try
 				{

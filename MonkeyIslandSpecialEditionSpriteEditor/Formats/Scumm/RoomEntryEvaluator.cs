@@ -881,9 +881,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
-		/// The name of the object a verb acts on to reach a state - the most common name among the
-		/// trigger objects (a set of like-named corpses reads as "Corpse"). Empty when the trigger
-		/// objects have no name, so the label falls back to the script number.
+		/// The name of the object a verb acts on to reach a state, used only when the trigger objects
+		/// share exactly one name (a set of like-named corpses reads as "Corpse"). Empty when they
+		/// have no name, or when several different names reach the state - then it would be a guess
+		/// which verb owns it - so the label falls back to the script number.
 		/// </summary>
 		private static string TriggerName( HashSet<int> objectIds, IReadOnlyDictionary<int, string?>? objectNames )
 		{
@@ -891,7 +892,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			{
 				return "";
 			}
-			var counts = new Dictionary<string, int>();
+			var names = new HashSet<string>( System.StringComparer.OrdinalIgnoreCase );
 			foreach( var id in objectIds )
 			{
 				string? raw;
@@ -899,19 +900,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				var name = CleanName( raw );
 				if( name.Length > 0 )
 				{
-					int current;
-					counts.TryGetValue( name, out current );
-					counts[name] = current + 1;
+					names.Add( name );
 				}
 			}
-			// name it only when the trigger objects agree on one name (a set of like-named corpses);
-			// several different names means the state is reachable more than one way, so rather than
-			// guess which verb "owns" it, fall back to the script number
-			if( counts.Count != 1 )
-			{
-				return "";
-			}
-			return Capitalize( counts.Keys.First() );
+			return names.Count == 1 ? Capitalize( names.First() ) : "";
 		}
 
 		/// <summary>A signature of what a control changes, so two atoms with the same effect merge.</summary>
