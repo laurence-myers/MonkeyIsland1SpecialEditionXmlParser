@@ -273,6 +273,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 				this.AddBackgroundNodes();
 
+				var frames = this.ComputeAnimationFrames();
 				for( var groupIndex = 0; groupIndex < this.Room!.SpriteHeaderList.Count && groupIndex < this.Room.SpriteGroupList.Count; groupIndex++ )
 				{
 					var spriteHeader = this.Room.SpriteHeaderList[groupIndex];
@@ -288,12 +289,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 						}
 					}
 
+					(int Frame, int Total) frame;
+					var frameTag = frames.TryGetValue( groupIndex, out frame ) ? $"  [frame {frame.Frame}/{frame.Total}]" : "";
 					var groupNode = new TreeNode
 					{
 						Text = string.Concat(
 							"Group ", groupIndex, " - id=", spriteHeader.Identifier,
 							classicObject?.Name is { Length: > 0 } ? " " + classicObject.Name : "",
-							classicObject == null ? " [unplaced]" : ""
+							classicObject == null ? " [unplaced]" : "",
+							frameTag
 						),
 						Tag = groupIndex,
 						Checked = true,
@@ -323,6 +327,55 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				this.suppressUiEvents = false;
 			}
+		}
+
+		/// <summary>
+		/// Finds the animation-frame runs among the object sprite groups: a run of consecutive
+		/// groups whose classic objects sit at the exact same position and size is the cels of one
+		/// animation (room 28's chandelier pirate is three overlapping objects - 330, 331, 332 - all
+		/// at 80,80). Returns, per group index in such a run, its frame number and the run length,
+		/// so the tree can mark the related sub-groups as frames of one thing. A run of clearly
+		/// different objects that merely appear in sequence (room 12's skull poles, each at its own
+		/// spot) does not overlap and is left alone.
+		/// </summary>
+		private Dictionary<int, (int Frame, int Total)> ComputeAnimationFrames()
+		{
+			var frames = new Dictionary<int, (int Frame, int Total)>();
+			if( this.Room?.SpriteHeaderList == null || this.classicObjects == null )
+			{
+				return frames;
+			}
+
+			var headers = this.Room.SpriteHeaderList;
+			var index = 0;
+			while( index < headers.Count )
+			{
+				ClassicObject first;
+				if( !this.classicObjects.TryGetValue( headers[index].Identifier, out first ) || first.Width <= 0 || first.Height <= 0 )
+				{
+					index++;
+					continue;
+				}
+
+				var end = index + 1;
+				while( end < headers.Count
+					&& this.classicObjects.TryGetValue( headers[end].Identifier, out var next )
+					&& next.X == first.X && next.Y == first.Y && next.Width == first.Width && next.Height == first.Height )
+				{
+					end++;
+				}
+
+				var total = end - index;
+				if( total >= 2 )
+				{
+					for( var run = index; run < end; run++ )
+					{
+						frames[run] = ( run - index + 1, total );
+					}
+				}
+				index = end;
+			}
+			return frames;
 		}
 
 		private static string DescribeSprite( int spriteIndex, Sprite sprite )
