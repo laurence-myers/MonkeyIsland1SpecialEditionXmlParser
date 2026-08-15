@@ -629,12 +629,49 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 				var shows = new HashSet<int>( drawn );
 				shows.ExceptWith( baselineDrawn );
-				var hides = new HashSet<int>( baselineDrawn );
-				hides.ExceptWith( drawn );
-				if( shows.Count > 0 || hides.Count > 0 )
+				var directHides = new HashSet<int>( baselineDrawn );
+				directHides.ExceptWith( drawn );
+
+				HashSet<int> effectShows;
+				HashSet<int> effectHides;
+				if( shows.Count > 0 )
+				{
+					// re-compose the room the way the game would on the next entry with these objects
+					// set: seed the entry with the objects the local drew and run it, so the entry's
+					// own conditional draws apply - e.g. room 12 draws the monkey head's nose only
+					// while the mouth is closed, so opening the mouth (drawing 140-143) must drop it
+					var entrySeeds = new Dictionary<int, ClassicObjectStartState>();
+					foreach( var pair in startStates )
+					{
+						entrySeeds[pair.Key] = pair.Value;
+					}
+					foreach( var id in shows )
+					{
+						ClassicObjectStartState existing;
+						var owner = entrySeeds.TryGetValue( id, out existing ) ? existing.Owner : 15;
+						var classFlags = existing?.ClassFlags ?? 0u;
+						var state = result.States.TryGetValue( id, out var s ) && s.HasValue && s.Value != 0 ? s.Value : 1;
+						entrySeeds[id] = new ClassicObjectStartState( id, state, owner, classFlags );
+					}
+					var recomposed = DrawnSet( RunAssignment( data, scripts, entrySeeds, requestedIds, EmptyLocked, null ).States );
+
+					effectShows = new HashSet<int>( recomposed );
+					effectShows.ExceptWith( baselineDrawn );
+					effectHides = new HashSet<int>( baselineDrawn );
+					effectHides.ExceptWith( recomposed );
+					effectHides.UnionWith( directHides );
+				}
+				else
+				{
+					effectShows = shows;
+					effectHides = directHides;
+				}
+
+				if( effectShows.Count > 0 || effectHides.Count > 0 )
 				{
 					var cascade = result.Walk != null ? result.Walk.EnteredScripts : new HashSet<int>();
-					effects.Add( new ScriptedEffect( local.Key, shows, hides, cascade ) );
+					var isAnimation = effectShows.Count > 1 && HasFrameYield( data, local.Value.Start, local.Value.End );
+					effects.Add( new ScriptedEffect( local.Key, effectShows, effectHides, cascade, isAnimation ) );
 				}
 			}
 
@@ -678,7 +715,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					model.Incomplete = true;
 					break;
 				}
-				var state = new RoomScriptedState { Label = ScriptedStateLabel( effect.Shows, effect.Hides, objectNames ) };
+				var state = new RoomScriptedState
+				{
+					Label = ScriptedStateLabel( effect.Shows, effect.Hides, effect.IsAnimation, objectNames ),
+					LocalScriptId = effect.LocalId,
+					IsAnimation = effect.IsAnimation,
+				};
 				state.ObjectsShown.AddRange( effect.Shows.OrderBy( id => id ) );
 				state.ObjectsHidden.AddRange( effect.Hides.OrderBy( id => id ) );
 				model.ScriptedStates.Add( state );
@@ -695,12 +737,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// <summary>One local script's effect: what it draws and hides, and the scripts it started.</summary>
 		private class ScriptedEffect
 		{
-			public ScriptedEffect( int localId, HashSet<int> shows, HashSet<int> hides, HashSet<int> cascade )
+			public ScriptedEffect( int localId, HashSet<int> shows, HashSet<int> hides, HashSet<int> cascade, bool isAnimation )
 			{
 				this.LocalId = localId;
 				this.Shows = shows;
 				this.Hides = hides;
 				this.Cascade = cascade;
+				this.IsAnimation = isAnimation;
 			}
 
 			public int LocalId
@@ -722,6 +765,38 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			{
 				get;
 			}
+
+			public bool IsAnimation
+			{
+				get;
+			}
+		}
+
+		/// <summary>
+		/// Whether a script reveals objects a frame at a time: it draws objects and contains a
+		/// breakHere (which yields a frame), so the objects appear in sequence rather than at once.
+		/// </summary>
+		private static bool HasFrameYield( byte[] data, int start, int end )
+		{
+			var decoder = new ScriptDecoder( data, start, end );
+			decoder.DecodeScript();
+			var hasBreak = false;
+			var draws = 0;
+			foreach( var instruction in decoder.Instructions )
+			{
+				if( instruction.Opcode == 0x80 )
+				{
+					hasBreak = true;
+				}
+				foreach( var scriptEvent in instruction.Events )
+				{
+					if( scriptEvent.Kind == ScriptEventKind.DrawObject || scriptEvent.Kind == ScriptEventKind.SetObjectState )
+					{
+						draws++;
+					}
+				}
+			}
+			return hasBreak && draws > 0;
 		}
 
 		private static Dictionary<int, ClassicObjectStartState> BuildBaselineSeeds(
@@ -757,13 +832,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		private static string ScriptedStateLabel(
 			HashSet<int> shows,
 			HashSet<int> hides,
+			bool isAnimation,
 			IReadOnlyDictionary<int, string?>? objectNames )
 		{
 			string primary;
 			if( shows.Count > 0 )
 			{
-				var label = LabelForObjects( shows, objectNames, out primary );
-				return hides.Count > 0 ? "Show " + label + " (hide " + hides.Count + ")" : "Show " + label;
+				var verb = isAnimation ? "Animate " : "Show ";
+				var label = verb + LabelForObjects( shows, objectNames, out primary );
+				return hides.Count > 0 ? label + " (hide " + hides.Count + ")" : label;
 			}
 			return "Hide " + LabelForObjects( hides, objectNames, out primary );
 		}
@@ -1111,6 +1188,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				if( sorted.Count == 1 )
 				{
 					primary = "Object " + sorted[0];
+					return primary;
+				}
+				// a contiguous run reads clearest as a range (146-151), which also tells two nearly
+				// identical states apart
+				if( sorted[sorted.Count - 1] - sorted[0] == sorted.Count - 1 )
+				{
+					primary = "Objects " + sorted[0] + "–" + sorted[sorted.Count - 1];
 					return primary;
 				}
 				if( sorted.Count <= 3 )

@@ -524,6 +524,44 @@ namespace Tests
 		}
 
 		[Test]
+		public void DiscoverStates_ScriptedStateHidesAnObjectTheEntryOnlyDrawsInTheOtherState()
+		{
+			// room 12's nose pattern: the entry draws 144 only while object 142 is not open (state
+			// 1); local 200 opens the mouth (140-143). The state must re-run the entry so the nose
+			// drops - shows {140-143}, hides {144}.
+			var entry = Bytes( IfNotState( 142, 1, jumpOverBytes: 4 ), SetStateLiteral( 144, 1 ), Stop() );
+			var local = Bytes(
+				SetStateLiteral( 140, 1 ), SetStateLiteral( 141, 1 ),
+				SetStateLiteral( 142, 1 ), SetStateLiteral( 143, 1 ), Stop() );
+			var data = Bytes( entry, local );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 140, 141, 142, 143, 144 }, null,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } } );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].ObjectsShown, Is.EqualTo( new[] { 140, 141, 142, 143 } ) );
+			Assert.That( model.ScriptedStates[0].ObjectsHidden, Is.EqualTo( new[] { 144 } ) );
+		}
+
+		[Test]
+		public void DiscoverStates_MarksAFrameYieldingDrawLoopAsAnimation()
+		{
+			// a local that draws two objects with a breakHere between them is an animation
+			var entry = Bytes( Stop() );
+			var local = Bytes( SetStateLiteral( 210, 1 ), BreakHere(), SetStateLiteral( 211, 1 ), Stop() );
+			var data = Bytes( entry, local );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 210, 211 }, null,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } } );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].IsAnimation, Is.True );
+			Assert.That( model.ScriptedStates[0].LocalScriptId, Is.EqualTo( 200 ) );
+		}
+
+		[Test]
 		public void DiscoverStates_ScriptedStateCanHideABaselineObject()
 		{
 			// the entry draws 210; local 200 hides it. The state's effect is a hide.
@@ -752,6 +790,12 @@ namespace Tests
 		private static byte[] StartScript( byte scriptId )
 		{
 			return new byte[] { 0x0A, scriptId, 0xFF };
+		}
+
+		/// <summary>breakHere (0x80): yields a frame. 1 byte.</summary>
+		private static byte[] BreakHere()
+		{
+			return new byte[] { 0x80 };
 		}
 
 		/// <summary>getObjectOwner (0x10): result variable, literal object word. 5 bytes.</summary>

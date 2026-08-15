@@ -51,6 +51,26 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 			set;
 		} = "";
 
+		/// <summary>
+		/// Gets or sets the local script number that produces this state (its trigger), so two
+		/// otherwise similar states can be told apart.
+		/// </summary>
+		public int LocalScriptId
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets whether the script reveals the objects one per frame (a breakHere between
+		/// each draw) - an animation - rather than all at once.
+		/// </summary>
+		public bool IsAnimation
+		{
+			get;
+			set;
+		}
+
 		/// <summary>Gets the object numbers this state draws that the game-start baseline does not.</summary>
 		public List<int> ObjectsShown
 		{

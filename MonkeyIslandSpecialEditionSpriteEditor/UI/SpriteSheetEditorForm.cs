@@ -1626,7 +1626,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			var box = new CheckBox
 			{
-				Text = scriptedState.Label,
+				// the local script number is the trigger, and tells otherwise-similar states apart
+				Text = string.Concat( scriptedState.Label, "  [script ", scriptedState.LocalScriptId, "]" ),
 				AutoSize = false,
 				Width = RoomStateControlWidth,
 				Height = 20,
@@ -1916,8 +1917,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// room actually has script-driven states to offer
 			if( this.panelRoomStates != null )
 			{
-				this.panelRoomStates.Visible = mode == RoomViewMode.ScriptInitial
-					&& this.roomStateModel != null
+				// the states panel stays visible in every view mode, not only the script view, so a
+				// modder can reach the controls whatever preset the preview is on
+				this.panelRoomStates.Visible = this.roomStateModel != null
 					&& ( this.roomStateModel.Controls.Count > 0 || this.roomStateModel.ScriptedStates.Count > 0 );
 			}
 
