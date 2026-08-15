@@ -5,6 +5,36 @@ using MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities;
 namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 {
 	/// <summary>
+	/// How the walk treats a test whose verdict it cannot compute.
+	/// </summary>
+	public enum ForkPolicy
+	{
+		/// <summary>
+		/// Fork the walk at every open test, enumerating every reachable combination of answers.
+		/// This is the exhaustive but noisy behaviour: engine/input variables, loop counters and
+		/// unresolved object-class tests all fork, and the path budget is quickly spent on results
+		/// that do not change what the room draws.
+		/// </summary>
+		Enumerate,
+
+		/// <summary>
+		/// Fork only on an open test of a plot-free variable or bit flag (a plain game global that
+		/// the engine does not own, or a bit): the small set of atoms that actually decide what a
+		/// room shows. Every other open test (an engine variable, a loop counter, an unresolved
+		/// object-class or object-state test) takes its fall-through edge without forking, which
+		/// keeps the walk on the real plot branches.
+		/// </summary>
+		PlotOnly,
+
+		/// <summary>
+		/// Never fork: every open test takes its fall-through edge, so the walk produces exactly
+		/// one path. Combined with a set of locked variables this evaluates the room under one
+		/// concrete assignment of the plot atoms.
+		/// </summary>
+		None,
+	}
+
+	/// <summary>
 	/// One possible appearance of a room when the player first enters it: the object states one
 	/// path through the entry script produces, with the tests that path assumed on the way.
 	/// </summary>
@@ -120,6 +150,33 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// <summary>The marker for "a value the evaluator could not compute".</summary>
 		private const int Unknown = int.MinValue;
 
+		/// <summary>The shared empty pin table, so an unpinned evaluation allocates nothing.</summary>
+		private static readonly IReadOnlyDictionary<int, int> EmptyLocked = new Dictionary<int, int>();
+
+		/// <summary>
+		/// Whether a variable is a plot atom: a plain game global the engine does not own itself, or
+		/// a bit flag. These are the values the scripts use to record story progress, so they are the
+		/// only ones the plot-only walk forks on. A script-local variable (the 0x4000 flag), an
+		/// engine-owned global (a timer, the mouse, the room number) and an indexed variable (its
+		/// number only known at run time) are not plot atoms.
+		/// </summary>
+		internal static bool IsPlotFree( int variableId )
+		{
+			if( variableId < 0 )
+			{
+				return false;
+			}
+			if( ( variableId & 0x8000 ) != 0 )
+			{
+				return true;
+			}
+			if( ( variableId & 0x4000 ) != 0 )
+			{
+				return false;
+			}
+			return !ScummEngineVariables.IsEngineVariable( variableId );
+		}
+
 		/// <summary>
 		/// Evaluates the entry script of a room from the still XOR encoded resource and index
 		/// file contents. The buffers are decoded in place. The index file supplies the script
@@ -131,14 +188,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			int roomNumber,
 			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
 			IEnumerable<int> objectIds,
-			byte[]? encodedIndexBytes = null )
+			byte[]? encodedIndexBytes = null,
+			ForkPolicy policy = ForkPolicy.Enumerate )
 		{
 			Parser.XorDecode( bytes, Parser.XorKey );
 			if( encodedIndexBytes != null )
 			{
 				Parser.XorDecode( encodedIndexBytes, Parser.XorKey );
 			}
-			return Evaluate( bytes, roomNumber, startStates, objectIds, encodedIndexBytes );
+			return Evaluate( bytes, roomNumber, startStates, objectIds, encodedIndexBytes, policy );
 		}
 
 		/// <summary>
@@ -157,22 +215,51 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			int roomNumber,
 			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
 			IEnumerable<int> objectIds,
-			byte[]? decodedIndex = null )
+			byte[]? decodedIndex = null,
+			ForkPolicy policy = ForkPolicy.Enumerate )
+		{
+			var scripts = LocateScripts( data, roomNumber, decodedIndex );
+			if( scripts == null )
+			{
+				return new List<RoomEntryScenario> { SeededScenario( startStates, objectIds ) };
+			}
+			return EvaluateScript(
+				data, scripts.Entry.Start, scripts.Entry.End, startStates, objectIds,
+				scripts.LocalScripts, scripts.GlobalScripts, scripts.BootScript, policy );
+		}
+
+		/// <summary>
+		/// The script byte ranges a room evaluation needs: its entry script, its local scripts, the
+		/// global script directory (empty without the index file) and the boot script. Null when the
+		/// room has no entry script. Located once and reused across the many walks state discovery
+		/// runs for one room.
+		/// </summary>
+		internal class RoomScripts
+		{
+			public (int Start, int End) Entry;
+			public Dictionary<int, (int Start, int End)> LocalScripts = null!;
+			public Dictionary<int, (int Start, int End)> GlobalScripts = null!;
+			public (int Start, int End)? BootScript;
+		}
+
+		private static RoomScripts? LocateScripts( byte[] data, int roomNumber, byte[]? decodedIndex )
 		{
 			var entry = ScriptScanner.FindEntryScript( data, roomNumber );
 			if( entry == null )
 			{
-				return new List<RoomEntryScenario> { SeededScenario( startStates, objectIds ) };
+				return null;
 			}
-			var localScripts = ScriptScanner.FindLocalScripts( data, roomNumber );
 			var globalScripts = decodedIndex != null
 				? ScriptScanner.FindGlobalScripts( data, decodedIndex )
 				: new Dictionary<int, (int Start, int End)>();
 			(int Start, int End) boot;
-			return EvaluateScript(
-				data, entry.Value.Start, entry.Value.End, startStates, objectIds,
-				localScripts, globalScripts,
-				globalScripts.TryGetValue( BootScriptId, out boot ) ? boot : ((int, int)?)null );
+			return new RoomScripts
+			{
+				Entry = ( entry.Value.Start, entry.Value.End ),
+				LocalScripts = ScriptScanner.FindLocalScripts( data, roomNumber ),
+				GlobalScripts = globalScripts,
+				BootScript = globalScripts.TryGetValue( BootScriptId, out boot ) ? boot : ( (int, int)?)null,
+			};
 		}
 
 		/// <summary>The number of the boot script the engine runs when a new game starts.</summary>
@@ -190,21 +277,49 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			IEnumerable<int> objectIds,
 			Dictionary<int, (int Start, int End)>? localScripts = null,
 			Dictionary<int, (int Start, int End)>? globalScripts = null,
-			(int Start, int End)? bootScript = null )
+			(int Start, int End)? bootScript = null,
+			ForkPolicy policy = ForkPolicy.Enumerate )
 		{
 			var requestedIds = objectIds.Distinct().ToList();
-			var walk = new Walk(
-				data, startStates,
+			var walk = RunWalk(
+				data, start, end, startStates,
 				localScripts ?? new Dictionary<int, (int Start, int End)>(),
-				globalScripts ?? new Dictionary<int, (int Start, int End)>() );
-
-			var entryGraph = walk.GetGraph( EntryScriptKey, start, end );
-			if( entryGraph.Blocks.Count == 0 )
+				globalScripts ?? new Dictionary<int, (int Start, int End)>(),
+				bootScript, policy, EmptyLocked, null );
+			if( walk == null )
 			{
 				return new List<RoomEntryScenario> { SeededScenario( startStates, requestedIds ) };
 			}
+			return MergePaths( walk.Finished, startStates, requestedIds );
+		}
 
-			var initial = new Path();
+		/// <summary>
+		/// Builds the work list and runs every path to its end, returning the finished walk (its
+		/// finished paths and the plot tests it saw). Returns null when the entry script has no
+		/// decodable body. The optional shared graph cache lets many walks over one room reuse the
+		/// decoded control flow graphs instead of decoding each script again.
+		/// </summary>
+		private static Walk? RunWalk(
+			byte[] data,
+			int entryStart,
+			int entryEnd,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			Dictionary<int, (int Start, int End)> localScripts,
+			Dictionary<int, (int Start, int End)> globalScripts,
+			(int Start, int End)? bootScript,
+			ForkPolicy policy,
+			IReadOnlyDictionary<int, int> locked,
+			Dictionary<int, ScriptControlFlowGraph>? sharedGraphs )
+		{
+			var walk = new Walk( data, startStates, localScripts, globalScripts, sharedGraphs );
+
+			var entryGraph = walk.GetGraph( EntryScriptKey, entryStart, entryEnd );
+			if( entryGraph.Blocks.Count == 0 )
+			{
+				return null;
+			}
+
+			var initial = new Path { Policy = policy, Locked = locked };
 			initial.Frames.Add( new Frame { ScriptKey = EntryScriptKey, Graph = entryGraph, FollowCalls = true } );
 
 			// every script starts with zeroed local variables the engine gives it
@@ -240,7 +355,584 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				walk.RunPath( walk.Work.Pop() );
 			}
 
-			return MergePaths( walk.Finished, startStates, requestedIds );
+			return walk;
+		}
+
+		//-------------------------------------------
+		// interactive state discovery
+
+		/// <summary>The most plot atoms one room offers as controls, a guard against a runaway room.</summary>
+		private const int MaxControls = 24;
+
+		/// <summary>The most value classes one control offers.</summary>
+		private const int MaxOptions = 8;
+
+		/// <summary>
+		/// Evaluates a room under one concrete assignment of plot atoms: the pinned variables hold
+		/// their given values (reads return them, writes to them are ignored) and every open test
+		/// takes its fall-through edge, so the walk produces exactly one appearance. This is what the
+		/// interactive UI calls on every control change - one path, so it is fast.
+		/// </summary>
+		/// <param name="pinned">The plot atoms to hold fixed, keyed by engine variable number (a bit keeps the 0x8000 flag).</param>
+		public static IReadOnlyDictionary<int, int?> EvaluateUnderAssignment(
+			byte[] data,
+			int roomNumber,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			IEnumerable<int> objectIds,
+			byte[]? decodedIndex,
+			IReadOnlyDictionary<int, int> pinned )
+		{
+			var requestedIds = objectIds.Distinct().ToList();
+			var scripts = LocateScripts( data, roomNumber, decodedIndex );
+			if( scripts == null )
+			{
+				return SeededStates( startStates, requestedIds );
+			}
+			return RunAssignment( data, scripts, startStates, requestedIds, pinned, null ).States;
+		}
+
+		/// <summary>
+		/// Evaluates one already-located script range under a pinned assignment. Internal so the
+		/// tests can feed synthetic bytecode without building a whole resource file.
+		/// </summary>
+		internal static IReadOnlyDictionary<int, int?> EvaluateUnderAssignmentScript(
+			byte[] data,
+			int start,
+			int end,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			IEnumerable<int> objectIds,
+			IReadOnlyDictionary<int, int> pinned,
+			Dictionary<int, (int Start, int End)>? localScripts = null,
+			Dictionary<int, (int Start, int End)>? globalScripts = null,
+			(int Start, int End)? bootScript = null )
+		{
+			var scripts = new RoomScripts
+			{
+				Entry = ( start, end ),
+				LocalScripts = localScripts ?? new Dictionary<int, (int Start, int End)>(),
+				GlobalScripts = globalScripts ?? new Dictionary<int, (int Start, int End)>(),
+				BootScript = bootScript,
+			};
+			return RunAssignment( data, scripts, startStates, objectIds.Distinct().ToList(), pinned, null ).States;
+		}
+
+		/// <summary>
+		/// Discovers the interactive story states a room offers by decoding the still XOR encoded
+		/// resource and index files in place, then delegating to <see cref="DiscoverStates"/>.
+		/// </summary>
+		public static RoomStateModel DiscoverStatesFromEncodedBytes(
+			byte[] bytes,
+			int roomNumber,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			IEnumerable<int> objectIds,
+			byte[]? encodedIndexBytes = null,
+			IReadOnlyDictionary<int, string?>? objectNames = null )
+		{
+			Parser.XorDecode( bytes, Parser.XorKey );
+			if( encodedIndexBytes != null )
+			{
+				Parser.XorDecode( encodedIndexBytes, Parser.XorKey );
+			}
+			return DiscoverStates( bytes, roomNumber, startStates, objectIds, encodedIndexBytes, objectNames );
+		}
+
+		/// <summary>
+		/// Discovers the interactive story states a room offers: which plot atoms (plain game
+		/// globals and bit flags) change what the room draws, the value classes each one can take,
+		/// and the objects each class shows and hides compared with the game-start baseline. A
+		/// plot-only enumeration and a baseline walk find the candidate atoms and the values the
+		/// scripts test them against; each candidate value is then realised with a one-path pinned
+		/// walk, and atoms that never change what is drawn are dropped. The result is a small model
+		/// the UI turns into radio groups and checkboxes.
+		/// </summary>
+		/// <param name="objectNames">Optional object names (OBNA), used to label the controls.</param>
+		public static RoomStateModel DiscoverStates(
+			byte[] data,
+			int roomNumber,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			IEnumerable<int> objectIds,
+			byte[]? decodedIndex,
+			IReadOnlyDictionary<int, string?>? objectNames = null )
+		{
+			var requestedIds = objectIds.Distinct().ToList();
+			var scripts = LocateScripts( data, roomNumber, decodedIndex );
+			if( scripts == null )
+			{
+				return new RoomStateModel();
+			}
+			return DiscoverStatesCore( data, scripts, startStates, requestedIds, objectNames );
+		}
+
+		/// <summary>
+		/// Discovers the interactive states for one already-located script range. Internal so the
+		/// tests can feed synthetic bytecode without building a whole resource file.
+		/// </summary>
+		internal static RoomStateModel DiscoverStatesScript(
+			byte[] data,
+			int start,
+			int end,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			IEnumerable<int> objectIds,
+			IReadOnlyDictionary<int, string?>? objectNames = null,
+			Dictionary<int, (int Start, int End)>? localScripts = null,
+			Dictionary<int, (int Start, int End)>? globalScripts = null,
+			(int Start, int End)? bootScript = null )
+		{
+			var scripts = new RoomScripts
+			{
+				Entry = ( start, end ),
+				LocalScripts = localScripts ?? new Dictionary<int, (int Start, int End)>(),
+				GlobalScripts = globalScripts ?? new Dictionary<int, (int Start, int End)>(),
+				BootScript = bootScript,
+			};
+			return DiscoverStatesCore( data, scripts, startStates, objectIds.Distinct().ToList(), objectNames );
+		}
+
+		private static RoomStateModel DiscoverStatesCore(
+			byte[] data,
+			RoomScripts scripts,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			List<int> requestedIds,
+			IReadOnlyDictionary<int, string?>? objectNames )
+		{
+			var model = new RoomStateModel();
+
+			// one decoded-graph cache shared by every walk this discovery runs for the room
+			var graphs = new Dictionary<int, ScriptControlFlowGraph>();
+
+			// the game-start baseline: what the room draws with every plot atom at its start value
+			var baseline = RunAssignment( data, scripts, startStates, requestedIds, EmptyLocked, graphs );
+			var baselineDrawn = DrawnSet( baseline.States );
+			var baselineSignature = Signature( baselineDrawn );
+
+			// discover candidate atoms and the values the scripts test them against: a broad
+			// plot-only enumeration reaches the forked branches, and the baseline walk adds the
+			// tests it reached on the way
+			var thresholds = new Dictionary<int, SortedSet<int>>();
+			var enumeration = RunWalk(
+				data, scripts.Entry.Start, scripts.Entry.End, startStates,
+				scripts.LocalScripts, scripts.GlobalScripts, scripts.BootScript,
+				ForkPolicy.PlotOnly, EmptyLocked, graphs );
+			model.Incomplete = HitCap( enumeration );
+			HarvestThresholds( enumeration, thresholds );
+			HarvestThresholds( baseline.Walk, thresholds );
+
+			// build a control for each candidate; following the tests each option walk reaches
+			// picks up atoms that only appear once another atom is pinned
+			var processed = new HashSet<int>();
+			var queue = new Queue<int>( thresholds.Keys );
+			while( queue.Count > 0 && model.Controls.Count < MaxControls )
+			{
+				var variableId = queue.Dequeue();
+				if( !processed.Add( variableId ) )
+				{
+					continue;
+				}
+
+				SortedSet<int> values;
+				thresholds.TryGetValue( variableId, out values );
+				var control = BuildControl(
+					data, scripts, startStates, requestedIds, baselineDrawn, baselineSignature,
+					variableId, values, objectNames, graphs, thresholds );
+				if( control != null )
+				{
+					model.Controls.Add( control );
+				}
+
+				foreach( var candidate in thresholds.Keys )
+				{
+					if( !processed.Contains( candidate ) && !queue.Contains( candidate ) )
+					{
+						queue.Enqueue( candidate );
+					}
+				}
+			}
+
+			// most-impactful first, then by variable number so the order is stable
+			model.Controls.Sort( ( a, b ) =>
+			{
+				var impact = ControlImpact( b ) - ControlImpact( a );
+				return impact != 0 ? impact : a.VariableId - b.VariableId;
+			} );
+
+			// two atoms that change exactly the same objects the same way are one story state read
+			// two ways (a plot counter and a bit the same branch sets); keep only the first, so the
+			// panel does not offer two controls that fight over the same objects
+			var seenEffects = new HashSet<string>();
+			model.Controls.RemoveAll( c => !seenEffects.Add( ControlEffectSignature( c ) ) );
+			return model;
+		}
+
+		/// <summary>A signature of what a control changes, so two atoms with the same effect merge.</summary>
+		private static string ControlEffectSignature( RoomStateControl control )
+		{
+			var parts = control.Options
+				.Select( o => "s:" + string.Join( ",", o.ObjectsShown ) + "|h:" + string.Join( ",", o.ObjectsHidden ) )
+				.OrderBy( s => s, System.StringComparer.Ordinal );
+			return string.Join( ";", parts );
+		}
+
+		/// <summary>
+		/// Runs one pinned walk (fork policy None) and reads the requested objects' states from its
+		/// single finished path. Returns the states and the walk (whose plot tests discovery reads).
+		/// </summary>
+		private static (Dictionary<int, int?> States, Walk? Walk) RunAssignment(
+			byte[] data,
+			RoomScripts scripts,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			List<int> requestedIds,
+			IReadOnlyDictionary<int, int> pinned,
+			Dictionary<int, ScriptControlFlowGraph>? sharedGraphs )
+		{
+			var walk = RunWalk(
+				data, scripts.Entry.Start, scripts.Entry.End, startStates,
+				scripts.LocalScripts, scripts.GlobalScripts, scripts.BootScript,
+				ForkPolicy.None, pinned, sharedGraphs );
+			var path = walk != null && walk.Finished.Count > 0 ? walk.Finished[0] : null;
+
+			var states = new Dictionary<int, int?>();
+			foreach( var id in requestedIds )
+			{
+				if( path == null )
+				{
+					states[id] = SeededState( startStates, id );
+				}
+				else
+				{
+					var state = GetObjectState( id, path, startStates );
+					states[id] = state == Unknown ? (int?)null : state;
+				}
+			}
+			return ( states, walk );
+		}
+
+		/// <summary>
+		/// Builds one control for a candidate plot atom, or null when the atom never changes what
+		/// the room draws (so it is not a real story state). Each value class is realised with a
+		/// pinned walk; the classes are grouped by the objects they draw, labelled from the object
+		/// names, and kept only when at least two classes differ.
+		/// </summary>
+		private static RoomStateControl? BuildControl(
+			byte[] data,
+			RoomScripts scripts,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			List<int> requestedIds,
+			HashSet<int> baselineDrawn,
+			string baselineSignature,
+			int variableId,
+			SortedSet<int>? thresholds,
+			IReadOnlyDictionary<int, string?>? objectNames,
+			Dictionary<int, ScriptControlFlowGraph> graphs,
+			Dictionary<int, SortedSet<int>> allThresholds )
+		{
+			var isBit = ( variableId & 0x8000 ) != 0;
+
+			// the values to probe: a bit is 0 or 1; a plain global is 0 (the start value) plus each
+			// threshold and its neighbours, so a <, <=, ==, >= or > boundary all land in a class
+			var representatives = new List<int>();
+			if( isBit )
+			{
+				representatives.Add( 0 );
+				representatives.Add( 1 );
+			}
+			else
+			{
+				AddRepresentative( representatives, 0 );
+				if( thresholds != null )
+				{
+					foreach( var threshold in thresholds )
+					{
+						AddRepresentative( representatives, threshold - 1 );
+						AddRepresentative( representatives, threshold );
+						AddRepresentative( representatives, threshold + 1 );
+					}
+				}
+			}
+
+			// group the representatives by the objects they draw; keep the first (smallest) value
+			// per class, and the class's full drawn set
+			var classesBySignature = new Dictionary<string, (int Representative, HashSet<int> Drawn)>();
+			var classOrder = new List<string>();
+			foreach( var value in representatives )
+			{
+				var pinned = new Dictionary<int, int> { { variableId, value } };
+				var result = RunAssignment( data, scripts, startStates, requestedIds, pinned, graphs );
+				HarvestThresholds( result.Walk, allThresholds );
+				var drawn = DrawnSet( result.States );
+				var signature = Signature( drawn );
+				if( !classesBySignature.ContainsKey( signature ) )
+				{
+					classesBySignature[signature] = ( value, drawn );
+					classOrder.Add( signature );
+				}
+			}
+
+			// the atom gates the room only when its classes differ in what they draw
+			if( classesBySignature.Count < 2 )
+			{
+				return null;
+			}
+
+			// the objects this atom toggles: drawn in some class but not in every class
+			var union = new HashSet<int>();
+			HashSet<int>? intersection = null;
+			foreach( var signature in classOrder )
+			{
+				var drawn = classesBySignature[signature].Drawn;
+				union.UnionWith( drawn );
+				if( intersection == null )
+				{
+					intersection = new HashSet<int>( drawn );
+				}
+				else
+				{
+					intersection.IntersectWith( drawn );
+				}
+			}
+			var toggled = new HashSet<int>( union );
+			toggled.ExceptWith( intersection! );
+
+			var control = new RoomStateControl
+			{
+				VariableId = variableId,
+				IsCheckbox = isBit,
+			};
+
+			var optionLabels = new List<string>();
+			foreach( var signature in classOrder )
+			{
+				if( control.Options.Count >= MaxOptions )
+				{
+					break;
+				}
+				var entry = classesBySignature[signature];
+				var shown = new HashSet<int>( entry.Drawn );
+				shown.ExceptWith( baselineDrawn );
+				var hidden = new HashSet<int>( baselineDrawn );
+				hidden.ExceptWith( entry.Drawn );
+
+				var governed = new HashSet<int>( entry.Drawn );
+				governed.IntersectWith( toggled );
+				string primary;
+				var label = LabelForObjects( governed, objectNames, out primary );
+
+				var option = new RoomStateOption
+				{
+					RepresentativeValue = entry.Representative,
+					Label = label,
+				};
+				option.ObjectsShown.AddRange( shown.OrderBy( id => id ) );
+				option.ObjectsHidden.AddRange( hidden.OrderBy( id => id ) );
+				control.Options.Add( option );
+				optionLabels.Add( string.IsNullOrEmpty( primary ) ? "None" : primary );
+
+				if( signature == baselineSignature )
+				{
+					control.DefaultOptionIndex = control.Options.Count - 1;
+				}
+			}
+
+			control.Name = BuildControlName( control, toggled, objectNames, optionLabels );
+			return control;
+		}
+
+		/// <summary>
+		/// The caption for a control. A checkbox describes what ticking it does to its objects; a
+		/// radio group joins the names of the objects its options draw.
+		/// </summary>
+		private static string BuildControlName(
+			RoomStateControl control,
+			HashSet<int> toggled,
+			IReadOnlyDictionary<int, string?>? objectNames,
+			List<string> optionLabels )
+		{
+			if( control.IsCheckbox && control.Options.Count == 2 )
+			{
+				var checkedOption = control.Options[control.DefaultOptionIndex == 0 ? 1 : 0];
+				string primary;
+				if( checkedOption.ObjectsHidden.Count > 0 && checkedOption.ObjectsShown.Count == 0 )
+				{
+					LabelForObjects( new HashSet<int>( checkedOption.ObjectsHidden ), objectNames, out primary );
+					return "Hide " + LowerFirst( primary );
+				}
+				if( checkedOption.ObjectsShown.Count > 0 && checkedOption.ObjectsHidden.Count == 0 )
+				{
+					LabelForObjects( new HashSet<int>( checkedOption.ObjectsShown ), objectNames, out primary );
+					return "Show " + LowerFirst( primary );
+				}
+			}
+
+			var distinct = optionLabels.Where( l => l != "None" ).Distinct().ToList();
+			if( distinct.Count > 0 )
+			{
+				return string.Join( " / ", distinct );
+			}
+			string name;
+			LabelForObjects( toggled, objectNames, out name );
+			return string.IsNullOrEmpty( name ) ? "State" : name;
+		}
+
+		private static void AddRepresentative( List<int> values, int value )
+		{
+			if( value >= 0 && !values.Contains( value ) )
+			{
+				values.Add( value );
+			}
+		}
+
+		/// <summary>How many object visibilities a control changes, for ordering the controls.</summary>
+		private static int ControlImpact( RoomStateControl control )
+		{
+			var count = 0;
+			foreach( var option in control.Options )
+			{
+				count += option.ObjectsShown.Count + option.ObjectsHidden.Count;
+			}
+			return count;
+		}
+
+		private static HashSet<int> DrawnSet( Dictionary<int, int?> states )
+		{
+			var drawn = new HashSet<int>();
+			foreach( var pair in states )
+			{
+				if( pair.Value.HasValue && pair.Value.Value != 0 )
+				{
+					drawn.Add( pair.Key );
+				}
+			}
+			return drawn;
+		}
+
+		private static string Signature( HashSet<int> drawn )
+		{
+			return string.Join( ",", drawn.OrderBy( id => id ) );
+		}
+
+		private static void HarvestThresholds( Walk? walk, Dictionary<int, SortedSet<int>> into )
+		{
+			if( walk == null )
+			{
+				return;
+			}
+			foreach( var test in walk.PlotTests )
+			{
+				SortedSet<int> values;
+				if( !into.TryGetValue( test.Subject, out values ) )
+				{
+					values = new SortedSet<int>();
+					into[test.Subject] = values;
+				}
+				values.Add( test.Value );
+			}
+		}
+
+		private static bool HitCap( Walk? walk )
+		{
+			return walk != null && walk.ForkBudgetHit;
+		}
+
+		private static Dictionary<int, int?> SeededStates(
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			List<int> requestedIds )
+		{
+			var states = new Dictionary<int, int?>();
+			foreach( var id in requestedIds )
+			{
+				states[id] = SeededState( startStates, id );
+			}
+			return states;
+		}
+
+		private static int SeededState( IReadOnlyDictionary<int, ClassicObjectStartState> startStates, int objectId )
+		{
+			ClassicObjectStartState startState;
+			return startStates.TryGetValue( objectId, out startState ) ? startState.State : 0;
+		}
+
+		/// <summary>
+		/// A label for a set of objects: the most common cleaned object name, pluralised and with
+		/// the count, e.g. "Pirates (10)". The chosen name is returned in <paramref name="primary"/>
+		/// so the caller can build a control caption from it.
+		/// </summary>
+		private static string LabelForObjects(
+			HashSet<int> objectIds,
+			IReadOnlyDictionary<int, string?>? objectNames,
+			out string primary )
+		{
+			primary = "";
+			if( objectIds.Count == 0 )
+			{
+				return "None";
+			}
+
+			var counts = new Dictionary<string, int>();
+			if( objectNames != null )
+			{
+				foreach( var id in objectIds )
+				{
+					string? raw;
+					objectNames.TryGetValue( id, out raw );
+					var name = CleanName( raw );
+					if( name.Length > 0 )
+					{
+						int current;
+						counts.TryGetValue( name, out current );
+						counts[name] = current + 1;
+					}
+				}
+			}
+
+			if( counts.Count == 0 )
+			{
+				// no names to go on: fall back to the object numbers, so options stay distinguishable
+				var sorted = objectIds.OrderBy( id => id ).ToList();
+				if( sorted.Count == 1 )
+				{
+					primary = "Object " + sorted[0];
+					return primary;
+				}
+				if( sorted.Count <= 3 )
+				{
+					primary = "Objects " + string.Join( ", ", sorted );
+					return primary;
+				}
+				primary = sorted.Count + " objects";
+				return primary + " (" + string.Join( ", ", sorted.Take( 3 ) ) + "…)";
+			}
+
+			var best = counts.OrderByDescending( c => c.Value ).ThenBy( c => c.Key ).First().Key;
+			primary = Capitalize( Pluralize( best, objectIds.Count ) );
+			return primary + " (" + objectIds.Count + ")";
+		}
+
+		/// <summary>Strips the OBNA padding (trailing '@' and spaces) from an object name.</summary>
+		private static string CleanName( string? name )
+		{
+			if( string.IsNullOrEmpty( name ) )
+			{
+				return "";
+			}
+			return name!.TrimEnd( '@', ' ', '\0' ).Trim();
+		}
+
+		private static string Pluralize( string word, int count )
+		{
+			if( count <= 1 || word.EndsWith( "s", System.StringComparison.OrdinalIgnoreCase ) )
+			{
+				return word;
+			}
+			return word + "s";
+		}
+
+		private static string Capitalize( string word )
+		{
+			return word.Length == 0 ? word : char.ToUpperInvariant( word[0] ) + word.Substring( 1 );
+		}
+
+		private static string LowerFirst( string word )
+		{
+			return word.Length == 0 ? word : char.ToLowerInvariant( word[0] ) + word.Substring( 1 );
 		}
 
 		//-------------------------------------------
@@ -344,6 +1036,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			/// <summary>The objects whose classes a script changed, so the directory no longer describes them.</summary>
 			public HashSet<int> ChangedClasses = new HashSet<int>();
 
+			/// <summary>How this path treats a test it cannot answer. Constant for one evaluation.</summary>
+			public ForkPolicy Policy = ForkPolicy.Enumerate;
+
+			/// <summary>
+			/// The variables pinned to a fixed value for this evaluation: a read of a locked variable
+			/// returns the pinned value and a write to one is ignored (so a boot-script write cannot
+			/// overwrite the pin). Shared and never mutated, so a fork keeps the same reference.
+			/// </summary>
+			public IReadOnlyDictionary<int, int> Locked = EmptyLocked;
+
 			public Path Fork()
 			{
 				return new Path
@@ -365,6 +1067,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					InBootScript = this.InBootScript,
 					ExpressionStack = new List<int?>( this.ExpressionStack ),
 					ChangedClasses = new HashSet<int>( this.ChangedClasses ),
+					Policy = this.Policy,
+					Locked = this.Locked,
 				};
 			}
 
@@ -391,16 +1095,33 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			byte[] data,
 			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
 			Dictionary<int, (int Start, int End)> localScripts,
-			Dictionary<int, (int Start, int End)> globalScripts )
+			Dictionary<int, (int Start, int End)> globalScripts,
+			Dictionary<int, ScriptControlFlowGraph>? sharedGraphs = null )
 		{
 			private readonly byte[] data = data;
 			private readonly Dictionary<int, (int Start, int End)> localScripts = localScripts;
 			private readonly Dictionary<int, (int Start, int End)> globalScripts = globalScripts;
-			private readonly Dictionary<int, ScriptControlFlowGraph> graphs = new Dictionary<int, ScriptControlFlowGraph>();
+			private readonly Dictionary<int, ScriptControlFlowGraph> graphs = sharedGraphs ?? new Dictionary<int, ScriptControlFlowGraph>();
 
 			public readonly IReadOnlyDictionary<int, ClassicObjectStartState> StartStates = startStates;
 			public readonly Stack<Path> Work = new Stack<Path>();
 			public readonly List<Path> Finished = new List<Path>();
+
+			/// <summary>
+			/// Every conditional test on a plot atom (a plain game global or a bit) with a literal
+			/// comparison value the walk reached, whether or not it forked, keyed by variable and
+			/// value. State discovery reads this to learn which plot atoms gate the room and the
+			/// threshold values the scripts test them against.
+			/// </summary>
+			public readonly HashSet<(int Subject, int Value)> PlotTests = new HashSet<(int Subject, int Value)>();
+
+			/// <summary>
+			/// Whether the walk ran out of its path budget and had to abandon a fork. State
+			/// discovery reports this as an incomplete result: there may be more states than found.
+			/// A path that only ran past its own step budget does not set this - that is a per-path
+			/// safety net that in practice trips on a trailing wait loop, after the object setup.
+			/// </summary>
+			public bool ForkBudgetHit;
 
 			public ScriptControlFlowGraph GetGraph( int scriptKey, int start, int end )
 			{
@@ -475,6 +1196,18 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 						case ScriptFlowKind.ConditionalJump:
 						{
 							var choiceKey = ( (long)frame.ScriptKey << 32 ) | (uint)last.Position;
+
+							// remember every plot-atom test the walk reaches, so state discovery
+							// learns which globals and bits gate the room and the values they test
+							if( last.Condition != null
+								&& last.Condition.Kind == ScriptConditionKind.Variable
+								&& last.Condition.ValueIsLiteral
+								&& last.Condition.Subject >= 0
+								&& IsPlotFree( last.Condition.Subject ) )
+							{
+								this.PlotTests.Add( ( last.Condition.Subject, last.Condition.Value ) );
+							}
+
 							var verdict = EvaluateCondition( last.Condition, path, this.StartStates );
 							if( verdict != null )
 							{
@@ -502,10 +1235,25 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 								continue;
 							}
 
+							// under a restricted fork policy most open tests do not fork: a plot
+							// atom forks under PlotOnly, and nothing forks under None. A non-forking
+							// test takes its fall-through edge and records that choice, so a wait
+							// loop that returns here leaves through the other edge next time instead
+							// of spinning
+							if( path.Policy != ForkPolicy.Enumerate
+								&& !( path.Policy == ForkPolicy.PlotOnly && IsForkableOpenCondition( last.Condition, path ) ) )
+							{
+								path.OpenChoices[choiceKey] = true;
+								Assume( last.Condition, path );
+								MoveTo( frame, block.NextBlock );
+								continue;
+							}
+
 							// the test is open: fork, unless the budget is used up
 							if( this.Finished.Count + this.Work.Count + 2 > MaxPaths )
 							{
 								// no budget: assume the test failed and skip the guarded code
+								this.ForkBudgetHit = true;
 								path.Truncated = true;
 								path.AddCondition( last.Condition?.Negate() );
 								path.OpenChoices[choiceKey] = false;
@@ -838,6 +1586,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// </summary>
 		private static void WriteVariable( int variableId, int? value, Path path )
 		{
+			if( path.Locked.ContainsKey( variableId ) )
+			{
+				// a pinned variable holds its value against every write, so a boot-script or
+				// entry-script assignment cannot overwrite the assumption the caller pinned
+				return;
+			}
 			if( variableId < 0 )
 			{
 				// A write whose target is only known when the game runs. The scripts use these
@@ -881,6 +1635,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// </summary>
 		private static int? ResolveVariable( int variableId, Path path )
 		{
+			int locked;
+			if( path.Locked.TryGetValue( variableId, out locked ) )
+			{
+				return locked;
+			}
 			int value;
 			if( path.Variables.TryGetValue( variableId, out value ) )
 			{
@@ -963,6 +1722,30 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				default:
 					return null;
 			}
+		}
+
+		/// <summary>
+		/// Whether the plot-only walk should fork at an open test. It forks only on a test of a
+		/// plot atom whose value it does not know while the compared value is known: that is a
+		/// genuine story branch. A test whose subject is already known (so the verdict came from a
+		/// range, not a real unknown) or whose compared value is itself unknown teaches the fork
+		/// nothing, so it does not fork.
+		/// </summary>
+		private static bool IsForkableOpenCondition( ScriptCondition? condition, Path path )
+		{
+			if( condition == null || condition.Kind != ScriptConditionKind.Variable )
+			{
+				return false;
+			}
+			if( condition.Subject < 0 || !IsPlotFree( condition.Subject ) )
+			{
+				return false;
+			}
+			if( ResolveVariable( condition.Subject, path ) != null )
+			{
+				return false;
+			}
+			return ResolveConditionValue( condition, path ) != null;
 		}
 
 		/// <summary>

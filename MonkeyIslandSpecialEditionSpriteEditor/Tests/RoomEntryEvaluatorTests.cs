@@ -313,12 +313,147 @@ namespace Tests
 		}
 
 		//-------------------------------------------
+		// fork policy, pinning and state discovery
+
+		[Test]
+		public void PlotOnly_DoesNotForkOnAnEngineVariable()
+		{
+			// variable 6 is VAR_MACHINE_SPEED, which the engine owns. Under the plot-only policy an
+			// open test on it does not fork; the walk takes its fall-through edge and draws the object
+			var scenarios = EvaluatePolicy( new[] { 200 }, NoSeeds(), ForkPolicy.PlotOnly,
+				EqualZero( 6, jumpOverBytes: 4 ),
+				SetStateLiteral( 200, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+			Assert.That( scenarios[0].ObjectStates[200], Is.EqualTo( 1 ) );
+		}
+
+		[Test]
+		public void PlotOnly_ForksOnAnUnknownPlotVariable()
+		{
+			// variable 196 is a plain game global (a plot atom). Made unknown by a random write, an
+			// open test on it is a real story branch, so the plot-only walk forks
+			var scenarios = EvaluatePolicy( new[] { 200 }, NoSeeds(), ForkPolicy.PlotOnly,
+				Move( 196, 5 ),
+				GetRandomNumber( 196 ),
+				EqualZero( 196, jumpOverBytes: 4 ),
+				SetStateLiteral( 200, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 2 ) );
+		}
+
+		[Test]
+		public void None_NeverForks()
+		{
+			// the same unknown plot variable, under the None policy, produces exactly one path
+			var scenarios = EvaluatePolicy( new[] { 200 }, NoSeeds(), ForkPolicy.None,
+				Move( 196, 5 ),
+				GetRandomNumber( 196 ),
+				EqualZero( 196, jumpOverBytes: 4 ),
+				SetStateLiteral( 200, 1 ),
+				Stop() );
+
+			Assert.That( scenarios.Count, Is.EqualTo( 1 ) );
+		}
+
+		[Test]
+		public void PinnedVariable_IsReadAtItsPinnedValue()
+		{
+			// if var196 == 0 then draw 200. Pinned to 1 the test fails and the object stays hidden;
+			// pinned to 0 it is drawn
+			var data = Bytes( EqualZero( 196, jumpOverBytes: 4 ), SetStateLiteral( 200, 1 ), Stop() );
+
+			var hidden = RoomEntryEvaluator.EvaluateUnderAssignmentScript(
+				data, 0, data.Length, NoSeeds(), new[] { 200 }, Pin( 196, 1 ) );
+			var shown = RoomEntryEvaluator.EvaluateUnderAssignmentScript(
+				data, 0, data.Length, NoSeeds(), new[] { 200 }, Pin( 196, 0 ) );
+
+			Assert.That( hidden[200], Is.EqualTo( 0 ) );
+			Assert.That( shown[200], Is.EqualTo( 1 ) );
+		}
+
+		[Test]
+		public void PinnedVariable_IgnoresWrites()
+		{
+			// move var196 = 5; if var196 == 0 draw 200. With var196 pinned to 0 the write is ignored,
+			// so the pin holds and the object is drawn
+			var data = Bytes( Move( 196, 5 ), EqualZero( 196, jumpOverBytes: 4 ), SetStateLiteral( 200, 1 ), Stop() );
+
+			var states = RoomEntryEvaluator.EvaluateUnderAssignmentScript(
+				data, 0, data.Length, NoSeeds(), new[] { 200 }, Pin( 196, 0 ) );
+
+			Assert.That( states[200], Is.EqualTo( 1 ) );
+		}
+
+		[Test]
+		public void DiscoverStates_FindsARadioForAGatingGlobal()
+		{
+			// if var196 == 0 then draw 200; the atom gates one object, so discovery offers a radio
+			var data = Bytes( EqualZero( 196, jumpOverBytes: 4 ), SetStateLiteral( 200, 1 ), Stop() );
+			var names = new Dictionary<int, string?> { { 200, "widget" } };
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript( data, 0, data.Length, NoSeeds(), new[] { 200 }, names );
+
+			Assert.That( model.Controls.Count, Is.EqualTo( 1 ) );
+			var control = model.Controls[0];
+			Assert.That( control.IsCheckbox, Is.False );
+			Assert.That( control.VariableId, Is.EqualTo( 196 ) );
+			Assert.That( control.Options.Count, Is.EqualTo( 2 ) );
+
+			// the class that draws the object is the game-start default (var196 is 0)
+			var defaultOption = control.Options[control.DefaultOptionIndex];
+			Assert.That( defaultOption.Label, Does.Contain( "Widget" ) );
+			Assert.That( defaultOption.ObjectsHidden, Is.Empty );
+
+			var otherOption = control.Options[control.DefaultOptionIndex == 0 ? 1 : 0];
+			Assert.That( otherOption.ObjectsHidden, Does.Contain( 200 ) );
+		}
+
+		[Test]
+		public void DiscoverStates_FindsACheckboxForAGatingBit()
+		{
+			// if bit453 == 0 then draw 200; a bit flag is offered as a checkbox
+			var data = Bytes( EqualZero( 0x8000 | 453, jumpOverBytes: 4 ), SetStateLiteral( 200, 1 ), Stop() );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript( data, 0, data.Length, NoSeeds(), new[] { 200 } );
+
+			Assert.That( model.Controls.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.Controls[0].IsCheckbox, Is.True );
+			Assert.That( model.Controls[0].VariableId, Is.EqualTo( 0x8000 | 453 ) );
+			Assert.That( model.Controls[0].Options.Count, Is.EqualTo( 2 ) );
+		}
+
+		[Test]
+		public void DiscoverStates_DropsAVariableThatChangesNothing()
+		{
+			// var197 is tested but the guarded code draws nothing, so it is not a story state
+			var data = Bytes( EqualZero( 197, jumpOverBytes: 5 ), Move( 0x4000, 5 ), Stop() );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript( data, 0, data.Length, NoSeeds(), new[] { 200 } );
+
+			Assert.That( model.Controls, Is.Empty );
+		}
+
+		//-------------------------------------------
 		// helpers
 
 		private static List<RoomEntryScenario> Evaluate( int[] objectIds, Dictionary<int, ClassicObjectStartState> seeds, params byte[][] instructions )
 		{
 			var data = instructions.SelectMany( i => i ).ToArray();
 			return RoomEntryEvaluator.EvaluateScript( data, 0, data.Length, seeds, objectIds );
+		}
+
+		private static List<RoomEntryScenario> EvaluatePolicy( int[] objectIds, Dictionary<int, ClassicObjectStartState> seeds, ForkPolicy policy, params byte[][] instructions )
+		{
+			var data = instructions.SelectMany( i => i ).ToArray();
+			return RoomEntryEvaluator.EvaluateScript( data, 0, data.Length, seeds, objectIds, policy: policy );
+		}
+
+		private static Dictionary<int, int> Pin( int variableId, int value )
+		{
+			return new Dictionary<int, int> { { variableId, value } };
 		}
 
 		private static Dictionary<int, ClassicObjectStartState> NoSeeds()
