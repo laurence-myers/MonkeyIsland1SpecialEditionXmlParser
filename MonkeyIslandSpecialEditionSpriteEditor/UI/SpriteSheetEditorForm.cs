@@ -1404,10 +1404,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		}
 
 		/// <summary>
-		/// Whether the room-object group at the given index is a far full-scene background: the SE
-		/// "extra_background", delivered as a named room object but really the sky/sea backdrop that
-		/// belongs behind the room's painted background (whose own sky is transparent). The preview
-		/// draws it first so it does not paint over the scene.
+		/// Whether the room-object group at the given index is a far full-scene background: a named
+		/// room object that really is the backdrop behind the room's painted background (whose own
+		/// sky is transparent), such as room 12's "Background" (the SE extra_background) or room 38's
+		/// "Sky". The preview draws it first so it does not paint over the scene. It is identified
+		/// structurally - a room object that covers essentially the whole background from the origin,
+		/// whatever its name or whether it is a sprite or a chunked image - because such names are not
+		/// fixed; the SE extra_background texture is also matched as a belt-and-braces signal, while a
+		/// partial overlay (a cloud drawn over part of the sky) is left as a normal overlay.
 		/// </summary>
 		private bool IsAlternateBackgroundGroup( int groupIndex )
 		{
@@ -1415,15 +1419,52 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return false;
 			}
-			var header = groupIndex < this.Room.RoomObjectHeaderList.Count ? this.Room.RoomObjectHeaderList[groupIndex] : null;
-			if( string.Equals( header?.Name, "Background", StringComparison.OrdinalIgnoreCase ) )
+			return this.Room.RoomObjectGroupList[groupIndex].RoomObjectList.Any( roomObject =>
+				this.CoversWholeBackground( roomObject )
+				|| ( roomObject.Image != null && roomObject.Image.ChunkList.Any( chunk =>
+					( chunk.TextureFileName ?? string.Empty ).IndexOf( "extra_background", StringComparison.OrdinalIgnoreCase ) >= 0 ) ) );
+		}
+
+		/// <summary>
+		/// Whether a room object spans essentially the whole painted background from the top-left,
+		/// i.e. it is a full-scene backdrop rather than a partial overlay. Works for a sprite-variant
+		/// object (room 38's "Sky") and a chunked image (room 12's "Background") alike.
+		/// </summary>
+		private bool CoversWholeBackground( RoomObject roomObject )
+		{
+			if( this.Room == null )
 			{
-				return true;
+				return false;
 			}
-			// structural fallback: an image-variant room object whose chunks are the SE extra background
-			return this.Room.RoomObjectGroupList[groupIndex].RoomObjectList.Any( roomObject => roomObject.Image != null
-				&& roomObject.Image.ChunkList.Any( chunk => ( chunk.TextureFileName ?? string.Empty )
-					.IndexOf( "extra_background", StringComparison.OrdinalIgnoreCase ) >= 0 ) );
+			var size = Renderer.GetBackgroundSize( this.Room );
+			if( size.Width <= 0 || size.Height <= 0 )
+			{
+				return false;
+			}
+
+			float left, top, right, bottom;
+			if( roomObject.Sprite != null )
+			{
+				left = roomObject.OffsetX;
+				top = roomObject.OffsetY;
+				right = roomObject.OffsetX + roomObject.Sprite.Width;
+				bottom = roomObject.OffsetY + roomObject.Sprite.Height;
+			}
+			else if( roomObject.Image != null && roomObject.Image.ChunkList.Count > 0 )
+			{
+				left = roomObject.OffsetX + roomObject.Image.ChunkList.Min( c => c.X );
+				top = roomObject.OffsetY + roomObject.Image.ChunkList.Min( c => c.Y );
+				right = roomObject.OffsetX + roomObject.Image.ChunkList.Max( c => c.X + c.Width );
+				bottom = roomObject.OffsetY + roomObject.Image.ChunkList.Max( c => c.Y + c.Height );
+			}
+			else
+			{
+				return false;
+			}
+
+			// starts at (or above/left of) the origin and reaches almost the full extent both ways
+			return left <= size.Width * 0.05f && top <= size.Height * 0.05f
+				&& right >= size.Width * 0.95f && bottom >= size.Height * 0.95f;
 		}
 
 		//-------------------------------------------
