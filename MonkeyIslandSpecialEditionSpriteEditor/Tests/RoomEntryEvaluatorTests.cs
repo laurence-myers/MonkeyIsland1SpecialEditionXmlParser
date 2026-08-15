@@ -426,6 +426,42 @@ namespace Tests
 		}
 
 		[Test]
+		public void PinnedVariable_ResolvesAThresholdTest()
+		{
+			// if var196 < 5 then draw 200 (isGreater keeps the next instruction when var < value).
+			// Pinned inside the range it is drawn; pinned outside it is hidden.
+			var data = Bytes( IsLessThan( 196, 5, jumpOverBytes: 4 ), SetStateLiteral( 200, 1 ), Stop() );
+
+			var inside = RoomEntryEvaluator.EvaluateUnderAssignmentScript(
+				data, 0, data.Length, NoSeeds(), new[] { 200 }, Pin( 196, 3 ) );
+			var outside = RoomEntryEvaluator.EvaluateUnderAssignmentScript(
+				data, 0, data.Length, NoSeeds(), new[] { 200 }, Pin( 196, 7 ) );
+
+			Assert.That( inside[200], Is.EqualTo( 1 ) );
+			Assert.That( outside[200], Is.EqualTo( 0 ) );
+		}
+
+		[Test]
+		public void ObjectClassTest_ResolvesFromTheDirectory()
+		{
+			// ifClassOfIs(400, has class 6) then draw 200. The directory decides the test, so the
+			// walk does not fork: an object with the class draws 200, one without it does not.
+			var withClass = Evaluate( new[] { 200 }, SeedClass( 400, classFlags: 1u << 5 ),
+				IfClassOfIs( 400, 0x80 | 6, jumpOverBytes: 4 ),
+				SetStateLiteral( 200, 1 ),
+				Stop() );
+			var withoutClass = Evaluate( new[] { 200 }, SeedClass( 400, classFlags: 0 ),
+				IfClassOfIs( 400, 0x80 | 6, jumpOverBytes: 4 ),
+				SetStateLiteral( 200, 1 ),
+				Stop() );
+
+			Assert.That( withClass.Count, Is.EqualTo( 1 ) );
+			Assert.That( withClass[0].ObjectStates[200], Is.EqualTo( 1 ) );
+			Assert.That( withoutClass.Count, Is.EqualTo( 1 ) );
+			Assert.That( withoutClass[0].ObjectStates[200], Is.EqualTo( 0 ) );
+		}
+
+		[Test]
 		public void DiscoverStates_DropsAVariableThatChangesNothing()
 		{
 			// var197 is tested but the guarded code draws nothing, so it is not a story state
@@ -475,6 +511,27 @@ namespace Tests
 			{
 				{ objectId, new ClassicObjectStartState( objectId, state: 0, owner: owner, classFlags: 0 ) },
 			};
+		}
+
+		private static Dictionary<int, ClassicObjectStartState> SeedClass( int objectId, uint classFlags )
+		{
+			return new Dictionary<int, ClassicObjectStartState>
+			{
+				{ objectId, new ClassicObjectStartState( objectId, state: 0, owner: 15, classFlags: classFlags ) },
+			};
+		}
+
+		/// <summary>
+		/// ifClassOfIs (0x1D): literal object word, a 0xFF-terminated list of literal class words
+		/// (each prefixed by its own parameter byte), then a jump offset. A class value with the
+		/// 0x80 flag asks for a class the object must have. 9 bytes for one class.
+		/// </summary>
+		private static byte[] IfClassOfIs( int objectId, int classValue, int jumpOverBytes )
+		{
+			return Bytes(
+				new byte[] { 0x1D }, Word( objectId ),
+				new byte[] { 0x01 }, Word( classValue ), new byte[] { 0xFF },
+				Word( jumpOverBytes ) );
 		}
 
 		private static byte[] Word( int value )

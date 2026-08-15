@@ -533,7 +533,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				thresholds.TryGetValue( variableId, out values );
 				var control = BuildControl(
 					data, scripts, startStates, requestedIds, baselineDrawn, baselineSignature,
-					variableId, values, objectNames, graphs, thresholds );
+					variableId, values, objectNames, graphs, thresholds, model );
 				if( control != null )
 				{
 					model.Controls.Add( control );
@@ -546,6 +546,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 						queue.Enqueue( candidate );
 					}
 				}
+			}
+
+			// candidates left unprocessed because the control cap was reached: the model is a
+			// lower bound, so say so rather than presenting it as the whole picture
+			if( queue.Count > 0 )
+			{
+				model.Incomplete = true;
 			}
 
 			// most-impactful first, then by variable number so the order is stable
@@ -623,7 +630,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			SortedSet<int>? thresholds,
 			IReadOnlyDictionary<int, string?>? objectNames,
 			Dictionary<int, ScriptControlFlowGraph> graphs,
-			Dictionary<int, SortedSet<int>> allThresholds )
+			Dictionary<int, SortedSet<int>> allThresholds,
+			RoomStateModel model )
 		{
 			var isBit = ( variableId & 0x8000 ) != 0;
 
@@ -698,11 +706,18 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				IsCheckbox = isBit,
 			};
 
+			// the default is the class whose drawn set matches the game-start baseline; it stays 0
+			// (the value-0 class, always probed first) when no class matches, which happens only if
+			// a script writes the atom before the gating test
+			var defaultFound = false;
+
 			var optionLabels = new List<string>();
 			foreach( var signature in classOrder )
 			{
 				if( control.Options.Count >= MaxOptions )
 				{
+					// more value classes than the panel shows: the model is a lower bound
+					model.Incomplete = true;
 					break;
 				}
 				var entry = classesBySignature[signature];
@@ -729,7 +744,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				if( signature == baselineSignature )
 				{
 					control.DefaultOptionIndex = control.Options.Count - 1;
+					defaultFound = true;
 				}
+			}
+
+			if( !defaultFound )
+			{
+				// no realised class reproduced the baseline: fall back to the value-0 class
+				control.DefaultOptionIndex = 0;
 			}
 
 			control.Name = BuildControlName( control, toggled, objectNames, optionLabels );
@@ -774,7 +796,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 		private static void AddRepresentative( List<int> values, int value )
 		{
-			if( value >= 0 && !values.Contains( value ) )
+			// SCUMM v5 variables are signed 16-bit, so a negative threshold is legitimate; keep it
+			if( !values.Contains( value ) )
 			{
 				values.Add( value );
 			}

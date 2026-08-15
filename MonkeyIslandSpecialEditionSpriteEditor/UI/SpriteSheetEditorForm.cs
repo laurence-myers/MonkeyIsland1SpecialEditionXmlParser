@@ -53,6 +53,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private RoomStateModel? roomStateModel;
 		private Panel? panelRoomStates;
 		private FlowLayoutPanel? roomStatesFlow;
+		// created once and reused across room reloads, so the panel rebuild does not leak a font
+		private Font? roomStatesHeadingFont;
 		private readonly HashSet<Sprite> hiddenSprites = new HashSet<Sprite>();
 		private Sprite? selectedSprite;
 		// the room object instance whose screen offset the numeric editors apply to; set for
@@ -116,7 +118,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.WindowState = windowState;
 
 			SpriteSheetEditorForm.instances.Add( this );
-			this.FormClosed += delegate { SpriteSheetEditorForm.instances.Remove( this ); };
+			this.FormClosed += delegate
+			{
+				SpriteSheetEditorForm.instances.Remove( this );
+				this.roomStatesHeadingFont?.Dispose();
+			};
 
 			this.InitializeComponent();
 
@@ -1517,7 +1523,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.roomStatesFlow!.SuspendLayout();
-			this.roomStatesFlow.Controls.Clear();
+
+			// dispose the previous room's controls (and their event handlers) rather than just
+			// detaching them, so repeated room loads do not accumulate handles
+			while( this.roomStatesFlow.Controls.Count > 0 )
+			{
+				var stale = this.roomStatesFlow.Controls[0];
+				this.roomStatesFlow.Controls.RemoveAt( 0 );
+				stale.Dispose();
+			}
 
 			if( this.roomStateModel == null || this.roomStateModel.Controls.Count == 0 )
 			{
@@ -1535,7 +1549,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				Width = RoomStateControlWidth,
 				Height = 18,
 				Margin = new Padding( 2, 2, 2, 4 ),
-				Font = new Font( this.Font, FontStyle.Bold ),
+				Font = this.roomStatesHeadingFont ??= new Font( this.Font, FontStyle.Bold ),
 			};
 			this.roomStatesFlow.Controls.Add( heading );
 
@@ -1598,8 +1612,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				Width = RoomStateControlWidth,
 				Height = 22,
 				Margin = new Padding( 4, 3, 4, 3 ),
-				// the default option is game start; ticking applies the other option
-				Checked = control.DefaultOptionIndex != 0,
+				// unchecked is the game-start default appearance; ticking applies the other option
+				Checked = false,
 				Tag = control,
 			};
 			box.CheckedChanged += this.HandleRoomStateControlChanged;
@@ -1629,9 +1643,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				foreach( Control widget in this.roomStatesFlow.Controls )
 				{
-					if( widget is CheckBox box && box.Tag is RoomStateControl checkControl )
+					if( widget is CheckBox box )
 					{
-						box.Checked = checkControl.DefaultOptionIndex != 0;
+						box.Checked = false;
 					}
 					else if( widget is GroupBox group && group.Tag is RoomStateControl radioControl )
 					{
@@ -1701,8 +1715,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					{
 						var objectId = this.Room.SpriteHeaderList[groupIndex].Identifier;
 						int? state;
-						// an object the evaluator did not resolve stays drawn, matching the other views
-						var visible = !states.TryGetValue( objectId, out state ) || ( state.HasValue && state.Value != 0 );
+						// hide only an object the evaluator computed as state 0; an object it could
+						// not resolve (null) or did not evaluate stays drawn, matching the other views
+						var visible = !states.TryGetValue( objectId, out state ) || !state.HasValue || state.Value != 0;
 						SetCheckedRecursive( groupNode, visible );
 					}
 				}
