@@ -567,7 +567,205 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			// panel does not offer two controls that fight over the same objects
 			var seenEffects = new HashSet<string>();
 			model.Controls.RemoveAll( c => !seenEffects.Add( ControlEffectSignature( c ) ) );
+
+			DiscoverScriptedStates( data, scripts, startStates, requestedIds, baseline.States, baselineDrawn, objectNames, model );
 			return model;
+		}
+
+		/// <summary>The most verb-driven states one room offers as checkboxes.</summary>
+		private const int MaxScriptedStates = 12;
+
+		/// <summary>
+		/// Discovers the verb-driven states a room can show: the appearances its local scripts
+		/// produce when a verb starts them, on top of the game-start baseline. Each local script is
+		/// run (following its cascade of started scripts) and the objects it draws or hides compared
+		/// with the baseline are its effect. An effect contained in a larger one whose cascade
+		/// actually started this script is dropped, exact duplicates are dropped, and any a plot
+		/// control already offers is dropped too, so what remains is the set of distinct extra
+		/// appearances a verb can reach.
+		///
+		/// This is an over-approximation, and deliberately so. A local runs under fork policy None,
+		/// which takes the fall-through edge of any test it cannot answer, so a draw guarded by an
+		/// engine variable or an object-state test the walk does not know still runs - the same
+		/// choice that lets the baseline surface the bar's crowd. It also runs the local with zero
+		/// arguments (a verb may pass some) and reads it from the local-script table, not the object
+		/// verb scripts (OBCD) a verb also runs - though those draw directly only a handful of times
+		/// across the whole game. The result is "the appearances these scripts can produce", offered
+		/// for the modder to preview, not a proof of exactly what each verb does.
+		/// </summary>
+		private static void DiscoverScriptedStates(
+			byte[] data,
+			RoomScripts scripts,
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			List<int> requestedIds,
+			Dictionary<int, int?> baselineStates,
+			HashSet<int> baselineDrawn,
+			IReadOnlyDictionary<int, string?>? objectNames,
+			RoomStateModel model )
+		{
+			if( scripts.LocalScripts.Count == 0 )
+			{
+				return;
+			}
+
+			// seed each local walk with the exact baseline object states, so a local that reads an
+			// object the entry script set (its state, not merely whether it is drawn) behaves the
+			// way it would after entry
+			var seeds = BuildBaselineSeeds( startStates, baselineStates );
+
+			var effects = new List<ScriptedEffect>();
+			foreach( var local in scripts.LocalScripts.OrderBy( l => l.Key ) )
+			{
+				var localScripts = new RoomScripts
+				{
+					Entry = ( local.Value.Start, local.Value.End ),
+					LocalScripts = scripts.LocalScripts,
+					GlobalScripts = scripts.GlobalScripts,
+					BootScript = null,
+				};
+				// a fresh graph cache: the entry-graph key would otherwise collide between locals
+				var result = RunAssignment( data, localScripts, seeds, requestedIds, EmptyLocked, null );
+				var drawn = DrawnSet( result.States );
+
+				var shows = new HashSet<int>( drawn );
+				shows.ExceptWith( baselineDrawn );
+				var hides = new HashSet<int>( baselineDrawn );
+				hides.ExceptWith( drawn );
+				if( shows.Count > 0 || hides.Count > 0 )
+				{
+					var cascade = result.Walk != null ? result.Walk.EnteredScripts : new HashSet<int>();
+					effects.Add( new ScriptedEffect( local.Key, shows, hides, cascade ) );
+				}
+			}
+
+			// the plot controls already cover some of these; skip an effect they offer
+			var controlEffects = new HashSet<string>();
+			foreach( var control in model.Controls )
+			{
+				foreach( var option in control.Options )
+				{
+					controlEffects.Add( EffectSignature( option.ObjectsShown, option.ObjectsHidden ) );
+				}
+			}
+
+			// keep the distinct effects, dropping a script that another kept script's cascade
+			// actually started and whose objects nest inside that script's (a genuine helper), but
+			// keeping a smaller effect from an unrelated script (a distinct verb outcome)
+			var ordered = effects
+				.OrderByDescending( e => e.Shows.Count + e.Hides.Count )
+				.ToList();
+			var kept = new List<ScriptedEffect>();
+			var keptSignatures = new HashSet<string>();
+			foreach( var effect in ordered )
+			{
+				if( kept.Any( k => k.Cascade.Contains( effect.LocalId )
+					&& effect.Shows.IsSubsetOf( k.Shows ) && effect.Hides.IsSubsetOf( k.Hides ) ) )
+				{
+					continue;
+				}
+				var signature = EffectSignature( effect.Shows, effect.Hides );
+				if( controlEffects.Contains( signature ) || !keptSignatures.Add( signature ) )
+				{
+					continue;
+				}
+				kept.Add( effect );
+			}
+
+			foreach( var effect in kept )
+			{
+				if( model.ScriptedStates.Count >= MaxScriptedStates )
+				{
+					model.Incomplete = true;
+					break;
+				}
+				var state = new RoomScriptedState { Label = ScriptedStateLabel( effect.Shows, effect.Hides, objectNames ) };
+				state.ObjectsShown.AddRange( effect.Shows.OrderBy( id => id ) );
+				state.ObjectsHidden.AddRange( effect.Hides.OrderBy( id => id ) );
+				model.ScriptedStates.Add( state );
+			}
+
+			// most objects first, then by label so the order is stable
+			model.ScriptedStates.Sort( ( a, b ) =>
+			{
+				var impact = ( b.ObjectsShown.Count + b.ObjectsHidden.Count ) - ( a.ObjectsShown.Count + a.ObjectsHidden.Count );
+				return impact != 0 ? impact : string.CompareOrdinal( a.Label, b.Label );
+			} );
+		}
+
+		/// <summary>One local script's effect: what it draws and hides, and the scripts it started.</summary>
+		private class ScriptedEffect
+		{
+			public ScriptedEffect( int localId, HashSet<int> shows, HashSet<int> hides, HashSet<int> cascade )
+			{
+				this.LocalId = localId;
+				this.Shows = shows;
+				this.Hides = hides;
+				this.Cascade = cascade;
+			}
+
+			public int LocalId
+			{
+				get;
+			}
+
+			public HashSet<int> Shows
+			{
+				get;
+			}
+
+			public HashSet<int> Hides
+			{
+				get;
+			}
+
+			public HashSet<int> Cascade
+			{
+				get;
+			}
+		}
+
+		private static Dictionary<int, ClassicObjectStartState> BuildBaselineSeeds(
+			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
+			Dictionary<int, int?> baselineStates )
+		{
+			var seeds = new Dictionary<int, ClassicObjectStartState>();
+			foreach( var pair in startStates )
+			{
+				seeds[pair.Key] = pair.Value;
+			}
+			// overlay the exact states the entry walk computed (0 hides, a positive value is that
+			// state); an unknown value keeps the object-directory seed
+			foreach( var pair in baselineStates )
+			{
+				if( pair.Value == null )
+				{
+					continue;
+				}
+				ClassicObjectStartState existing;
+				var owner = seeds.TryGetValue( pair.Key, out existing ) ? existing.Owner : 15;
+				var classFlags = existing?.ClassFlags ?? 0u;
+				seeds[pair.Key] = new ClassicObjectStartState( pair.Key, pair.Value.Value, owner, classFlags );
+			}
+			return seeds;
+		}
+
+		private static string EffectSignature( IEnumerable<int> shows, IEnumerable<int> hides )
+		{
+			return "s:" + string.Join( ",", shows.OrderBy( id => id ) ) + "|h:" + string.Join( ",", hides.OrderBy( id => id ) );
+		}
+
+		private static string ScriptedStateLabel(
+			HashSet<int> shows,
+			HashSet<int> hides,
+			IReadOnlyDictionary<int, string?>? objectNames )
+		{
+			string primary;
+			if( shows.Count > 0 )
+			{
+				var label = LabelForObjects( shows, objectNames, out primary );
+				return hides.Count > 0 ? "Show " + label + " (hide " + hides.Count + ")" : "Show " + label;
+			}
+			return "Hide " + LabelForObjects( hides, objectNames, out primary );
 		}
 
 		/// <summary>A signature of what a control changes, so two atoms with the same effect merge.</summary>
@@ -1146,6 +1344,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			/// </summary>
 			public bool ForkBudgetHit;
 
+			/// <summary>
+			/// Every script number this walk entered through a startScript call. State discovery
+			/// reads it to tell a script's own cascade (the helpers it starts) from an unrelated
+			/// script that merely draws a subset of the same objects.
+			/// </summary>
+			public readonly HashSet<int> EnteredScripts = new HashSet<int>();
+
 			public ScriptControlFlowGraph GetGraph( int scriptKey, int start, int end )
 			{
 				ScriptControlFlowGraph graph;
@@ -1431,6 +1636,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				RemoveLocalEntries( path );
 				SeedLocals( arguments, path );
 				path.Frames.Add( frame );
+				this.EnteredScripts.Add( scriptId );
 			}
 		}
 

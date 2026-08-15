@@ -1560,43 +1560,82 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				stale.Dispose();
 			}
 
-			if( this.roomStateModel == null || this.roomStateModel.Controls.Count == 0 )
+			if( this.roomStateModel == null
+				|| ( this.roomStateModel.Controls.Count == 0 && this.roomStateModel.ScriptedStates.Count == 0 ) )
 			{
 				this.roomStatesFlow.ResumeLayout();
 				this.panelRoomStates.Visible = false;
 				return;
 			}
 
-			var heading = new Label
+			var hasControls = this.roomStateModel.Controls.Count > 0;
+			if( hasControls )
 			{
-				Text = this.roomStateModel.Incomplete
+				this.roomStatesFlow.Controls.Add( this.BuildStateHeading( this.roomStateModel.Incomplete
 					? "Story states (from scripts) — may be incomplete:"
-					: "Story states (from scripts):",
-				AutoSize = false,
-				Width = RoomStateControlWidth,
-				Height = 18,
-				Margin = new Padding( 2, 2, 2, 4 ),
-				Font = this.roomStatesHeadingFont ??= new Font( this.Font, FontStyle.Bold ),
-			};
-			this.roomStatesFlow.Controls.Add( heading );
+					: "Story states (from scripts):" ) );
 
-			foreach( var control in this.roomStateModel.Controls )
+				foreach( var control in this.roomStateModel.Controls )
+				{
+					this.roomStatesFlow.Controls.Add( control.IsCheckbox
+						? this.BuildStateCheckbox( control )
+						: this.BuildStateRadioGroup( control ) );
+				}
+			}
+
+			// the verb-driven states: appearances a verb reaches, offered as on/off overlays
+			if( this.roomStateModel.ScriptedStates.Count > 0 )
 			{
-				this.roomStatesFlow.Controls.Add( control.IsCheckbox
-					? this.BuildStateCheckbox( control )
-					: this.BuildStateRadioGroup( control ) );
+				this.roomStatesFlow.Controls.Add( this.BuildStateHeading( "Verb-driven states:" ) );
+				foreach( var scriptedState in this.roomStateModel.ScriptedStates )
+				{
+					this.roomStatesFlow.Controls.Add( this.BuildScriptedStateCheckbox( scriptedState ) );
+				}
 			}
 
 			this.roomStatesFlow.ResumeLayout( true );
 
 			// size the panel from the model rather than measuring the widgets, which do not report
 			// their auto-size height until the form is shown. Any shortfall scrolls (AutoScroll).
-			var wanted = 30; // the heading
+			var wanted = hasControls ? 28 : 0; // the story-states heading, when there are controls
 			foreach( var control in this.roomStateModel.Controls )
 			{
-				wanted += control.IsCheckbox ? 28 : 34 + control.Options.Count * 23;
+				wanted += control.IsCheckbox ? 26 : 34 + control.Options.Count * 23;
 			}
-			this.panelRoomStates.Height = Math.Min( Math.Max( wanted + 14, 64 ), 280 );
+			if( this.roomStateModel.ScriptedStates.Count > 0 )
+			{
+				wanted += 26 + this.roomStateModel.ScriptedStates.Count * 24;
+			}
+			this.panelRoomStates.Height = Math.Min( Math.Max( wanted + 14, 64 ), 320 );
+		}
+
+		private Label BuildStateHeading( string text )
+		{
+			return new Label
+			{
+				Text = text,
+				AutoSize = false,
+				Width = RoomStateControlWidth,
+				Height = 18,
+				Margin = new Padding( 2, 2, 2, 4 ),
+				Font = this.roomStatesHeadingFont ??= new Font( this.Font, FontStyle.Bold ),
+			};
+		}
+
+		private Control BuildScriptedStateCheckbox( RoomScriptedState scriptedState )
+		{
+			var box = new CheckBox
+			{
+				Text = scriptedState.Label,
+				AutoSize = false,
+				Width = RoomStateControlWidth,
+				Height = 20,
+				Margin = new Padding( 4, 1, 4, 1 ),
+				Checked = false,
+				Tag = scriptedState,
+			};
+			box.CheckedChanged += this.HandleRoomStateControlChanged;
+			return box;
 		}
 
 		/// <summary>The fixed width of a state control, so layout does not depend on the auto-size
@@ -1750,6 +1789,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 						SetCheckedRecursive( groupNode, visible );
 					}
 				}
+
+				// verb-driven states the user ticked override the objects they affect, on top of the
+				// baseline the evaluator just applied
+				this.ApplyCheckedScriptedStates();
 				this.treeViewSprites.EndUpdate();
 			}
 			finally
@@ -1758,6 +1801,55 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 
 			this.SyncVisibilityFromTree();
+		}
+
+		/// <summary>
+		/// Applies the ticked verb-driven states to the object tree: their drawn objects are checked
+		/// and their hidden objects unchecked, over whatever the baseline set.
+		/// </summary>
+		private void ApplyCheckedScriptedStates()
+		{
+			if( this.roomStatesFlow == null || this.Room == null )
+			{
+				return;
+			}
+
+			var show = new HashSet<int>();
+			var hide = new HashSet<int>();
+			foreach( Control widget in this.roomStatesFlow.Controls )
+			{
+				if( widget is CheckBox box && box.Checked && box.Tag is RoomScriptedState scriptedState )
+				{
+					foreach( var id in scriptedState.ObjectsShown )
+					{
+						show.Add( id );
+					}
+					foreach( var id in scriptedState.ObjectsHidden )
+					{
+						hide.Add( id );
+					}
+				}
+			}
+			if( show.Count == 0 && hide.Count == 0 )
+			{
+				return;
+			}
+
+			foreach( TreeNode groupNode in this.treeViewSprites.Nodes )
+			{
+				if( groupNode.Tag is int groupIndex && groupIndex < this.Room.SpriteHeaderList.Count )
+				{
+					var objectId = this.Room.SpriteHeaderList[groupIndex].Identifier;
+					if( show.Contains( objectId ) )
+					{
+						SetCheckedRecursive( groupNode, true );
+					}
+					else if( hide.Contains( objectId ) )
+					{
+						SetCheckedRecursive( groupNode, false );
+					}
+				}
+			}
 		}
 
 		/// <summary>
@@ -1825,7 +1917,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			if( this.panelRoomStates != null )
 			{
 				this.panelRoomStates.Visible = mode == RoomViewMode.ScriptInitial
-					&& this.roomStateModel != null && this.roomStateModel.Controls.Count > 0;
+					&& this.roomStateModel != null
+					&& ( this.roomStateModel.Controls.Count > 0 || this.roomStateModel.ScriptedStates.Count > 0 );
 			}
 
 			switch( mode )

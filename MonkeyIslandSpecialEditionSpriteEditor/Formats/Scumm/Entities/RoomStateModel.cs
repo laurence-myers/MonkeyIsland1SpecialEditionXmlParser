@@ -18,6 +18,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 		} = new List<RoomStateControl>();
 
 		/// <summary>
+		/// Gets the verb-driven states: appearances the room's local scripts produce on top of the
+		/// game-start baseline (a mouth that opens, a wall that breaks), which a verb triggers rather
+		/// than the entry script. Each is an on/off overlay the modder can apply to preview it.
+		/// </summary>
+		public List<RoomScriptedState> ScriptedStates
+		{
+			get;
+		} = new List<RoomScriptedState>();
+
+		/// <summary>
 		/// Gets or sets whether discovery stopped early (the enumeration hit its path budget). The
 		/// controls are then a lower bound: some plot atoms may be missing.
 		/// </summary>
@@ -26,6 +36,32 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 			get;
 			set;
 		}
+	}
+
+	/// <summary>
+	/// One verb-driven appearance a room's local script produces: the objects it draws and hides
+	/// compared with the game-start baseline. Shown as a checkbox the modder ticks to preview it.
+	/// </summary>
+	public class RoomScriptedState
+	{
+		/// <summary>Gets or sets the label for the state, derived from the objects it draws.</summary>
+		public string Label
+		{
+			get;
+			set;
+		} = "";
+
+		/// <summary>Gets the object numbers this state draws that the game-start baseline does not.</summary>
+		public List<int> ObjectsShown
+		{
+			get;
+		} = new List<int>();
+
+		/// <summary>Gets the object numbers the game-start baseline draws that this state hides.</summary>
+		public List<int> ObjectsHidden
+		{
+			get;
+		} = new List<int>();
 	}
 
 	/// <summary>

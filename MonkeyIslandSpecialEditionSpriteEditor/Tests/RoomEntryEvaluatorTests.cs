@@ -462,6 +462,101 @@ namespace Tests
 		}
 
 		[Test]
+		public void DiscoverStates_FindsAScriptedStateForALocalDraw()
+		{
+			// the entry draws nothing; local 200 draws object 201 (a verb-driven appearance)
+			var entry = Bytes( Stop() );
+			var local = Bytes( SetStateLiteral( 201, 1 ), Stop() );
+			var data = Bytes( entry, local );
+			var names = new Dictionary<int, string?> { { 201, "lever" } };
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 200, 201 }, names,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } } );
+
+			Assert.That( model.Controls, Is.Empty );
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].ObjectsShown, Is.EqualTo( new[] { 201 } ) );
+			Assert.That( model.ScriptedStates[0].Label, Does.Contain( "Lever" ) );
+		}
+
+		[Test]
+		public void DiscoverStates_ScriptedStateFollowsTheCascadeAndDropsTheHelper()
+		{
+			// local 200 draws 210 and starts local 201, which draws 211. The state is the whole
+			// cascade {210,211}; the helper 201's {211} is dropped because 200's cascade started it.
+			var entry = Bytes( Stop() );
+			var local200 = Bytes( StartScript( 201 ), SetStateLiteral( 210, 1 ), Stop() );
+			var local201 = Bytes( SetStateLiteral( 211, 1 ), Stop() );
+			var data = Bytes( entry, local200, local201 );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 210, 211 }, null,
+				new Dictionary<int, (int Start, int End)>
+				{
+					{ 200, ( entry.Length, entry.Length + local200.Length ) },
+					{ 201, ( entry.Length + local200.Length, data.Length ) },
+				} );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].ObjectsShown, Is.EqualTo( new[] { 210, 211 } ) );
+		}
+
+		[Test]
+		public void DiscoverStates_KeepsADistinctSmallerStateFromAnUnrelatedLocal()
+		{
+			// local 200 draws {210,211}; unrelated local 201 draws {210}. Even though {210} nests in
+			// {210,211}, 200 never started 201, so both are distinct verb outcomes and both are kept.
+			var entry = Bytes( Stop() );
+			var local200 = Bytes( SetStateLiteral( 210, 1 ), SetStateLiteral( 211, 1 ), Stop() );
+			var local201 = Bytes( SetStateLiteral( 210, 1 ), Stop() );
+			var data = Bytes( entry, local200, local201 );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 210, 211 }, null,
+				new Dictionary<int, (int Start, int End)>
+				{
+					{ 200, ( entry.Length, entry.Length + local200.Length ) },
+					{ 201, ( entry.Length + local200.Length, data.Length ) },
+				} );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 2 ) );
+		}
+
+		[Test]
+		public void DiscoverStates_ScriptedStateCanHideABaselineObject()
+		{
+			// the entry draws 210; local 200 hides it. The state's effect is a hide.
+			var entry = Bytes( SetStateLiteral( 210, 1 ), Stop() );
+			var local200 = Bytes( SetStateLiteral( 210, 0 ), Stop() );
+			var data = Bytes( entry, local200 );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 210 }, null,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } } );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].ObjectsShown, Is.Empty );
+			Assert.That( model.ScriptedStates[0].ObjectsHidden, Is.EqualTo( new[] { 210 } ) );
+			Assert.That( model.ScriptedStates[0].Label, Does.Contain( "Hide" ) );
+		}
+
+		[Test]
+		public void DiscoverStates_NoScriptedStateWhenALocalRedrawsTheBaseline()
+		{
+			// the entry draws 201; local 200 draws the same object, so there is no new appearance
+			var entry = Bytes( SetStateLiteral( 201, 1 ), Stop() );
+			var local = Bytes( SetStateLiteral( 201, 1 ), Stop() );
+			var data = Bytes( entry, local );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 201 }, null,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } } );
+
+			Assert.That( model.ScriptedStates, Is.Empty );
+		}
+
+		[Test]
 		public void DiscoverStates_DropsAVariableThatChangesNothing()
 		{
 			// var197 is tested but the guarded code draws nothing, so it is not a story state
