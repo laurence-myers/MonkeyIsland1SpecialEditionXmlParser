@@ -42,6 +42,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// or null when the classic data (and thus the scripts) was not available.
 		/// </summary>
 		private IReadOnlyDictionary<int, ScriptInitialVisibility.Verdict>? scriptVisibility;
+
+		// the decoded classic resource (.001) and index (.000) bytes for the current pak, read once
+		// per room load so the interactive state evaluator can re-run without re-decoding
+		private byte[]? classicResourceBytes;
+		private byte[]? classicIndexBytes;
+
+		// the interactive story states the room's scripts can produce, and the panel of radio
+		// groups and checkboxes that drives them; null when the room has no script-driven states
+		private RoomStateModel? roomStateModel;
+		private Panel? panelRoomStates;
+		private FlowLayoutPanel? roomStatesFlow;
 		private readonly HashSet<Sprite> hiddenSprites = new HashSet<Sprite>();
 		private Sprite? selectedSprite;
 		// the room object instance whose screen offset the numeric editors apply to; set for
@@ -194,6 +205,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			// scripts were read (shows the objects the game leaves drawn, e.g. the bar's pirates),
 			// otherwise the baked-background default
 			this.ComputeScriptVisibility();
+			this.DiscoverRoomStates();
+			this.BuildRoomStatePanel();
 			this.PopulateViewModes();
 			var defaultMode = this.scriptVisibility != null ? RoomViewMode.ScriptInitial : RoomViewMode.BakedDefault;
 			this.suppressUiEvents = true;
@@ -1409,7 +1422,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				"How the preview chooses which object states to show:\r\n"
 				+ "• All object states – every object sprite at once\r\n"
 				+ "• Baked background only – only what the room art paints, plus named overlays\r\n"
-				+ "• Game start (from scripts) – the objects the classic scripts leave drawn when the room is first entered" );
+				+ "• Game start (from scripts) – the objects the classic scripts leave drawn when the room is first entered.\r\n"
+				+ "    Rooms whose scripts can show more than one state add controls below to switch between them (e.g. the bar's pirates or mugs)." );
 		}
 
 		/// <summary>
@@ -1428,6 +1442,325 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.scriptVisibility = ScriptInitialVisibility.Compute( this.classicRoom.RoomNumber, objectIds, this.classicRoom.ObjectDrawChanges );
 		}
 
+		/// <summary>
+		/// Reads the decoded classic resource bytes and discovers the interactive story states the
+		/// current room's scripts can produce, or clears them when the classic data was not found.
+		/// </summary>
+		private void DiscoverRoomStates()
+		{
+			this.roomStateModel = null;
+			this.classicResourceBytes = null;
+			this.classicIndexBytes = null;
+			if( this.Room == null || this.classicRoom == null || this.classicData == null )
+			{
+				return;
+			}
+
+			byte[]? resource;
+			byte[]? index;
+			if( !ClassicDataLocator.TryGetDecodedResources( this.LPAKFile, this.classicData, out resource, out index )
+				|| resource == null )
+			{
+				return;
+			}
+			this.classicResourceBytes = resource;
+			this.classicIndexBytes = index;
+
+			var objectIds = this.Room.SpriteHeaderList.Select( header => header.Identifier ).Distinct().ToList();
+			var names = new Dictionary<int, string?>();
+			foreach( var id in objectIds )
+			{
+				ClassicObject classicObject;
+				names[id] = this.classicObjects != null && this.classicObjects.TryGetValue( id, out classicObject )
+					? classicObject.Name
+					: null;
+			}
+
+			try
+			{
+				this.roomStateModel = RoomEntryEvaluator.DiscoverStates(
+					this.classicResourceBytes, this.classicRoom.RoomNumber,
+					this.classicData.ObjectStartStates, objectIds, this.classicIndexBytes, names );
+			}
+			catch( Exception )
+			{
+				// discovery is a best-effort read of the scripts; a failure just drops the controls
+				this.roomStateModel = null;
+			}
+		}
+
+		/// <summary>
+		/// Builds the panel of radio groups and checkboxes for the discovered room states, docked
+		/// under the object tree. Rebuilt on every room load; hidden until the script view selects it.
+		/// </summary>
+		private void BuildRoomStatePanel()
+		{
+			if( this.panelRoomStates == null )
+			{
+				this.panelRoomStates = new Panel
+				{
+					Dock = DockStyle.Bottom,
+					AutoScroll = true,
+					BorderStyle = BorderStyle.FixedSingle,
+					Visible = false,
+				};
+				this.roomStatesFlow = new FlowLayoutPanel
+				{
+					Dock = DockStyle.Fill,
+					FlowDirection = FlowDirection.TopDown,
+					WrapContents = false,
+					AutoScroll = true,
+					Padding = new Padding( 4 ),
+				};
+				this.panelRoomStates.Controls.Add( this.roomStatesFlow );
+				this.tabPageObjects.Controls.Add( this.panelRoomStates );
+			}
+
+			this.roomStatesFlow!.SuspendLayout();
+			this.roomStatesFlow.Controls.Clear();
+
+			if( this.roomStateModel == null || this.roomStateModel.Controls.Count == 0 )
+			{
+				this.roomStatesFlow.ResumeLayout();
+				this.panelRoomStates.Visible = false;
+				return;
+			}
+
+			var heading = new Label
+			{
+				Text = this.roomStateModel.Incomplete
+					? "Story states (from scripts) — may be incomplete:"
+					: "Story states (from scripts):",
+				AutoSize = false,
+				Width = RoomStateControlWidth,
+				Height = 18,
+				Margin = new Padding( 2, 2, 2, 4 ),
+				Font = new Font( this.Font, FontStyle.Bold ),
+			};
+			this.roomStatesFlow.Controls.Add( heading );
+
+			foreach( var control in this.roomStateModel.Controls )
+			{
+				this.roomStatesFlow.Controls.Add( control.IsCheckbox
+					? this.BuildStateCheckbox( control )
+					: this.BuildStateRadioGroup( control ) );
+			}
+
+			this.roomStatesFlow.ResumeLayout( true );
+
+			// size the panel from the model rather than measuring the widgets, which do not report
+			// their auto-size height until the form is shown. Any shortfall scrolls (AutoScroll).
+			var wanted = 30; // the heading
+			foreach( var control in this.roomStateModel.Controls )
+			{
+				wanted += control.IsCheckbox ? 28 : 34 + control.Options.Count * 23;
+			}
+			this.panelRoomStates.Height = Math.Min( Math.Max( wanted + 14, 64 ), 280 );
+		}
+
+		/// <summary>The fixed width of a state control, so layout does not depend on the auto-size
+		/// pass (which does not run in the off-screen render used to verify the panel).</summary>
+		private const int RoomStateControlWidth = 330;
+
+		private Control BuildStateRadioGroup( RoomStateControl control )
+		{
+			var group = new GroupBox
+			{
+				Text = control.Name,
+				Width = RoomStateControlWidth,
+				Height = 22 + control.Options.Count * 22 + 6,
+				Margin = new Padding( 2 ),
+				Tag = control,
+			};
+			for( var i = 0; i < control.Options.Count; i++ )
+			{
+				var option = control.Options[i];
+				var radio = new RadioButton
+				{
+					Text = option.Label,
+					AutoSize = false,
+					Bounds = new Rectangle( 10, 18 + i * 22, RoomStateControlWidth - 20, 20 ),
+					Checked = i == control.DefaultOptionIndex,
+					Tag = option,
+				};
+				radio.CheckedChanged += this.HandleRoomStateControlChanged;
+				group.Controls.Add( radio );
+			}
+			return group;
+		}
+
+		private Control BuildStateCheckbox( RoomStateControl control )
+		{
+			var box = new CheckBox
+			{
+				Text = control.Name,
+				AutoSize = false,
+				Width = RoomStateControlWidth,
+				Height = 22,
+				Margin = new Padding( 4, 3, 4, 3 ),
+				// the default option is game start; ticking applies the other option
+				Checked = control.DefaultOptionIndex != 0,
+				Tag = control,
+			};
+			box.CheckedChanged += this.HandleRoomStateControlChanged;
+			return box;
+		}
+
+		private void HandleRoomStateControlChanged( object? sender, EventArgs args )
+		{
+			if( this.suppressUiEvents )
+			{
+				return;
+			}
+			this.RecomputeRoomState();
+		}
+
+		/// <summary>
+		/// Sets every state control back to the game-start default without firing a recompute.
+		/// </summary>
+		private void ResetRoomStateControlsToDefault()
+		{
+			if( this.roomStatesFlow == null )
+			{
+				return;
+			}
+			this.suppressUiEvents = true;
+			try
+			{
+				foreach( Control widget in this.roomStatesFlow.Controls )
+				{
+					if( widget is CheckBox box && box.Tag is RoomStateControl checkControl )
+					{
+						box.Checked = checkControl.DefaultOptionIndex != 0;
+					}
+					else if( widget is GroupBox group && group.Tag is RoomStateControl radioControl )
+					{
+						SetRadioGroupSelection( group, radioControl.DefaultOptionIndex );
+					}
+				}
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+		}
+
+		private static void SetRadioGroupSelection( GroupBox group, int optionIndex )
+		{
+			var i = 0;
+			foreach( Control child in group.Controls )
+			{
+				if( child is RadioButton radio )
+				{
+					radio.Checked = i == optionIndex;
+					i++;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Reads the pinned value from each state control, evaluates the room under that assignment,
+		/// and checks or unchecks each object group in the tree to match, then refreshes the preview.
+		/// </summary>
+		private void RecomputeRoomState()
+		{
+			if( this.roomStateModel == null || this.classicResourceBytes == null
+				|| this.Room == null || this.classicRoom == null || this.classicData == null )
+			{
+				return;
+			}
+
+			var pinned = this.GatherPinnedValues();
+			var objectIds = this.Room.SpriteHeaderList.Select( header => header.Identifier ).Distinct().ToList();
+
+			IReadOnlyDictionary<int, int?> states;
+			try
+			{
+				states = RoomEntryEvaluator.EvaluateUnderAssignment(
+					this.classicResourceBytes, this.classicRoom.RoomNumber,
+					this.classicData.ObjectStartStates, objectIds, this.classicIndexBytes, pinned );
+			}
+			catch( Exception )
+			{
+				return;
+			}
+
+			this.suppressUiEvents = true;
+			try
+			{
+				this.treeViewSprites.BeginUpdate();
+				foreach( TreeNode groupNode in this.treeViewSprites.Nodes )
+				{
+					if( groupNode == this.roomObjectsTreeRoot )
+					{
+						// named overlays are shown like the baked default
+						SetCheckedRecursive( groupNode, true );
+						continue;
+					}
+					if( groupNode.Tag is int groupIndex && groupIndex < this.Room.SpriteHeaderList.Count )
+					{
+						var objectId = this.Room.SpriteHeaderList[groupIndex].Identifier;
+						int? state;
+						// an object the evaluator did not resolve stays drawn, matching the other views
+						var visible = !states.TryGetValue( objectId, out state ) || ( state.HasValue && state.Value != 0 );
+						SetCheckedRecursive( groupNode, visible );
+					}
+				}
+				this.treeViewSprites.EndUpdate();
+			}
+			finally
+			{
+				this.suppressUiEvents = false;
+			}
+
+			this.SyncVisibilityFromTree();
+		}
+
+		/// <summary>
+		/// Collects the pinned variable values from the state controls: a radio pins the selected
+		/// option's representative value, a checkbox pins the ticked or unticked option's value.
+		/// </summary>
+		private Dictionary<int, int> GatherPinnedValues()
+		{
+			var pinned = new Dictionary<int, int>();
+			if( this.roomStatesFlow == null )
+			{
+				return pinned;
+			}
+
+			foreach( Control widget in this.roomStatesFlow.Controls )
+			{
+				if( widget is CheckBox box && box.Tag is RoomStateControl checkControl && checkControl.Options.Count > 0 )
+				{
+					var defaultOption = checkControl.Options[checkControl.DefaultOptionIndex];
+					var otherOption = checkControl.Options[checkControl.DefaultOptionIndex == 0 ? Math.Min( 1, checkControl.Options.Count - 1 ) : 0];
+					var option = box.Checked ? otherOption : defaultOption;
+					pinned[checkControl.VariableId] = option.RepresentativeValue;
+				}
+				else if( widget is GroupBox group && group.Tag is RoomStateControl radioControl )
+				{
+					var selected = FindSelectedOption( group, radioControl );
+					if( selected != null )
+					{
+						pinned[radioControl.VariableId] = selected.RepresentativeValue;
+					}
+				}
+			}
+			return pinned;
+		}
+
+		private static RoomStateOption? FindSelectedOption( GroupBox group, RoomStateControl control )
+		{
+			foreach( Control child in group.Controls )
+			{
+				if( child is RadioButton radio && radio.Checked && radio.Tag is RoomStateOption option )
+				{
+					return option;
+				}
+			}
+			return control.Options.Count > 0 ? control.Options[control.DefaultOptionIndex] : null;
+		}
+
 		private void HandleViewModeChanged( object sender, EventArgs args )
 		{
 			if( this.suppressUiEvents )
@@ -1443,6 +1776,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private void ApplyViewMode( RoomViewMode mode )
 		{
+			// the interactive state controls belong only to the script view, and only when the
+			// room actually has script-driven states to offer
+			if( this.panelRoomStates != null )
+			{
+				this.panelRoomStates.Visible = mode == RoomViewMode.ScriptInitial
+					&& this.roomStateModel != null && this.roomStateModel.Controls.Count > 0;
+			}
+
 			switch( mode )
 			{
 				case RoomViewMode.AllStates:
@@ -1465,6 +1806,15 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private void ShowScriptInitialView()
 		{
+			// when the room has script-driven states, the interactive panel drives the tree: reset
+			// the controls to game start and evaluate the room under that assignment
+			if( this.roomStateModel != null && this.roomStateModel.Controls.Count > 0 && this.classicResourceBytes != null )
+			{
+				this.ResetRoomStateControlsToDefault();
+				this.RecomputeRoomState();
+				return;
+			}
+
 			if( this.scriptVisibility == null || this.Room == null )
 			{
 				this.ShowGameDefaultView();

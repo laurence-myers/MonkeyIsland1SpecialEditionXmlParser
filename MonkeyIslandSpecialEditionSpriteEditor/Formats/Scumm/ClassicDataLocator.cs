@@ -104,6 +104,65 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
+		/// Reads and XOR decodes the classic resource file (.001) and, when present, the index file
+		/// (.000) the given data was loaded from - a loose file, or an entry inside the pak. The
+		/// script-state evaluator needs the raw decoded bytes, and this returns them from the same
+		/// source the data itself came from. Returns false when the bytes cannot be read.
+		/// </summary>
+		public static bool TryGetDecodedResources( LPAKFile lpakFile, ClassicData data, out byte[]? resource, out byte[]? index )
+		{
+			resource = null;
+			index = null;
+			try
+			{
+				// a loose file (a loose override, or loose classic data) records its own paths
+				if( !string.IsNullOrEmpty( data.LooseDataFilePath ) && File.Exists( data.LooseDataFilePath ) )
+				{
+					resource = Decode( File.ReadAllBytes( data.LooseDataFilePath! ) );
+					if( !string.IsNullOrEmpty( data.LooseIndexFilePath ) && File.Exists( data.LooseIndexFilePath ) )
+					{
+						index = Decode( File.ReadAllBytes( data.LooseIndexFilePath! ) );
+					}
+					return true;
+				}
+
+				// otherwise the data came from an entry inside the pak
+				if( !string.IsNullOrEmpty( data.PakDataEntryName ) )
+				{
+					var dataIndex = lpakFile.FindEntryIndex( name => name.EndsWith( ".001", StringComparison.OrdinalIgnoreCase ) );
+					if( dataIndex < 0 )
+					{
+						return false;
+					}
+					resource = Decode( lpakFile.ReadEntryBytes( dataIndex ) );
+					if( !string.IsNullOrEmpty( data.PakIndexEntryName ) )
+					{
+						var indexIndex = lpakFile.FindEntryIndex( name => name.EndsWith( ".000", StringComparison.OrdinalIgnoreCase ) );
+						if( indexIndex >= 0 )
+						{
+							index = Decode( lpakFile.ReadEntryBytes( indexIndex ) );
+						}
+					}
+					return true;
+				}
+
+				return false;
+			}
+			catch( Exception )
+			{
+				resource = null;
+				index = null;
+				return false;
+			}
+		}
+
+		private static byte[] Decode( byte[] bytes )
+		{
+			Parser.XorDecode( bytes, Parser.XorKey );
+			return bytes;
+		}
+
+		/// <summary>
 		/// Loads the classic data for an opened LPAK without caching.
 		/// </summary>
 		public static ClassicData? Load( LPAKFile lpakFile, Func<string?>? folderPrompt )
