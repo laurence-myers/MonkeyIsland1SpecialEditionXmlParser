@@ -460,7 +460,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			{
 				return new RoomStateModel();
 			}
-			return DiscoverStatesCore( data, scripts, startStates, requestedIds, objectNames );
+			var verbStarts = ScriptScanner.FindObjectVerbScripts( data, roomNumber );
+			return DiscoverStatesCore( data, scripts, startStates, requestedIds, objectNames, verbStarts );
 		}
 
 		/// <summary>
@@ -476,7 +477,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			IReadOnlyDictionary<int, string?>? objectNames = null,
 			Dictionary<int, (int Start, int End)>? localScripts = null,
 			Dictionary<int, (int Start, int End)>? globalScripts = null,
-			(int Start, int End)? bootScript = null )
+			(int Start, int End)? bootScript = null,
+			IReadOnlyDictionary<int, HashSet<int>>? verbStarts = null )
 		{
 			var scripts = new RoomScripts
 			{
@@ -485,7 +487,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				GlobalScripts = globalScripts ?? new Dictionary<int, (int Start, int End)>(),
 				BootScript = bootScript,
 			};
-			return DiscoverStatesCore( data, scripts, startStates, objectIds.Distinct().ToList(), objectNames );
+			return DiscoverStatesCore( data, scripts, startStates, objectIds.Distinct().ToList(), objectNames,
+				verbStarts ?? new Dictionary<int, HashSet<int>>() );
 		}
 
 		private static RoomStateModel DiscoverStatesCore(
@@ -493,7 +496,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			RoomScripts scripts,
 			IReadOnlyDictionary<int, ClassicObjectStartState> startStates,
 			List<int> requestedIds,
-			IReadOnlyDictionary<int, string?>? objectNames )
+			IReadOnlyDictionary<int, string?>? objectNames,
+			IReadOnlyDictionary<int, HashSet<int>> verbStarts )
 		{
 			var model = new RoomStateModel();
 
@@ -568,7 +572,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			var seenEffects = new HashSet<string>();
 			model.Controls.RemoveAll( c => !seenEffects.Add( ControlEffectSignature( c ) ) );
 
-			DiscoverScriptedStates( data, scripts, startStates, requestedIds, baseline.States, baselineDrawn, objectNames, model );
+			DiscoverScriptedStates( data, scripts, startStates, requestedIds, baseline.States, baselineDrawn, objectNames, verbStarts, model );
 			return model;
 		}
 
@@ -601,6 +605,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			Dictionary<int, int?> baselineStates,
 			HashSet<int> baselineDrawn,
 			IReadOnlyDictionary<int, string?>? objectNames,
+			IReadOnlyDictionary<int, HashSet<int>> verbStarts,
 			RoomStateModel model )
 		{
 			if( scripts.LocalScripts.Count == 0 )
@@ -614,6 +619,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			var seeds = BuildBaselineSeeds( startStates, baselineStates );
 
 			var effects = new List<ScriptedEffect>();
+			var cascadeByLocal = new Dictionary<int, HashSet<int>>();
 			foreach( var local in scripts.LocalScripts.OrderBy( l => l.Key ) )
 			{
 				var localScripts = new RoomScripts
@@ -625,6 +631,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				};
 				// a fresh graph cache: the entry-graph key would otherwise collide between locals
 				var result = RunAssignment( data, localScripts, seeds, requestedIds, EmptyLocked, null );
+				cascadeByLocal[local.Key] = result.Walk != null ? result.Walk.EnteredScripts : new HashSet<int>();
 				var drawn = DrawnSet( result.States );
 
 				var shows = new HashSet<int>( drawn );
@@ -669,9 +676,32 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 				if( effectShows.Count > 0 || effectHides.Count > 0 )
 				{
-					var cascade = result.Walk != null ? result.Walk.EnteredScripts : new HashSet<int>();
 					var isAnimation = effectShows.Count > 1 && HasFrameYield( data, local.Value.Start, local.Value.End );
-					effects.Add( new ScriptedEffect( local.Key, effectShows, effectHides, cascade, isAnimation ) );
+					effects.Add( new ScriptedEffect( local.Key, effectShows, effectHides, cascadeByLocal[local.Key], isAnimation ) );
+				}
+			}
+
+			// which object's verb reaches each local: an object that starts local X reaches X and
+			// every script X's cascade goes on to start, so a state drawn deep in the cascade is
+			// still named after the object the player acts on
+			var triggerObjectsFor = new Dictionary<int, HashSet<int>>();
+			foreach( var start in verbStarts )
+			{
+				var reach = new HashSet<int> { start.Key };
+				HashSet<int> cascade;
+				if( cascadeByLocal.TryGetValue( start.Key, out cascade ) )
+				{
+					reach.UnionWith( cascade );
+				}
+				foreach( var localId in reach )
+				{
+					HashSet<int> objects;
+					if( !triggerObjectsFor.TryGetValue( localId, out objects ) )
+					{
+						objects = new HashSet<int>();
+						triggerObjectsFor[localId] = objects;
+					}
+					objects.UnionWith( start.Value );
 				}
 			}
 
@@ -715,11 +745,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 					model.Incomplete = true;
 					break;
 				}
+				HashSet<int> triggerObjects;
+				var trigger = triggerObjectsFor.TryGetValue( effect.LocalId, out triggerObjects )
+					? TriggerName( triggerObjects, objectNames )
+					: "";
 				var state = new RoomScriptedState
 				{
 					Label = ScriptedStateLabel( effect.Shows, effect.Hides, effect.IsAnimation, objectNames ),
 					LocalScriptId = effect.LocalId,
 					IsAnimation = effect.IsAnimation,
+					Trigger = trigger,
 				};
 				state.ObjectsShown.AddRange( effect.Shows.OrderBy( id => id ) );
 				state.ObjectsHidden.AddRange( effect.Hides.OrderBy( id => id ) );
@@ -843,6 +878,40 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				return hides.Count > 0 ? label + " (hide " + hides.Count + ")" : label;
 			}
 			return "Hide " + LabelForObjects( hides, objectNames, out primary );
+		}
+
+		/// <summary>
+		/// The name of the object a verb acts on to reach a state - the most common name among the
+		/// trigger objects (a set of like-named corpses reads as "Corpse"). Empty when the trigger
+		/// objects have no name, so the label falls back to the script number.
+		/// </summary>
+		private static string TriggerName( HashSet<int> objectIds, IReadOnlyDictionary<int, string?>? objectNames )
+		{
+			if( objectIds.Count == 0 || objectNames == null )
+			{
+				return "";
+			}
+			var counts = new Dictionary<string, int>();
+			foreach( var id in objectIds )
+			{
+				string? raw;
+				objectNames.TryGetValue( id, out raw );
+				var name = CleanName( raw );
+				if( name.Length > 0 )
+				{
+					int current;
+					counts.TryGetValue( name, out current );
+					counts[name] = current + 1;
+				}
+			}
+			// name it only when the trigger objects agree on one name (a set of like-named corpses);
+			// several different names means the state is reachable more than one way, so rather than
+			// guess which verb "owns" it, fall back to the script number
+			if( counts.Count != 1 )
+			{
+				return "";
+			}
+			return Capitalize( counts.Keys.First() );
 		}
 
 		/// <summary>A signature of what a control changes, so two atoms with the same effect merge.</summary>

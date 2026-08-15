@@ -545,6 +545,45 @@ namespace Tests
 		}
 
 		[Test]
+		public void DiscoverStates_NamesAStateAfterTheObjectVerbThatStartsIt()
+		{
+			// object 50 ("lever") is the object whose verb starts local 200, which draws 210
+			var entry = Bytes( Stop() );
+			var local = Bytes( SetStateLiteral( 210, 1 ), Stop() );
+			var data = Bytes( entry, local );
+			var names = new Dictionary<int, string?> { { 50, "lever" }, { 210, null } };
+			var verbStarts = new Dictionary<int, HashSet<int>> { { 200, new HashSet<int> { 50 } } };
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 210 }, names,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } },
+				verbStarts: verbStarts );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].Trigger, Is.EqualTo( "Lever" ) );
+		}
+
+		[Test]
+		public void DiscoverStates_LeavesTheTriggerBlankWhenSeveralObjectsReachTheState()
+		{
+			// two differently-named objects both start the state's script, so there is no single
+			// object to name it after
+			var entry = Bytes( Stop() );
+			var local = Bytes( SetStateLiteral( 210, 1 ), Stop() );
+			var data = Bytes( entry, local );
+			var names = new Dictionary<int, string?> { { 50, "lever" }, { 51, "switch" }, { 210, null } };
+			var verbStarts = new Dictionary<int, HashSet<int>> { { 200, new HashSet<int> { 50, 51 } } };
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 210 }, names,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } },
+				verbStarts: verbStarts );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].Trigger, Is.Empty );
+		}
+
+		[Test]
 		public void DiscoverStates_MarksAFrameYieldingDrawLoopAsAnimation()
 		{
 			// a local that draws two objects with a breakHere between them is an animation

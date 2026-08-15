@@ -401,6 +401,143 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			return localScripts;
 		}
 
+		/// <summary>
+		/// Maps each local script that a room's object verbs start to the objects that start it, by
+		/// decoding the VERB code in every OBCD of the room. This lets a verb-driven state be named
+		/// after the object a verb acts on (the nose whose verb opens the monkey head's mouth)
+		/// rather than a bare script number. Keyed by local script number, valued by object numbers.
+		/// </summary>
+		internal static Dictionary<int, HashSet<int>> FindObjectVerbScripts( byte[] data, int roomNumber )
+		{
+			var startsByLocal = new Dictionary<int, HashSet<int>>();
+			var roomNumberByOffset = new Dictionary<int, int>();
+
+			foreach( var lecf in ReadBlocks( data, 0, data.Length ) )
+			{
+				if( lecf.Tag != "LECF" )
+				{
+					continue;
+				}
+				foreach( var child in ReadBlocks( data, lecf.Position + 8, lecf.Position + lecf.Size ) )
+				{
+					if( child.Tag == "LOFF" )
+					{
+						var position = child.Position + 8;
+						int count = data[position];
+						position += 1;
+						for( var index = 0; index < count; index++ )
+						{
+							roomNumberByOffset[BitConverter.ToInt32( data, position + 1 )] = data[position];
+							position += 5;
+						}
+					}
+					else if( child.Tag == "LFLF" )
+					{
+						ScanLflfVerbs( data, child, roomNumberByOffset, roomNumber, startsByLocal );
+					}
+				}
+			}
+			return startsByLocal;
+		}
+
+		private static void ScanLflfVerbs( byte[] data, BlockInfo lflf, Dictionary<int, int> roomNumberByOffset, int roomNumber, Dictionary<int, HashSet<int>> startsByLocal )
+		{
+			foreach( var child in ReadBlocks( data, lflf.Position + 8, lflf.Position + lflf.Size ) )
+			{
+				if( child.Tag != "ROOM" )
+				{
+					continue;
+				}
+				int found;
+				if( !( roomNumberByOffset.TryGetValue( child.Position, out found )
+					|| roomNumberByOffset.TryGetValue( lflf.Position + 8, out found )
+					|| roomNumberByOffset.TryGetValue( lflf.Position, out found ) )
+					|| found != roomNumber )
+				{
+					continue;
+				}
+
+				foreach( var obcd in ReadBlocks( data, child.Position + 8, child.Position + child.Size ) )
+				{
+					if( obcd.Tag == "OBCD" )
+					{
+						ScanObcdVerbs( data, obcd, startsByLocal );
+					}
+				}
+			}
+		}
+
+		private static void ScanObcdVerbs( byte[] data, BlockInfo obcd, Dictionary<int, HashSet<int>> startsByLocal )
+		{
+			var objectId = -1;
+			BlockInfo? verb = null;
+			foreach( var child in ReadBlocks( data, obcd.Position + 8, obcd.Position + obcd.Size ) )
+			{
+				if( child.Tag == "CDHD" )
+				{
+					objectId = data[child.Position + 8] | ( data[child.Position + 9] << 8 );
+				}
+				else if( child.Tag == "VERB" )
+				{
+					verb = child;
+				}
+			}
+			if( objectId < 0 || verb == null )
+			{
+				return;
+			}
+
+			// the VERB payload is a table of (verb# byte, u16 offset) entries terminated by a 0
+			// byte; each offset is measured from the OBCD block start. Bound each verb's code by
+			// the next entry's offset so one verb's startScript is not attributed to another.
+			var offsets = new List<int>();
+			var position = verb.Value.Position + 8;
+			var tableEnd = verb.Value.Position + verb.Value.Size;
+			while( position + 3 <= tableEnd && data[position] != 0 )
+			{
+				offsets.Add( data[position + 1] | ( data[position + 2] << 8 ) );
+				position += 3;
+			}
+
+			var sortedBounds = offsets.Distinct().OrderBy( o => o ).ToList();
+			var obcdEnd = obcd.Position + obcd.Size;
+			foreach( var offset in offsets )
+			{
+				var codeStart = obcd.Position + offset;
+				if( codeStart < obcd.Position || codeStart >= obcdEnd )
+				{
+					continue;
+				}
+				var next = sortedBounds.FirstOrDefault( o => o > offset );
+				var codeEnd = next > offset ? obcd.Position + next : obcdEnd;
+
+				try
+				{
+					var decoder = new ScriptDecoder( data, codeStart, codeEnd );
+					decoder.DecodeScript();
+					foreach( var instruction in decoder.Instructions )
+					{
+						foreach( var scriptEvent in instruction.Events )
+						{
+							if( scriptEvent.Kind == ScriptEventKind.StartScript && scriptEvent.A.IsLiteral )
+							{
+								HashSet<int> objects;
+								if( !startsByLocal.TryGetValue( scriptEvent.A.Value, out objects ) )
+								{
+									objects = new HashSet<int>();
+									startsByLocal[scriptEvent.A.Value] = objects;
+								}
+								objects.Add( objectId );
+							}
+						}
+					}
+				}
+				catch( Exception )
+				{
+				}
+			}
+		}
+
 		private static void HarvestLflfScripts( byte[] data, BlockInfo lflf, Dictionary<int, int> roomNumberByOffset, List<ScriptInfo> scripts )
 		{
 			int? roomNumber = null;

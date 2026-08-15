@@ -1624,10 +1624,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private Control BuildScriptedStateCheckbox( RoomScriptedState scriptedState )
 		{
+			// name the state by the object a verb acts on to reach it (from the OBCD verb scripts),
+			// falling back to the local script number when no object verb starts it
+			var trigger = string.IsNullOrEmpty( scriptedState.Trigger )
+				? "script " + scriptedState.LocalScriptId
+				: scriptedState.Trigger;
 			var box = new CheckBox
 			{
-				// the local script number is the trigger, and tells otherwise-similar states apart
-				Text = string.Concat( scriptedState.Label, "  [script ", scriptedState.LocalScriptId, "]" ),
+				Text = string.Concat( scriptedState.Label, "  [", trigger, "]" ),
 				AutoSize = false,
 				Width = RoomStateControlWidth,
 				Height = 20,

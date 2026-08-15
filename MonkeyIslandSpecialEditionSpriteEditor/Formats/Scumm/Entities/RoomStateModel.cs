@@ -62,6 +62,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 		}
 
 		/// <summary>
+		/// Gets or sets the name of the object whose verb reaches this state (the nose whose verb
+		/// opens the monkey head's mouth), from the OBCD verb scripts, or empty when no object verb
+		/// starts it.
+		/// </summary>
+		public string Trigger
+		{
+			get;
+			set;
+		} = "";
+
+		/// <summary>
 		/// Gets or sets whether the script reveals the objects one per frame (a breakHere between
 		/// each draw) - an animation - rather than all at once.
 		/// </summary>
