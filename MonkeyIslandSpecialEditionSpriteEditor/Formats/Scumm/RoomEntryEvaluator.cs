@@ -808,30 +808,35 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
-		/// Whether a script reveals objects a frame at a time: it draws objects and contains a
-		/// breakHere (which yields a frame), so the objects appear in sequence rather than at once.
+		/// Whether a script yields a frame AFTER drawing, so its objects appear one after another
+		/// rather than all at once - the mark of an animation. A draw-loop shows this as a single
+		/// drawObject followed by a breakHere (room 12's skull poles: draw, breakHere, loop). A
+		/// LEADING run of breakHere before any draw is just a delay, so room 80 (wait, then draw the
+		/// cannon ball and the gunpowder together) is not flagged. The caller only treats a script as
+		/// an animation when it also shows more than one object, so a lone draw-then-wait is excluded.
 		/// </summary>
 		private static bool HasFrameYield( byte[] data, int start, int end )
 		{
 			var decoder = new ScriptDecoder( data, start, end );
 			decoder.DecodeScript();
-			var hasBreak = false;
-			var draws = 0;
+			var sawDraw = false;
 			foreach( var instruction in decoder.Instructions )
 			{
 				if( instruction.Opcode == 0x80 )
 				{
-					hasBreak = true;
-				}
-				foreach( var scriptEvent in instruction.Events )
-				{
-					if( scriptEvent.Kind == ScriptEventKind.DrawObject || scriptEvent.Kind == ScriptEventKind.SetObjectState )
+					if( sawDraw )
 					{
-						draws++;
+						return true;
 					}
+					continue;
+				}
+				if( instruction.Events.Any( e =>
+					e.Kind == ScriptEventKind.DrawObject || e.Kind == ScriptEventKind.SetObjectState ) )
+				{
+					sawDraw = true;
 				}
 			}
-			return hasBreak && draws > 0;
+			return false;
 		}
 
 		private static Dictionary<int, ClassicObjectStartState> BuildBaselineSeeds(
@@ -1210,9 +1215,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		}
 
 		/// <summary>
-		/// A label for a set of objects: the most common cleaned object name, pluralised and with
-		/// the count, e.g. "Pirates (10)". The chosen name is returned in <paramref name="primary"/>
-		/// so the caller can build a control caption from it.
+		/// A label for a set of objects. When one name dominates it reads as that name pluralised
+		/// with the count, e.g. "Pirates (10)" (the crowd is mostly "pirate" with a stray dog). When
+		/// the objects are a few differently-named things it lists them, e.g. "Cannon ball, Gunpowder"
+		/// (room 80 draws both, and calling them "Cannon balls (2)" was wrong). Unnamed objects fall
+		/// back to their numbers. The lead name is returned in <paramref name="primary"/> for captions.
 		/// </summary>
 		private static string LabelForObjects(
 			HashSet<int> objectIds,
@@ -1267,9 +1274,22 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				return primary + " (" + string.Join( ", ", sorted.Take( 3 ) ) + "…)";
 			}
 
-			var best = counts.OrderByDescending( c => c.Value ).ThenBy( c => c.Key ).First().Key;
-			primary = Capitalize( Pluralize( best, objectIds.Count ) );
-			return primary + " (" + objectIds.Count + ")";
+			var ordered = counts.OrderByDescending( c => c.Value ).ThenBy( c => c.Key ).ToList();
+			var namedTotal = counts.Values.Sum();
+
+			// one name in the clear majority: the whole set reads as that name plus the count
+			if( counts.Count == 1 || ordered[0].Value * 2 > namedTotal )
+			{
+				primary = Capitalize( Pluralize( ordered[0].Key, objectIds.Count ) );
+				return primary + " (" + objectIds.Count + ")";
+			}
+
+			// a few different things: list them rather than pluralise one over the rest
+			var distinct = ordered.Select( c => Capitalize( c.Key ) ).ToList();
+			primary = distinct.Count <= 3
+				? string.Join( ", ", distinct )
+				: string.Join( ", ", distinct.Take( 3 ) ) + ", +" + ( distinct.Count - 3 );
+			return primary;
 		}
 
 		/// <summary>Strips the OBNA padding (trailing '@' and spaces) from an object name.</summary>

@@ -584,6 +584,42 @@ namespace Tests
 		}
 
 		[Test]
+		public void DiscoverStates_ALeadingDelayThenTwoDrawsIsNotAnimation()
+		{
+			// room 80's cannon pattern: breakHere yields (a delay) BEFORE the draws, then two
+			// objects are drawn together - a reveal, not an animation
+			var entry = Bytes( Stop() );
+			var local = Bytes( BreakHere(), BreakHere(), SetStateLiteral( 210, 1 ), SetStateLiteral( 211, 1 ), Stop() );
+			var data = Bytes( entry, local );
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 210, 211 }, null,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } } );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].IsAnimation, Is.False );
+		}
+
+		[Test]
+		public void DiscoverStates_LabelsDifferentlyNamedObjectsByListingThem()
+		{
+			// two differently-named objects drawn together read as both names, not one pluralised
+			var entry = Bytes( Stop() );
+			var local = Bytes( SetStateLiteral( 210, 1 ), SetStateLiteral( 211, 1 ), Stop() );
+			var data = Bytes( entry, local );
+			var names = new Dictionary<int, string?> { { 210, "cannon ball" }, { 211, "gunpowder" } };
+
+			var model = RoomEntryEvaluator.DiscoverStatesScript(
+				data, 0, entry.Length, NoSeeds(), new[] { 210, 211 }, names,
+				new Dictionary<int, (int Start, int End)> { { 200, ( entry.Length, data.Length ) } } );
+
+			Assert.That( model.ScriptedStates.Count, Is.EqualTo( 1 ) );
+			Assert.That( model.ScriptedStates[0].Label, Does.Contain( "Cannon ball" ) );
+			Assert.That( model.ScriptedStates[0].Label, Does.Contain( "Gunpowder" ) );
+			Assert.That( model.ScriptedStates[0].Label, Does.Not.Contain( "Cannon balls" ) );
+		}
+
+		[Test]
 		public void DiscoverStates_MarksAFrameYieldingDrawLoopAsAnimation()
 		{
 			// a local that draws two objects with a breakHere between them is an animation
