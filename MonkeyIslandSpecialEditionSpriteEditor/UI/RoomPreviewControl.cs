@@ -577,6 +577,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
 			graphics.PixelOffsetMode = PixelOffsetMode.Half;
 
+			// the far-background room objects (the SE "extra_background" sky/sea) sit behind the
+			// painted background, whose own sky is transparent so the far backdrop shows through
+			this.PaintRoomObjects( graphics, farBackground: true );
+
 			if( this.background != null )
 			{
 				var destRect = new RectangleF( 0, 0, this.background.Width * this.zoom, this.background.Height * this.zoom );
@@ -584,30 +588,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				graphics.DrawImage( this.background, destRect, srcRect, GraphicsUnit.Pixel );
 			}
 
-			// room object overlays sit between the background and the object sprites (the
-			// kitchen's Water lies behind the plank); their real order is per-name engine
+			// the remaining room object overlays sit between the background and the object sprites
+			// (the kitchen's Water lies behind the plank); their real order is per-name engine
 			// logic, so this is the closest static approximation
-			foreach( var roomObject in this.RoomObjects )
-			{
-				if( !roomObject.Visible )
-				{
-					continue;
-				}
-				foreach( var draw in roomObject.Draws )
-				{
-					if( !draw.Visible || draw.Texture == null )
-					{
-						continue;
-					}
-					var destRect = new RectangleF(
-						( roomObject.RoomObject.OffsetX + draw.RelativeRect.X ) * this.zoom,
-						( roomObject.RoomObject.OffsetY + draw.RelativeRect.Y ) * this.zoom,
-						draw.RelativeRect.Width * this.zoom,
-						draw.RelativeRect.Height * this.zoom
-					);
-					graphics.DrawImage( draw.Texture, destRect, draw.SourceRect, GraphicsUnit.Pixel );
-				}
-			}
+			this.PaintRoomObjects( graphics, farBackground: false );
 
 			// object sprites interleave with the foreground static layers by their Layer: a
 			// sprite with Layer L composites just after static layer L (foreground layer L),
@@ -682,6 +666,35 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		protected override void OnPaintBackground( PaintEventArgs args )
 		{
 			// everything is painted in OnPaint over a transparency grid
+		}
+
+		/// <summary>
+		/// Paints the room object overlays whose far-background flag matches: the far backgrounds
+		/// (sky/sea) before the painted background, the rest between it and the object sprites.
+		/// </summary>
+		private void PaintRoomObjects( Graphics graphics, bool farBackground )
+		{
+			foreach( var roomObject in this.RoomObjects )
+			{
+				if( !roomObject.Visible || roomObject.DrawAsFarBackground != farBackground )
+				{
+					continue;
+				}
+				foreach( var draw in roomObject.Draws )
+				{
+					if( !draw.Visible || draw.Texture == null )
+					{
+						continue;
+					}
+					var destRect = new RectangleF(
+						( roomObject.RoomObject.OffsetX + draw.RelativeRect.X ) * this.zoom,
+						( roomObject.RoomObject.OffsetY + draw.RelativeRect.Y ) * this.zoom,
+						draw.RelativeRect.Width * this.zoom,
+						draw.RelativeRect.Height * this.zoom
+					);
+					graphics.DrawImage( draw.Texture, destRect, draw.SourceRect, GraphicsUnit.Pixel );
+				}
+			}
 		}
 
 		private void PaintActors( Graphics graphics, bool drawAboveForeground )

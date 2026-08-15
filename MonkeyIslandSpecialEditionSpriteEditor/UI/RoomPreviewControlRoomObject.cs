@@ -48,6 +48,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		} = true;
 
 		/// <summary>
+		/// Gets or sets whether this overlay is the room's far background (the SE "extra_background"
+		/// sky/sea backdrop). The preview paints these before the room's painted background, so they
+		/// sit behind the scene rather than over it.
+		/// </summary>
+		public bool DrawAsFarBackground
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Gets the overlay's screen rectangle: the union of the draws, placed at the
 		/// entity's current offset.
 		/// </summary>

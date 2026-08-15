@@ -399,7 +399,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return null;
 			}
 
-			var rootNode = new TreeNode { Text = "Room objects", Checked = false };
+			// named "Named overlays" to tell these apart from the numbered classic object groups
+			// above: these come from the SE room's own RoomObjectGroupList (the animated backdrop and
+			// cloud layers), not the classic SCUMM objects, and the tab itself is titled "Room objects"
+			var rootNode = new TreeNode { Text = "Named overlays", Checked = false };
 
 			for( var groupIndex = 0; groupIndex < this.Room.RoomObjectGroupList.Count; groupIndex++ )
 			{
@@ -579,9 +582,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					var header = groupIndex < this.Room.RoomObjectHeaderList.Count ? this.Room.RoomObjectHeaderList[groupIndex] : null;
 					var name = string.IsNullOrEmpty( header?.Name ) ? "?" : header!.Name!;
 
+					var isFarBackground = this.IsAlternateBackgroundGroup( groupIndex );
 					foreach( var roomObject in group.RoomObjectList )
 					{
-						var entry = new RoomPreviewControlRoomObject( roomObject, name );
+						var entry = new RoomPreviewControlRoomObject( roomObject, name ) { DrawAsFarBackground = isFarBackground };
 						if( roomObject.Sprite != null )
 						{
 							var sprite = roomObject.Sprite;
@@ -1399,6 +1403,29 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.SyncVisibilityFromTree();
 		}
 
+		/// <summary>
+		/// Whether the room-object group at the given index is a far full-scene background: the SE
+		/// "extra_background", delivered as a named room object but really the sky/sea backdrop that
+		/// belongs behind the room's painted background (whose own sky is transparent). The preview
+		/// draws it first so it does not paint over the scene.
+		/// </summary>
+		private bool IsAlternateBackgroundGroup( int groupIndex )
+		{
+			if( this.Room?.RoomObjectGroupList == null || groupIndex >= this.Room.RoomObjectGroupList.Count )
+			{
+				return false;
+			}
+			var header = groupIndex < this.Room.RoomObjectHeaderList.Count ? this.Room.RoomObjectHeaderList[groupIndex] : null;
+			if( string.Equals( header?.Name, "Background", StringComparison.OrdinalIgnoreCase ) )
+			{
+				return true;
+			}
+			// structural fallback: an image-variant room object whose chunks are the SE extra background
+			return this.Room.RoomObjectGroupList[groupIndex].RoomObjectList.Any( roomObject => roomObject.Image != null
+				&& roomObject.Image.ChunkList.Any( chunk => ( chunk.TextureFileName ?? string.Empty )
+					.IndexOf( "extra_background", StringComparison.OrdinalIgnoreCase ) >= 0 ) );
+		}
+
 		//-------------------------------------------
 		// view mode selector
 
@@ -1678,7 +1705,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private void RecomputeRoomState()
 		{
-			if( this.roomStateModel == null || this.classicResourceBytes == null
+			// works with no controls too: an empty pin set gives the plain game-start baseline
+			if( this.classicResourceBytes == null
 				|| this.Room == null || this.classicRoom == null || this.classicData == null )
 			{
 				return;
@@ -1707,7 +1735,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				{
 					if( groupNode == this.roomObjectsTreeRoot )
 					{
-						// named overlays are shown like the baked default
+						// named overlays are shown; the far background among them is drawn behind
+						// the scene by the preview, not on top
 						SetCheckedRecursive( groupNode, true );
 						continue;
 					}
@@ -1821,9 +1850,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private void ShowScriptInitialView()
 		{
-			// when the room has script-driven states, the interactive panel drives the tree: reset
-			// the controls to game start and evaluate the room under that assignment
-			if( this.roomStateModel != null && this.roomStateModel.Controls.Count > 0 && this.classicResourceBytes != null )
+			// when the scripts were read, the evaluator drives the tree: reset any controls to game
+			// start and evaluate the room under that assignment. This is the accurate game-start
+			// appearance (only the objects the entry scripts actually leave drawn) and is used even
+			// when the room has no interactive controls, so it replaces the coarser heuristic below.
+			if( this.classicResourceBytes != null && this.classicRoom != null && this.classicData != null )
 			{
 				this.ResetRoomStateControlsToDefault();
 				this.RecomputeRoomState();
