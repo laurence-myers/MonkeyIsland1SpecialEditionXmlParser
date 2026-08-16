@@ -75,7 +75,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			}
 
 			// two or more different names means two or more different things sharing a rectangle
-			var names = frames.Select( f => CleanName( f.Name ) ).Where( n => n.Length > 0 ).Distinct().ToList();
+			var names = frames.Select( f => ClassicObjectNames.CleanName( f.Name ) ).Where( n => n.Length > 0 ).Distinct().ToList();
 			if( names.Count > 1 )
 			{
 				return null;
@@ -97,16 +97,18 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 			if( names.Count == 1 )
 			{
-				entity.Name = Capitalize( names[0] );
+				entity.Name = ClassicObjectNames.Capitalize( names[0] );
 				entity.NameSource = RoomEntityNameSource.FrameName;
 				return entity;
 			}
 
-			// borrow the name of the smallest named object that encloses the frames (the fire is
-			// drawn inside the "fireplace"; the store's lever positions inside its "handle")
+			// borrow the name of the smallest named object at this spot (the fire is drawn inside the
+			// "fireplace"; the store's lever positions inside its "handle"). The test is non-strict, so
+			// a named object with the same rectangle as the frames (room 30's "handle" is exactly the
+			// lever's rect) qualifies too - that is the intended name, not an accident.
 			var frameIds = new HashSet<int>( entity.ObjectIds );
 			var enclosing = objectsById.Values
-				.Where( o => !frameIds.Contains( o.ObjectId ) && CleanName( o.Name ).Length > 0
+				.Where( o => !frameIds.Contains( o.ObjectId ) && ClassicObjectNames.CleanName( o.Name ).Length > 0
 					&& o.X <= first.X && o.Y <= first.Y
 					&& o.X + o.Width >= first.X + first.Width && o.Y + o.Height >= first.Y + first.Height )
 				.OrderBy( o => o.Width * o.Height )
@@ -114,7 +116,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				.FirstOrDefault();
 			if( enclosing != null )
 			{
-				entity.Name = Capitalize( CleanName( enclosing.Name ) );
+				entity.Name = ClassicObjectNames.Capitalize( ClassicObjectNames.CleanName( enclosing.Name ) );
 				entity.NameSource = RoomEntityNameSource.EnclosingObject;
 				entity.NamedByObjectId = enclosing.ObjectId;
 				return entity;
@@ -123,21 +125,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 			entity.Name = "Objects " + entity.DescribeObjectIds();
 			entity.NameSource = RoomEntityNameSource.None;
 			return entity;
-		}
-
-		/// <summary>Strips the OBNA padding (trailing '@' and spaces) from an object name.</summary>
-		public static string CleanName( string? name )
-		{
-			if( string.IsNullOrEmpty( name ) )
-			{
-				return "";
-			}
-			return name!.TrimEnd( '@', ' ', '\0' ).Trim();
-		}
-
-		private static string Capitalize( string text )
-		{
-			return text.Length == 0 ? text : char.ToUpperInvariant( text[0] ) + text.Substring( 1 );
 		}
 	}
 }

@@ -11,7 +11,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 	internal static class TreeCheckPropagation
 	{
 		/// <summary>
-		/// Applies the propagation for a node whose checkbox has just changed.
+		/// Applies the propagation for a node whose checkbox has just changed: its subtree follows it
+		/// and every ancestor is recomputed.
 		/// </summary>
 		public static void Apply( TreeNode node )
 		{
@@ -19,6 +20,27 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				SetCheckedRecursive( child, node.Checked );
 			}
+			RefreshAncestors( node );
+		}
+
+		/// <summary>
+		/// Sets a node's checkbox and propagates both ways, at any depth: the subtree follows the new
+		/// value and every ancestor is checked exactly when one of its children is. Use this instead of
+		/// hand-rolling the ancestor recompute at a single level.
+		/// </summary>
+		public static void SetChecked( TreeNode node, bool value )
+		{
+			node.Checked = value;
+			Apply( node );
+		}
+
+		/// <summary>
+		/// Recomputes every ancestor of a node from its children (checked exactly when at least one
+		/// child is checked), leaving the node and its subtree untouched. Use after editing leaves
+		/// directly (soloing one sprite among siblings) so the branch above stays consistent.
+		/// </summary>
+		public static void RefreshAncestors( TreeNode node )
+		{
 			for( var ancestor = node.Parent; ancestor != null; ancestor = ancestor.Parent )
 			{
 				ancestor.Checked = AnyChildChecked( ancestor );

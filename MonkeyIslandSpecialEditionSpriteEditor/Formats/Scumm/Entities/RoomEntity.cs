@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 {
@@ -35,6 +34,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 			get;
 			set;
 		} = "";
+
+		/// <summary>
+		/// The label to show for the entity: its name, or "Unnamed entity" when the classic data gave
+		/// none. This is the single place the placeholder is decided, so the tree and the frame strip
+		/// stay in step.
+		/// </summary>
+		public string DisplayName
+		{
+			get
+			{
+				return this.NameSource == RoomEntityNameSource.None ? "Unnamed entity" : this.Name;
+			}
+		}
 
 		/// <summary>Gets or sets where <see cref="Name"/> came from.</summary>
 		public RoomEntityNameSource NameSource
@@ -115,27 +127,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm.Entities
 		/// </summary>
 		public string DescribeObjectIds()
 		{
-			if( this.ObjectIds.Count == 0 )
-			{
-				return "";
-			}
-			var consecutive = true;
-			for( var i = 1; i < this.ObjectIds.Count; i++ )
-			{
-				if( this.ObjectIds[i] != this.ObjectIds[i - 1] + 1 )
-				{
-					consecutive = false;
-					break;
-				}
-			}
-			return consecutive && this.ObjectIds.Count > 1
-				? this.ObjectIds[0] + "-" + this.ObjectIds[this.ObjectIds.Count - 1]
-				: string.Join( ", ", this.ObjectIds );
+			return ClassicObjectNames.FormatRange( this.ObjectIds );
 		}
 
 		public override string ToString()
 		{
-			return string.Concat( this.Name, " [", this.FrameCount, " frames: objects ", this.DescribeObjectIds(), "]" );
+			return string.Concat( this.DisplayName, "  [", this.FrameCount, " frames: objects ", this.DescribeObjectIds(), "]" );
 		}
 	}
 }

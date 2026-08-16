@@ -1262,7 +1262,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 				// identical states apart
 				if( sorted[sorted.Count - 1] - sorted[0] == sorted.Count - 1 )
 				{
-					primary = "Objects " + sorted[0] + "–" + sorted[sorted.Count - 1];
+					primary = "Objects " + ClassicObjectNames.FormatRange( sorted );
 					return primary;
 				}
 				if( sorted.Count <= 3 )
@@ -1295,11 +1295,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 		/// <summary>Strips the OBNA padding (trailing '@' and spaces) from an object name.</summary>
 		private static string CleanName( string? name )
 		{
-			if( string.IsNullOrEmpty( name ) )
-			{
-				return "";
-			}
-			return name!.TrimEnd( '@', ' ', '\0' ).Trim();
+			return ClassicObjectNames.CleanName( name );
 		}
 
 		private static string Pluralize( string word, int count )
@@ -1313,7 +1309,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Formats.Scumm
 
 		private static string Capitalize( string word )
 		{
-			return word.Length == 0 ? word : char.ToUpperInvariant( word[0] ) + word.Substring( 1 );
+			return ClassicObjectNames.Capitalize( word );
 		}
 
 		private static string LowerFirst( string word )

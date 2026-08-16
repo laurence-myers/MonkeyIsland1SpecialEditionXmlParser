@@ -64,12 +64,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		// an object sprite is selected, or a background / room-object entity from the tree
 		private ITextureReference? selectedTextureTarget;
 		private TreeNode? roomObjectsTreeRoot;
-		// the room's entities - the frame runs among the object groups - reconstructed on each load;
-		// empty when the classic data is missing (then no groups nest)
-		private List<RoomEntity> roomEntities = new List<RoomEntity>();
+		// the tree node of each room entity (the frame runs among the object groups), rebuilt on each
+		// load; the lookup FindEntityNode and the strip use it, so it is not rebuilt per step
+		private readonly Dictionary<RoomEntity, TreeNode> entityNodes = new Dictionary<RoomEntity, TreeNode>();
 
 		// the frame-stepping strip under the view combo: shows the entity the tree selection is in,
-		// steps its frames one at a time and plays them like the costume editor's animations
+		// steps its frames one at a time and plays them like the costume editor's animations. The frame
+		// currently shown is read from the tree (its single checked frame group), not tracked here, so a
+		// view/state command that rewrites the checks cannot desync the strip.
 		private Panel? panelAnimation;
 		private Label? labelAnimation;
 		private Button? buttonAnimationPrevious;
@@ -79,9 +81,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Timer? timerAnimation;
 		private ToolTip? animationToolTip;
 		private RoomEntity? animationEntity;
-		// the 0-based frame the strip last showed for animationEntity, or -1 when it has not
-		// stepped yet (the tree shows whatever frames the view left checked)
-		private int animationFrameIndex = -1;
 		private bool suppressUiEvents;
 		private bool dirty;
 		// the three copy/paste slots: atlas rect position, atlas rect size, screen offset;
@@ -298,8 +297,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 				// the frames of one entity (the fire's three cels) nest under one entity node, so
 				// the tree reads as things in the room rather than a flat list of object groups
-				this.roomEntities = this.GroupRoomEntities();
-				var entityNodes = new Dictionary<RoomEntity, TreeNode>();
+				var entities = this.GroupRoomEntities();
+				var entityByGroupIndex = new Dictionary<int, RoomEntity>();
+				foreach( var roomEntity in entities )
+				{
+					foreach( var frameGroupIndex in roomEntity.GroupIndices )
+					{
+						entityByGroupIndex[frameGroupIndex] = roomEntity;
+					}
+				}
+				this.entityNodes.Clear();
 
 				for( var groupIndex = 0; groupIndex < this.Room!.SpriteHeaderList.Count && groupIndex < this.Room.SpriteGroupList.Count; groupIndex++ )
 				{
@@ -316,9 +323,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 						}
 					}
 
-					var entity = this.FindEntityOfGroup( groupIndex );
+					entityByGroupIndex.TryGetValue( groupIndex, out var entity );
 					var frameTag = entity == null ? "" : $"  [frame {entity.FrameNumberOf( groupIndex )}/{entity.FrameCount}]";
-					var objectName = RoomEntityGrouper.CleanName( classicObject?.Name );
+					var objectName = ClassicObjectNames.CleanName( classicObject?.Name );
 					var groupNode = new TreeNode
 					{
 						Text = string.Concat(
@@ -350,16 +357,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					}
 
 					TreeNode entityNode;
-					if( !entityNodes.TryGetValue( entity, out entityNode ) )
+					if( !this.entityNodes.TryGetValue( entity, out entityNode ) )
 					{
 						entityNode = new TreeNode
 						{
-							Text = DescribeEntity( entity ),
+							Text = entity.ToString(),
 							ToolTipText = DescribeEntityNameSource( entity ),
 							Tag = entity,
 							Checked = true,
 						};
-						entityNodes[entity] = entityNode;
+						this.entityNodes[entity] = entityNode;
 						this.treeViewSprites.Nodes.Add( entityNode );
 					}
 					entityNode.Nodes.Add( groupNode );
@@ -398,17 +405,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			return RoomEntityGrouper.Group( groupObjectIds, this.classicObjects );
 		}
 
-		private RoomEntity? FindEntityOfGroup( int groupIndex )
-		{
-			return this.roomEntities.FirstOrDefault( entity => entity.GroupIndices.Contains( groupIndex ) );
-		}
-
-		private static string DescribeEntity( RoomEntity entity )
-		{
-			var name = entity.NameSource == RoomEntityNameSource.None ? "Unnamed entity" : entity.Name;
-			return string.Concat( name, "  [", entity.FrameCount, " frames: objects ", entity.DescribeObjectIds(), "]" );
-		}
-
 		private static string DescribeEntityNameSource( RoomEntity entity )
 		{
 			switch( entity.NameSource )
@@ -416,7 +412,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				case RoomEntityNameSource.FrameName:
 					return string.Concat( "Named from its own object name. ", entity.FrameCount, " objects at ", entity.X, ",", entity.Y, " ", entity.Width, "x", entity.Height, ", drawn one at a time by the scripts." );
 				case RoomEntityNameSource.EnclosingObject:
-					return string.Concat( "The frames have no name of their own; named after the enclosing classic object ", entity.NamedByObjectId, " \"", entity.Name, "\". ", entity.FrameCount, " objects at ", entity.X, ",", entity.Y, " ", entity.Width, "x", entity.Height, "." );
+					return string.Concat( "The frames have no name of their own; named after the classic object ", entity.NamedByObjectId, " \"", entity.Name, "\" at the same spot. ", entity.FrameCount, " objects at ", entity.X, ",", entity.Y, " ", entity.Width, "x", entity.Height, "." );
 				default:
 					return string.Concat( "No name anywhere in the classic data (no object name, no enclosing named object). ", entity.FrameCount, " objects at ", entity.X, ",", entity.Y, " ", entity.Width, "x", entity.Height, ", drawn one at a time by the scripts." );
 			}
@@ -444,25 +440,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 						}
 					}
 				}
-			}
-		}
-
-		/// <summary>
-		/// Checks or unchecks a group node with its frames, keeping an entity parent's box in step
-		/// (checked when any of its frames is).
-		/// </summary>
-		private static void SetGroupChecked( TreeNode groupNode, bool value )
-		{
-			SetCheckedRecursive( groupNode, value );
-			var parent = groupNode.Parent;
-			if( parent?.Tag is RoomEntity )
-			{
-				var any = false;
-				foreach( TreeNode sibling in parent.Nodes )
-				{
-					any |= sibling.Checked;
-				}
-				parent.Checked = any;
 			}
 		}
 
@@ -1349,6 +1326,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
+			// a manual checkbox change is the user taking over; stop playback so it is not undone
+			this.StopAnimationPlayback();
 			this.suppressUiEvents = true;
 			try
 			{
@@ -1410,6 +1389,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 			// visibility changes the content bounds when overlays extend past the background
 			this.roomPreviewControl.RefreshContent();
+
+			// the frame strip reads its label from the tree, so keep it honest after any check change
+			this.RefreshAnimationLabel();
 		}
 
 		//-------------------------------------------
@@ -1466,6 +1448,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
+			this.StopAnimationPlayback();
 			this.suppressUiEvents = true;
 			try
 			{
@@ -1475,11 +1458,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					SetCheckedRecursive( root, false );
 				}
 				SetCheckedRecursive( node, true );
-				// keep ancestors checked so the soloed node stays visible
-				for( var ancestor = node.Parent; ancestor != null; ancestor = ancestor.Parent )
-				{
-					ancestor.Checked = true;
-				}
+				// keep the branch above the soloed node checked so it stays visible
+				TreeCheckPropagation.RefreshAncestors( node );
 				this.treeViewSprites.EndUpdate();
 			}
 			finally
@@ -1502,6 +1482,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
+			this.StopAnimationPlayback();
 			this.suppressUiEvents = true;
 			try
 			{
@@ -1510,7 +1491,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				{
 					sibling.Checked = sibling == node;
 				}
-				node.Parent.Checked = true;
+				// recompute the whole branch above (the group and, when the group nests, its entity),
+				// so a soloed frame does not leave an unchecked entity node claiming it is hidden
+				TreeCheckPropagation.RefreshAncestors( node );
 				this.treeViewSprites.EndUpdate();
 			}
 			finally
@@ -1552,10 +1535,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			this.animationEntity = entity;
-			this.animationFrameIndex = frameNumber - 1;
+			// selecting the node already targeted the strip at this entity; show the frame and let the
+			// resulting SyncVisibilityFromTree refresh the strip's label from the tree
+			this.StopAnimationPlayback();
 			this.ShowEntityFrame( entity, frameNumber - 1 );
-			this.UpdateAnimationStrip();
 		}
 
 		/// <summary>
@@ -1579,7 +1562,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				{
 					SetCheckedRecursive( groupNode, groupNode.Tag is int groupIndex && groupIndex == entity.GroupIndices[frameIndex] );
 				}
-				entityNode.Checked = true;
+				// the shown frame is checked, so the entity node (and any node above) recomputes to checked
+				TreeCheckPropagation.RefreshAncestors( entityNode.Nodes[0] );
 				this.treeViewSprites.EndUpdate();
 			}
 			finally
@@ -1592,14 +1576,53 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private TreeNode? FindEntityNode( RoomEntity entity )
 		{
-			foreach( TreeNode root in this.treeViewSprites.Nodes )
+			return this.entityNodes.TryGetValue( entity, out var node ) ? node : null;
+		}
+
+		/// <summary>
+		/// The 0-based frame currently shown for an entity: the index of its single checked frame group,
+		/// or -1 when none or more than one frame is checked (so the strip reads "N frames").
+		/// </summary>
+		private int CurrentEntityFrameIndex( RoomEntity entity )
+		{
+			var entityNode = this.FindEntityNode( entity );
+			if( entityNode == null )
 			{
-				if( root.Tag == entity )
+				return -1;
+			}
+			var found = -1;
+			foreach( TreeNode groupNode in entityNode.Nodes )
+			{
+				if( groupNode.Checked && groupNode.Tag is int groupIndex )
 				{
-					return root;
+					if( found >= 0 )
+					{
+						return -1;   // more than one frame checked: not a single-frame view
+					}
+					found = entity.FrameNumberOf( groupIndex ) - 1;
 				}
 			}
-			return null;
+			return found;
+		}
+
+		/// <summary>
+		/// Stops frame playback (unticks Play, which disables the timer), so a view or state command
+		/// that rewrites the tree is not overwritten by the next tick.
+		/// </summary>
+		private void StopAnimationPlayback()
+		{
+			if( this.checkBoxAnimationPlay == null )
+			{
+				return;
+			}
+			if( this.checkBoxAnimationPlay.Checked )
+			{
+				this.checkBoxAnimationPlay.Checked = false;   // fires CheckedChanged -> timer off
+			}
+			else if( this.timerAnimation != null )
+			{
+				this.timerAnimation.Enabled = false;
+			}
 		}
 
 		//-------------------------------------------
@@ -1669,13 +1692,22 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.checkBoxAnimationPlay.CheckedChanged += delegate
 			{
 				this.timerAnimation.Enabled = this.checkBoxAnimationPlay.Checked && this.animationEntity != null;
-				if( this.timerAnimation.Enabled && this.animationFrameIndex < 0 )
+				// if the entity is not already on a single frame (all or none checked), show one at once
+				// so playback starts from a frame rather than after the first 150 ms
+				if( this.timerAnimation.Enabled && this.animationEntity != null && this.CurrentEntityFrameIndex( this.animationEntity ) < 0 )
 				{
-					// start from the first frame so the very first tick shows a single frame
 					this.StepAnimation( 1 );
 				}
 			};
-			this.timerAnimation.Tick += delegate { this.StepAnimation( 1 ); };
+			this.timerAnimation.Tick += delegate
+			{
+				// ignore a tick that was already queued when playback was stopped (a disabled WinForms
+				// timer can still deliver one late WM_TIMER), so a stopped animation never advances
+				if( this.checkBoxAnimationPlay!.Checked )
+				{
+					this.StepAnimation( 1 );
+				}
+			};
 			this.buttonAnimationAllFrames.Click += delegate { this.ShowAllEntityFrames(); };
 
 			this.panelAnimation.Controls.Add( this.labelAnimation );
@@ -1712,11 +1744,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		/// <summary>
 		/// Re-targets the strip at the selected entity: shows it for an entity selection and hides it
-		/// otherwise, stopping playback when the entity changes.
+		/// otherwise, stopping playback when the entity changes. The frame shown is read from the tree,
+		/// not tracked here, so selecting a frame node only relabels - it never claims a frame the tree
+		/// is not actually showing.
 		/// </summary>
 		private void UpdateAnimationStrip()
 		{
-			if( this.panelAnimation == null || this.labelAnimation == null || this.checkBoxAnimationPlay == null || this.timerAnimation == null )
+			if( this.panelAnimation == null || this.checkBoxAnimationPlay == null || this.timerAnimation == null )
 			{
 				return;
 			}
@@ -1724,32 +1758,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			var entity = this.FindSelectedEntity();
 			if( entity != this.animationEntity )
 			{
-				this.timerAnimation.Enabled = false;
-				this.checkBoxAnimationPlay.Checked = false;
+				this.StopAnimationPlayback();
 				this.animationEntity = entity;
-				this.animationFrameIndex = -1;
-			}
-			if( entity == null )
-			{
-				this.panelAnimation.Visible = false;
-				return;
 			}
 
-			// a frame group (or a sprite in one) selected by hand is the current frame
-			for( var node = this.treeViewSprites.SelectedNode; node != null; node = node.Parent )
-			{
-				if( node.Tag is int groupIndex )
-				{
-					var frameNumber = entity.FrameNumberOf( groupIndex );
-					if( frameNumber > 0 )
-					{
-						this.animationFrameIndex = frameNumber - 1;
-					}
-					break;
-				}
-			}
-
-			this.panelAnimation.Visible = true;
+			this.panelAnimation.Visible = entity != null;
 			this.RefreshAnimationLabel();
 		}
 
@@ -1759,15 +1772,16 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				return;
 			}
-			var frame = this.animationFrameIndex >= 0
-				? string.Concat( "frame ", this.animationFrameIndex + 1, "/", this.animationEntity.FrameCount )
+			var index = this.CurrentEntityFrameIndex( this.animationEntity );
+			var frame = index >= 0
+				? string.Concat( "frame ", index + 1, "/", this.animationEntity.FrameCount )
 				: string.Concat( this.animationEntity.FrameCount, " frames" );
-			var name = this.animationEntity.NameSource == RoomEntityNameSource.None ? "Unnamed entity" : this.animationEntity.Name;
-			this.labelAnimation.Text = string.Concat( name, " - ", frame );
+			this.labelAnimation.Text = string.Concat( this.animationEntity.DisplayName, " - ", frame );
 		}
 
 		/// <summary>
-		/// Shows the entity's next (or previous) frame alone, wrapping at either end.
+		/// Shows the entity's next (or previous) frame alone, wrapping at either end. The current frame
+		/// is read from the tree, so stepping follows whatever is actually shown.
 		/// </summary>
 		private void StepAnimation( int delta )
 		{
@@ -1777,12 +1791,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 			var count = entity.FrameCount;
-			var next = this.animationFrameIndex < 0
+			var current = this.CurrentEntityFrameIndex( entity );
+			var next = current < 0
 				? ( delta > 0 ? 0 : count - 1 )
-				: ( ( this.animationFrameIndex + delta ) % count + count ) % count;
-			this.animationFrameIndex = next;
+				: ( ( current + delta ) % count + count ) % count;
+			// ShowEntityFrame -> SyncVisibilityFromTree refreshes the strip label from the tree
 			this.ShowEntityFrame( entity, next );
-			this.RefreshAnimationLabel();
 		}
 
 		/// <summary>
@@ -1793,12 +1807,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			var entity = this.animationEntity;
 			var entityNode = entity == null ? null : this.FindEntityNode( entity );
-			if( entityNode == null || this.checkBoxAnimationPlay == null )
+			if( entityNode == null )
 			{
 				return;
 			}
-			this.checkBoxAnimationPlay.Checked = false;
-			this.animationFrameIndex = -1;
+			this.StopAnimationPlayback();
 
 			this.suppressUiEvents = true;
 			try
@@ -1812,7 +1825,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.suppressUiEvents = false;
 			}
 			this.SyncVisibilityFromTree();
-			this.RefreshAnimationLabel();
 		}
 
 		/// <summary>
@@ -1824,6 +1836,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private void ShowGameDefaultView()
 		{
+			this.StopAnimationPlayback();
 			this.suppressUiEvents = true;
 			try
 			{
@@ -2236,6 +2249,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return;
 			}
 
+			// applying a state preset takes over the tree; stop playback so a tick does not fight it
+			this.StopAnimationPlayback();
 			var pinned = this.GatherPinnedValues();
 			var objectIds = this.Room.SpriteHeaderList.Select( header => header.Identifier ).Distinct().ToList();
 
@@ -2270,7 +2285,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 						// hide only an object the evaluator computed as state 0; an object it could
 						// not resolve (null) or did not evaluate stays drawn, matching the other views
 						var visible = !states.TryGetValue( objectId, out state ) || !state.HasValue || state.Value != 0;
-						SetGroupChecked( groupNode, visible );
+						TreeCheckPropagation.SetChecked( groupNode, visible );
 					}
 				}
 
@@ -2326,11 +2341,11 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					var objectId = this.Room.SpriteHeaderList[groupIndex].Identifier;
 					if( show.Contains( objectId ) )
 					{
-						SetGroupChecked( groupNode, true );
+						TreeCheckPropagation.SetChecked( groupNode, true );
 					}
 					else if( hide.Contains( objectId ) )
 					{
-						SetGroupChecked( groupNode, false );
+						TreeCheckPropagation.SetChecked( groupNode, false );
 					}
 				}
 			}
@@ -2428,6 +2443,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		/// </summary>
 		private void ShowScriptInitialView()
 		{
+			this.StopAnimationPlayback();
+
 			// when the scripts were read, the evaluator drives the tree: reset any controls to game
 			// start and evaluate the room under that assignment. This is the accurate game-start
 			// appearance (only the objects the entry scripts actually leave drawn) and is used even
@@ -2459,7 +2476,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 					if( groupNode.Tag is int groupIndex && groupIndex < this.Room.SpriteHeaderList.Count )
 					{
 						var objectId = this.Room.SpriteHeaderList[groupIndex].Identifier;
-						SetGroupChecked( groupNode, this.IsScriptInitiallyVisible( objectId ) );
+						TreeCheckPropagation.SetChecked( groupNode, this.IsScriptInitiallyVisible( objectId ) );
 					}
 				}
 				this.treeViewSprites.EndUpdate();
@@ -2493,6 +2510,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 
 		private void ShowAllNodes()
 		{
+			this.StopAnimationPlayback();
 			this.suppressUiEvents = true;
 			try
 			{

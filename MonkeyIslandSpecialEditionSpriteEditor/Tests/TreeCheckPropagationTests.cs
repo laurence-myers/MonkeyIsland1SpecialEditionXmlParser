@@ -105,6 +105,64 @@ namespace Tests
 			Assert.That( root.Checked, Is.True );
 		}
 
+		[Test]
+		public void SetChecked_UncheckingAGroup_ClearsItsSubtreeAndRecomputesTheEntityAbove()
+		{
+			// entity (root) > group > two frame sprites; both frames drawn
+			var entity = new TreeNode();
+			var group = new TreeNode();
+			var spriteA = new TreeNode();
+			var spriteB = new TreeNode();
+			entity.Nodes.Add( group );
+			group.Nodes.Add( spriteA );
+			group.Nodes.Add( spriteB );
+			entity.Checked = group.Checked = spriteA.Checked = spriteB.Checked = true;
+
+			TreeCheckPropagation.SetChecked( group, false );
+
+			Assert.That( spriteA.Checked, Is.False, "the subtree follows the group" );
+			Assert.That( spriteB.Checked, Is.False );
+			Assert.That( entity.Checked, Is.False, "the entity ancestor clears when its last group goes" );
+		}
+
+		[Test]
+		public void RefreshAncestors_SoloingOneSpriteInAFrame_KeepsTheGroupAndEntityChecked()
+		{
+			// the "show only this frame in its group" path: soloing one sprite leaf must leave the
+			// group and the entity node above it checked, not stranded unchecked (finding 3)
+			var entity = new TreeNode();
+			var group = new TreeNode();
+			var spriteA = new TreeNode();
+			var spriteB = new TreeNode();
+			entity.Nodes.Add( group );
+			group.Nodes.Add( spriteA );
+			group.Nodes.Add( spriteB );
+			// start from a hidden entity (a "game default" view left everything unchecked)
+			entity.Checked = group.Checked = spriteA.Checked = spriteB.Checked = false;
+
+			// solo spriteA among its siblings, then recompute the branch above it
+			spriteA.Checked = true;
+			spriteB.Checked = false;
+			TreeCheckPropagation.RefreshAncestors( spriteA );
+
+			Assert.That( spriteA.Checked, Is.True, "the soloed leaf is untouched" );
+			Assert.That( group.Checked, Is.True, "the group is checked because a child is" );
+			Assert.That( entity.Checked, Is.True, "the entity is checked because a frame is" );
+		}
+
+		[Test]
+		public void RefreshAncestors_ClearsAncestorsWhenNoChildRemainsChecked()
+		{
+			var (root, group, frame) = MakeThreeLevels();
+			root.Checked = group.Checked = true;
+			frame.Checked = false;
+
+			TreeCheckPropagation.RefreshAncestors( frame );
+
+			Assert.That( group.Checked, Is.False );
+			Assert.That( root.Checked, Is.False );
+		}
+
 		private static (TreeNode root, TreeNode group, TreeNode frame) MakeThreeLevels()
 		{
 			var root = new TreeNode();

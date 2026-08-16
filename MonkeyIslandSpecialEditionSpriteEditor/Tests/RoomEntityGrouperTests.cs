@@ -68,6 +68,30 @@ namespace Tests
 			Assert.That( entities.Count, Is.EqualTo( 1 ) );
 			Assert.That( entities[0].NameSource, Is.EqualTo( RoomEntityNameSource.None ) );
 			Assert.That( entities[0].Name, Is.EqualTo( "Objects 411-413" ) );
+			// the single place the placeholder is decided for the UI
+			Assert.That( entities[0].DisplayName, Is.EqualTo( "Unnamed entity" ) );
+		}
+
+		[Test]
+		public void DisplayName_IsTheNameForANamedEntity()
+		{
+			var objects = Objects(
+				Obj( 330, 80, 80, 40, 48, "pirate" ),
+				Obj( 331, 80, 80, 40, 48, null ) );
+
+			var entities = RoomEntityGrouper.Group( new[] { 330, 331 }, objects );
+
+			Assert.That( entities[0].DisplayName, Is.EqualTo( "Pirate" ) );
+		}
+
+		[Test]
+		public void FormatRange_IsSharedHyphenFormat_ForRangesAndLists()
+		{
+			// the tree and the room-states panel format object numbers the same way now
+			Assert.That( ClassicObjectNames.FormatRange( new[] { 317, 318, 319 } ), Is.EqualTo( "317-319" ) );
+			Assert.That( ClassicObjectNames.FormatRange( new[] { 5, 8, 12 } ), Is.EqualTo( "5, 8, 12" ) );
+			Assert.That( ClassicObjectNames.FormatRange( new[] { 42 } ), Is.EqualTo( "42" ) );
+			Assert.That( ClassicObjectNames.FormatRange( new int[0] ), Is.EqualTo( "" ) );
 		}
 
 		[Test]
@@ -134,9 +158,9 @@ namespace Tests
 		[Test]
 		public void CleanName_StripsPaddingAndHandlesNull()
 		{
-			Assert.That( RoomEntityGrouper.CleanName( "mug@@@@@" ), Is.EqualTo( "mug" ) );
-			Assert.That( RoomEntityGrouper.CleanName( "  door  " ), Is.EqualTo( "door" ) );
-			Assert.That( RoomEntityGrouper.CleanName( null ), Is.EqualTo( "" ) );
+			Assert.That( ClassicObjectNames.CleanName( "mug@@@@@" ), Is.EqualTo( "mug" ) );
+			Assert.That( ClassicObjectNames.CleanName( "  door  " ), Is.EqualTo( "door" ) );
+			Assert.That( ClassicObjectNames.CleanName( null ), Is.EqualTo( "" ) );
 		}
 
 		//-------------------------------------------
