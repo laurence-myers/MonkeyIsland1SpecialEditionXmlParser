@@ -22,6 +22,31 @@ HOW DO I OVERRIDE ASSETS?
 - Use the right-click context menu to "Apply override"
 
 ================================
+HOW DO I TEST MY CHANGES IN THE GAME? (play-test loop)
+================================
+
+The real Special Edition loads loose override files from its game folder,
+and re-reads a room's overrides every time you enter the room. So the loop
+is: edit, write the overrides, then in game walk out of the room and back
+in - the change appears in the game's own renderer. New textures that are
+not in the pak at all are loaded too.
+
+- Game > "Test in game" (F5): writes every unsaved room and costume edit in
+  the open editors as overrides (texture imports are written the moment you
+  import), then starts the game or switches to it if it is already running.
+  In game, leave the room and come back to see the change.
+- Game > "Auto-write overrides on edit": every edit is written shortly after
+  you make it - nudge a sprite, alt-tab, re-enter the room. No saving needed.
+- Game > "Loose overrides...": lists every override file the game is loading
+  (edited rooms/costumes, replaced and NEW textures, the XML mirrors), and
+  lets you revert any of them - deleting the file restores the pak's version.
+  These files change the installed game persistently, so this is where to
+  see and undo all of them.
+
+Tip: keep an in-game save inside the room you are working on, so a freshly
+launched game is two clicks from the room.
+
+================================
 HOW DO I FIX MISALIGNED ROOM SPRITES?
 ================================
 

@@ -76,6 +76,17 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			set;
 		}
 
+		/// <summary>
+		/// Play-test loop: when set, the room and costume editors write their override to disk
+		/// (debounced) after every edit, so the running game shows the change as soon as the room is
+		/// re-entered - no explicit "Save override" needed.
+		/// </summary>
+		public bool AutoWriteOverrides
+		{
+			get;
+			set;
+		}
+
 		public void Save()
 		{
 			Helper.WriteObjectToFile( UserSettings.UserSettingsFileName, this );

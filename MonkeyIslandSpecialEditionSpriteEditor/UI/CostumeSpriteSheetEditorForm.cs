@@ -37,6 +37,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		private Sprite? selectedSprite;
 		private bool suppressUiEvents;
 		private bool dirty;
+		// play-test loop: debounces the "auto-write overrides on edit" writes (see ScheduleAutoWrite)
+		private Timer? autoWriteTimer;
 		// the room backdrop bitmaps this form owns and must dispose; the preview only borrows them
 		private Bitmap? backdropBelow;
 		private Bitmap? backdropAbove;
@@ -89,6 +91,8 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				CostumeSpriteSheetEditorForm.instances.Remove( this );
 				this.ClearBackdrop();
+				this.autoWriteTimer?.Stop();
+				this.autoWriteTimer?.Dispose();
 			};
 
 			this.InitializeComponent();
@@ -1602,10 +1606,25 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.TrySaveOverride();
 		}
 
-		private bool TrySaveOverride()
+		/// <summary>The pak resource path this editor edits, e.g. "art/costumes/24_leaders-skin.costume.xml".</summary>
+		public string? ResourcePath => this.LPAKFile.PakFileNames[this.FileIndex].FileName;
+
+		/// <summary>Whether the costume has edits not yet written as an override.</summary>
+		public bool IsDirty => this.dirty;
+
+		/// <summary>
+		/// Writes the override if the costume is dirty (a no-op returning true otherwise). Silent: a
+		/// failure is reported through the return value and the status bar, not a dialog - for the
+		/// play-test loop, which writes every open editor in one go.
+		/// </summary>
+		public bool SaveOverrideIfDirty( bool silent )
 		{
-			var resourcePath = this.LPAKFile.PakFileNames[this.FileIndex].FileName;
-			var result = new SaveCostumeOverrideCommand( this.LPAKFile, resourcePath, this.Costume ).Execute();
+			return !this.dirty || this.TrySaveOverride( silent );
+		}
+
+		private bool TrySaveOverride( bool silent = false )
+		{
+			var result = new SaveCostumeOverrideCommand( this.LPAKFile, this.ResourcePath, this.Costume ).Execute();
 			if( result.IsSuccess )
 			{
 				this.undoStack.MarkSaved();
@@ -1613,8 +1632,35 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				return true;
 			}
 
-			MessageBox.Show( this, result.Error, "Save override", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			if( !silent )
+			{
+				MessageBox.Show( this, result.Error, "Save override", MessageBoxButtons.OK, MessageBoxIcon.Error );
+			}
+
 			return false;
+		}
+
+		/// <summary>
+		/// Debounces the auto-write: a burst of arrow-key nudges becomes one override write shortly
+		/// after the last one, so the game never reads a half-written run and the disk isn't hammered.
+		/// </summary>
+		private void ScheduleAutoWrite()
+		{
+			if( this.autoWriteTimer == null )
+			{
+				this.autoWriteTimer = new Timer { Interval = 500 };
+				this.autoWriteTimer.Tick += delegate
+				{
+					this.autoWriteTimer!.Stop();
+					if( this.dirty && !this.IsDisposed )
+					{
+						this.TrySaveOverride( silent: true );
+					}
+				};
+			}
+
+			this.autoWriteTimer.Stop();
+			this.autoWriteTimer.Start();
 		}
 
 		private void RevertChanges( object sender, EventArgs args )
@@ -1872,6 +1918,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			this.dirty = !this.undoStack.IsAtSavedPosition;
 			this.UpdateTitle();
+
+			// play-test loop: with auto-write on, every edit lands on disk (debounced) so the game
+			// picks it up the next time the room is entered - no explicit save needed
+			if( this.dirty && UserSettings.Instance.AutoWriteOverrides )
+			{
+				this.ScheduleAutoWrite();
+			}
 
 			this.undoToolStripMenuItem.Enabled = this.undoStack.CanUndo;
 			this.undoToolStripMenuItem.Text = this.undoStack.CanUndo

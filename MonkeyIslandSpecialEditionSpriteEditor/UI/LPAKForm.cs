@@ -12,7 +12,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 {
 	public partial class LPAKForm : Form
 	{
-		private LPAKFile LPAKFile
+		public LPAKFile LPAKFile
 		{
 			get;
 			set;
