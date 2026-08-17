@@ -95,6 +95,16 @@ objdump -D -b binary -mi386 --adjust-vma=0x400000 MISE.image.bin > MISE.asm   # 
 This is what Phase 2 reverse-engineers to locate the room-load routine and drive a reload on demand.
 It is your own game's memory written to your own disk; nothing leaves the machine.
 
+`analyze-image.sh` runs the first-pass RE automatically: it disassembles the dump and, from the known
+anchor strings (`classic/%s/%s`, `LoadRoom`, `ScummResources`, …) and the file wrappers, reports the
+two room loaders, the VFS wrappers, and function boundaries — then exports `entryof`/`callers`/`refs`
+helpers to climb to the room-entry driver and `_currentRoom`:
+
+```sh
+./analyze-image.sh MISE.image.bin       # prints the call-graph report
+source ./analyze-image.sh MISE.image.bin && callers 0x4XXXXX   # climb interactively
+```
+
 ## Limitations
 
 - **IAT hooking only catches calls that read the IAT slot *after* injection.** If a piece of code

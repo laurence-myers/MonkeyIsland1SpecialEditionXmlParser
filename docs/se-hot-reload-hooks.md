@@ -136,27 +136,42 @@ does **not** make edits immediate; it only changes what the *next* load reads.
 ### Phase 2 — Trigger the reload on demand
 
 The room's assets are cached in memory after the first load, so "immediate" means re-running the
-load for the *current* room. Options, best-fidelity first:
+load for the *current* room. **What Phase 1 established in-game (room 28 log):** every open funnels
+through one `_access` probe wrapper (`+0x70fca`) and one `CreateFileA` wrapper (`+0x75488`); the
+resolution order is `art\rooms\<lang>.<name>.room.xml` → `art\rooms\<name>.room.xml` → `monkey1.pak`;
+and **one room entry drives both loaders** (the classic `classic\en\monkey1.001`/pak block *and* the
+HD DXT/costume stream) on a single thread. So the reload lever is the room-entry itself.
 
-- **(A) Re-invoke the room load / poke the pending-room state.** From Phase-1 caller addresses,
-  dump the decrypted process and RE the `LoadRoom` / classic `startScene`-equivalent (the string
-  `LoadRoom` and `classic/%s/%s` are the cross-reference anchors on the dump). Then, from the
-  injected DLL, either call it for the current room or set the interpreter's "requested room"
-  variable + dirty flag. Highest fidelity (the real SE renderer, seamless), most work — this is
-  the days-of-Ghidra item, but Phase 1 removes most of the searching. Take the SCUMM mutex
-  (`LockScummMutex`) around any poke, and drive it on the game's own thread/fiber to avoid races.
-- **(B) Drive a room re-enter (zero RE).** Synthesize the walk-out/walk-in, or trigger the SE's
-  own load-game on an editor-managed in-room save slot (loading re-runs `startScene`, which
-  reloads assets). Medium effort, no RE; the load-game route loses live actor state and flickers,
-  the walk route only works where room geometry allows an immediate exit-and-return.
-- **(C) File-redirect only.** Keep Phase 1's hook serving edited bytes; accept that the modder
-  still triggers the reload by re-entering. This is just the current play-test loop with the
-  "write loose file" step removed — an ergonomic win, not "immediate."
+**Design (adversarially reviewed).** The one hard runtime lesson on record is that forcing a scene
+change out-of-band crashed the engine once (ScummVM `error()`→`exit`). That dominates the choice: use
+the engine's *own* in-band room-entry machinery, on the interpreter's *own* thread, at a safe point.
 
-**Recommendation.** Build Phase 1 now — it is cheap, it proves the mechanism, it hands us the
-loader addresses, and it improves the play-test loop on its own. Decide Phase 2 (A vs. B) *after*
-reading what Phase 1 reveals about the room-load code; if (A) turns out to be a deep hole, (B) via
-load-game is the pragmatic "close enough to immediate" fallback.
+- **PRIMARY — interpreter-poke.** Set the classic interpreter's "requested/pending room" to the room
+  it is already in and raise the transition flag, then let the interpreter run its own
+  `startScene`-equivalent on its own thread. One re-entry fans out to *both* loaders exactly like a
+  doorway does — the reload we verified — while keeping live actor/game state, no menu, no flicker.
+  Crash-safety: do what the engine does — take `LockScummMutex`, write the state, let the main loop
+  consume it at its top-of-frame boundary; never call into a loader mid-load. If the build has no
+  deferred pending-room flag (room changes are opcode-only), escalate *within* this approach: call
+  the `startScene`-equivalent directly but marshalled onto the interpreter thread under the mutex.
+  (Calling the HD `LoadRoom` in isolation is the trap — it likely runs on the resources fiber and
+  would refresh only the HD half, leaving the classic block stale/racing.)
+- **FALLBACK — save-reload.** If the pending-room lever doesn't cleanly re-fan to the HD side, use the
+  engine's most crash-safe first-class op: auto-save to an editor-owned slot, then load it (loading
+  re-runs `startScene`). Works in every room, restores actor state, but costs a visible load
+  transition and needs a save/load trigger (an RE'd callable entry, or synthesised menu input).
+- **Not chosen:** standalone direct-call of a loader (most RE, partial-reload hazard); input
+  synthesis of walk-out/walk-in (unreliable, room-geometry dependent, drags the actor off-spot) —
+  manual last resort only.
+
+**First-pass RE (automated by `se-file-hook/analyze-image.sh` over `MISE.image.bin`):** disassemble
+the decrypted dump; xref the anchor strings to pin the two loaders (`classic/%s/%s` @ `0x4EBFE8` →
+classic path builder; `LoadRoom` @ `0x4EA7DC` / `ScummResources` @ `0x4EB050` → HD loader); confirm
+the `+0x70fca`/`+0x75488` wrappers and their loose-override callers; the function that calls **both**
+loaders — and that recurs in the Phase-1 `stk:` chains for one entry — is the room-entry driver; the
+room number it stores on entry is `_currentRoom`; a `cmp`/`jne` on `_currentRoom` at the top of the
+interpreter loop (found via the `LockScummMutex` string xref) is the deferred poke target, if one
+exists.
 
 ### Risks / caveats
 
