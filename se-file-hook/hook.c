@@ -39,6 +39,10 @@ static void          **g_slots[8];
 static void           *g_origs[8];
 static int             g_nslots = 0;
 
+/* .text VA range, for filtering the stack scan to real code addresses */
+static BYTE           *g_textLo = NULL;
+static BYTE           *g_textHi = NULL;
+
 /* --- logging (guarded; the DLL's own file calls go through its own unpatched IAT, so no recursion) --- */
 
 static void log_raw( const char *buf, int len )
@@ -84,6 +88,35 @@ static void log_call( const char *fn, void *ret, const char *path, int mode )
 		hlog( "%06d %02d:%02d:%02d.%03d tid=%04x %s+0x%06x %s \"%s\"\r\n",
 		      (int)seq, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, (int)tid, g_host, rva, fn,
 		      path ? path : "(null)" );
+	}
+
+	/* Best-effort caller chain. The MSVC release build omits frame pointers, so we cannot walk EBP;
+	   instead scan the stack upward for values that land in .text. Across a room load the frames
+	   that recur are the resolver -> resource loader -> room-load chain above the file wrappers —
+	   that chain is what Phase 2 needs. (Leaf/first hit ~= this call's return address.) */
+	if( g_textLo != NULL )
+	{
+		uintptr_t sp;
+		__asm__ volatile ( "movl %%esp, %0" : "=r"( sp ) );
+		uintptr_t *stack = (uintptr_t *)sp;
+		char chain[220];
+		int ci = 0;
+		int found = 0;
+		uintptr_t prev = 0;
+		for( int i = 0; i < 192 && found < 8 && ci < (int)sizeof( chain ) - 12; ++i )
+		{
+			uintptr_t v = stack[i];
+			if( v >= (uintptr_t)g_textLo && v < (uintptr_t)g_textHi && v != prev )
+			{
+				ci += wsprintfA( chain + ci, " %x", (unsigned)( v - (uintptr_t)g_base ) );
+				prev = v;
+				++found;
+			}
+		}
+		if( found > 0 )
+		{
+			hlog( "        stk:%s\r\n", chain );
+		}
 	}
 }
 
@@ -225,6 +258,66 @@ static void open_log( void )
 	OutputDebugStringA( path );
 }
 
+/* Dump the host's in-memory image next to the DLL, RVA-aligned (byte at file offset X == VA base+X),
+   committed regions verbatim and everything else zero-filled. The on-disk .text is Steam-encrypted;
+   this dump is the DECRYPTED code, the input for Phase 2 reverse-engineering. Disassemble it with:
+     objdump -D -b binary -mi386 --adjust-vma=0x400000 MISE.image.bin   (then jump to a logged offset) */
+static void dump_image( DWORD size_of_image )
+{
+	char path[MAX_PATH];
+	DWORD n = GetModuleFileNameA( g_self, path, MAX_PATH );
+	while( n > 0 && path[n - 1] != '\\' && path[n - 1] != '/' )
+	{
+		--n;
+	}
+	lstrcpynA( path + n, "MISE.image.bin", (int)( MAX_PATH - n ) );
+
+	HANDLE f = CreateFileA( path, GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS,
+	                        FILE_ATTRIBUTE_NORMAL, NULL );
+	if( f == INVALID_HANDLE_VALUE )
+	{
+		hlog( "# image dump FAILED to create %s (err %u)\r\n", path, (unsigned)GetLastError() );
+		return;
+	}
+
+	static BYTE zero[4096];
+	BYTE *p = g_base;
+	BYTE *end = g_base + size_of_image;
+	DWORD written;
+	while( p < end )
+	{
+		MEMORY_BASIC_INFORMATION mbi;
+		if( VirtualQuery( p, &mbi, sizeof( mbi ) ) == 0 )
+		{
+			break;
+		}
+		BYTE *region_end = (BYTE *)mbi.BaseAddress + mbi.RegionSize;
+		if( region_end > end )
+		{
+			region_end = end;
+		}
+		SIZE_T span = (SIZE_T)( region_end - p );
+		int readable = ( mbi.State == MEM_COMMIT ) && !( mbi.Protect & ( PAGE_NOACCESS | PAGE_GUARD ) );
+		if( readable )
+		{
+			WriteFile( f, p, (DWORD)span, &written, NULL );
+		}
+		else
+		{
+			while( span > 0 )
+			{
+				DWORD chunk = span > sizeof( zero ) ? (DWORD)sizeof( zero ) : (DWORD)span;
+				WriteFile( f, zero, chunk, &written, NULL );
+				span -= chunk;
+			}
+		}
+		p = region_end;
+	}
+	CloseHandle( f );
+	hlog( "# decrypted image dumped: %s (%u bytes @ base %p)\r\n", path, (unsigned)size_of_image, g_base );
+	hlog( "#   disasm: objdump -D -b binary -mi386 --adjust-vma=0x%p MISE.image.bin\r\n", g_base );
+}
+
 static DWORD WINAPI worker( LPVOID unused )
 {
 	(void)unused;
@@ -241,11 +334,18 @@ static DWORD WINAPI worker( LPVOID unused )
 	}
 	lstrcpynA( g_host, host + hb, (int)sizeof( g_host ) );
 
+	IMAGE_DOS_HEADER *dos = (IMAGE_DOS_HEADER *)g_base;
+	IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)( g_base + dos->e_lfanew );
+	g_textLo = g_base + nt->OptionalHeader.BaseOfCode;
+	g_textHi = g_textLo + nt->OptionalHeader.SizeOfCode;
+
 	SYSTEMTIME st;
 	GetLocalTime( &st );
 	hlog( "# se-file-hook — host %s @ base %p — %04d-%02d-%02d %02d:%02d:%02d\r\n",
 	      host, g_base, st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond );
-	hlog( "# columns: seq  time  tid  caller  function  [mode]  path\r\n" );
+	hlog( "# columns: seq  time  tid  caller  function  [mode]  path   (+ 'stk:' = caller offsets)\r\n" );
+
+	dump_image( nt->OptionalHeader.SizeOfImage );
 
 	for_each_import( install_cb );
 

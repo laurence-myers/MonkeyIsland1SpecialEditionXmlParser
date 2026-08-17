@@ -6,5 +6,7 @@ se-selftest.exe
 
 # runtime / test artifacts
 se-file-hook.log
+MISE.image.bin
+MISE.asm
 *.tmp
 build.err

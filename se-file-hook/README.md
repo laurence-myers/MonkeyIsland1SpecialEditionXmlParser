@@ -76,6 +76,24 @@ If the game is elevated (launched by an elevated Steam), run the injector elevat
   Phase 2's targets.
 - `_access` lines are the loose-override probe paths (what the game looks for, existing or not).
 - `CreateFileA` lines are the actual opens (loose hits + the pak).
+- Each call is followed by an indented `stk:` line — module-relative offsets found by scanning the
+  stack for `.text` addresses (the release build omits frame pointers, so this is a scan, not an EBP
+  walk). The offsets that recur across a whole room load are the resolver → resource-loader →
+  room-load call chain above the file wrappers — Phase 2's targets.
+
+## Phase 2 output: the decrypted image (`MISE.image.bin`)
+
+On injection the DLL also writes `MISE.image.bin` next to itself — the host's **decrypted** in-memory
+image, RVA-aligned so a byte at file offset `X` is virtual address `0x400000 + X` (the on-disk
+`.text` is Steam-encrypted; this is the plaintext). Disassemble and jump to any logged offset:
+
+```sh
+objdump -D -b binary -mi386 --adjust-vma=0x400000 MISE.image.bin > MISE.asm   # ~large
+# e.g. the _access wrapper is around 0x470fca, CreateFileA around 0x475488
+```
+
+This is what Phase 2 reverse-engineers to locate the room-load routine and drive a reload on demand.
+It is your own game's memory written to your own disk; nothing leaves the machine.
 
 ## Limitations
 
