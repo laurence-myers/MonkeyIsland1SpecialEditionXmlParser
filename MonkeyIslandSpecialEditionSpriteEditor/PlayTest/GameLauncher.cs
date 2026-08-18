@@ -86,6 +86,21 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.PlayTest
 			return "launched via Steam - load a save in the room to see the overrides";
 		}
 
+		/// <summary>Brings the running game to the front if it is running; returns false when it is not.</summary>
+		public static bool FocusIfRunning()
+		{
+			using( var running = FindRunning() )
+			{
+				if( running != null )
+				{
+					Focus( running.MainWindowHandle );
+					return true;
+				}
+			}
+
+			return false;
+		}
+
 		private static void Focus( IntPtr window )
 		{
 			// a minimised game window has to be restored before it can take the foreground

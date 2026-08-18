@@ -39,6 +39,19 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 				return CommandResult.Fail( "Could not write: " + string.Join( ", ", failed ) + " - fix that before testing." );
 			}
 
+			var summary = written.Count == 0
+				? "No unsaved edits (textures are written on import). "
+				: string.Concat( "Wrote ", written.Count, " override", written.Count == 1 ? "" : "s", ": ", string.Join( ", ", written ), ". " );
+
+			// If mise-hotreload.dll is injected in the running game, refresh the edited room instantly
+			// (a real room bounce on the engine's own thread) instead of asking the modder to re-enter it.
+			if( HotReloadClient.TrySignal() )
+			{
+				GameLauncher.FocusIfRunning();
+				return CommandResult.Success( summary + "Hot-reloaded the running game." );
+			}
+
+			// Otherwise launch or focus the game; the modder re-enters the room to pick up the overrides.
 			string outcome;
 			try
 			{
@@ -48,10 +61,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 			{
 				return CommandResult.Fail( "Overrides written, but the game could not be started: " + exception.Message );
 			}
-
-			var summary = written.Count == 0
-				? "No unsaved edits (textures are written on import). "
-				: string.Concat( "Wrote ", written.Count, " override", written.Count == 1 ? "" : "s", ": ", string.Join( ", ", written ), ". " );
 			return CommandResult.Success( summary + outcome );
 		}
 
