@@ -1,8 +1,45 @@
-# se-file-hook — Phase 1 file reconnaissance for MI1 Special Edition
+# MI1 Special Edition hot-reload tooling
+
+This folder holds the tooling for making edited room art appear **immediately** in the running MI1
+Special Edition, instead of the modder walking the character out of the room and back in. Background
+and the full analysis: `docs/se-hot-reload-hooks.md`.
+
+- **`mise-hotreload.dll` + `mise-reload.exe`** — the feature (below).
+- **`se-file-hook.dll` + `se-inject.exe` + `se-selftest.exe`** — the reconnaissance tool that mapped
+  the file access (further down).
+
+Build everything (32-bit, to match the game): `bash build.sh` (needs `mingw-w64-i686-gcc`).
+
+## Hot reload — `mise-hotreload.dll`
+
+Reloads the **current room's HD art** (`art\rooms\*.room.xml`, layer/object `*.dxt`) in the running
+game on demand. Mechanism (reverse-engineered from the DRM-free GOG build, which is byte-identical to
+the Steam build — same addresses, no ASLR, base `0x400000`): the HD renderer re-streams a room's art
+only when the room number changes, via the per-frame detector at `0x44e5c0(HDobj)` which compares the
+current room to `[HDobj+0x980]`. The DLL inline-hooks that function and, on request, writes `0xFF`
+into that byte so the detector sees a delta and re-streams the current room — re-reading the loose
+overrides from disk, on the render thread's own path (no actor reset, no room "bounce"). It refuses
+to patch anything but this exact build (13-byte signature + base check).
+
+```sh
+# 1. get into the room you're editing, then inject (same injector as the recon tool):
+./se-inject.exe mise-hotreload.dll MISE.exe
+# 2. edit art in the editor and save the loose override, then trigger a reload:
+./mise-reload.exe          # or press F11 in the game
+```
+
+The editor triggers the same reload by setting a named auto-reset event `Local\MISE_HotReload`
+(.NET: `EventWaitHandle.OpenExisting("Local\\MISE_HotReload").Set()`). Diagnostics: `mise-hotreload.log`
+next to the DLL. Scope: covers the HD art the editor edits; classic SCUMM data edits (`monkey1.001`)
+and — pending live confirmation — costume atlases may need the heavier "bounce" reload (a real room
+change), documented in `docs/se-hot-reload-hooks.md`.
+
+---
+
+# se-file-hook — file reconnaissance (how the above was found)
 
 A tiny injected DLL that records **which files `MISE.exe` opens, when, and from where in its code**,
-so we can confirm the room-entry reload mechanism and locate the room-load routine for Phase 2
-(making an edit reload on demand). Background and the full plan: `docs/se-hot-reload-hooks.md`.
+so we could confirm the room-entry reload mechanism and locate the room-load routine.
 
 It is a read-only observer: it forwards every call unchanged and only logs it. It ships nothing from
 the game and modifies nothing on disk.
