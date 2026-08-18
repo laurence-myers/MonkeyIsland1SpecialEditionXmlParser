@@ -108,7 +108,12 @@ static void __cdecl handle_frame( void )
 	{
 		if( reload_requested() )
 		{
-			g_home    = *(unsigned char *)CURROOM;
+			g_home = *(unsigned char *)CURROOM;
+			if( g_home == 0 )   /* already in the VOID (no room loaded) — nothing to reload */
+			{
+				logline( "reload skipped: not in a room (_currentRoom==0)\r\n" );
+				return;
+			}
 			g_scratch = ( g_home != SCRATCH_ROOM ) ? SCRATCH_ROOM : ALT_SCRATCH;
 			startScene( g_scratch, 0, 0 );      /* leave: loads scratch, evicts `home` from the HD set */
 			g_leave_tick = GetTickCount();
