@@ -19,3 +19,8 @@ mise-observe.dll
 mise-observe.log
 mise-hotswap.dll
 mise-hotswap.log
+mise-hdreload.dll
+mise-cprobe.dll
+mise-ctrace.dll
+mise-mreload.dll
+*.log

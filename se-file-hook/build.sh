@@ -56,5 +56,13 @@ WARN="-Wall -Wextra -Wno-unused-parameter"
 
 "$GCC" $WARN -O1 -fno-omit-frame-pointer -static -shared -o mise-hotswap.dll swap.c -lkernel32 -luser32
 
+"$GCC" $WARN -O1 -fno-omit-frame-pointer -static -shared -o mise-hdreload.dll hdreload.c -lkernel32 -luser32
+
+"$GCC" $WARN -O1 -fno-omit-frame-pointer -static -shared -o mise-cprobe.dll cprobe.c -lkernel32 -luser32
+
+"$GCC" $WARN -O1 -fno-omit-frame-pointer -static -shared -o mise-ctrace.dll ctrace.c -lkernel32 -luser32
+
+"$GCC" $WARN -O1 -fno-omit-frame-pointer -static -shared -o mise-mreload.dll mreload.c -lkernel32 -luser32
+
 echo "built:"
-ls -la se-file-hook.dll se-inject.exe se-selftest.exe mise-hotreload.dll mise-reload.exe mise-probe.dll mise-observe.dll mise-hotswap.dll
+ls -la se-file-hook.dll se-inject.exe se-selftest.exe mise-hotreload.dll mise-reload.exe mise-probe.dll mise-observe.dll mise-hotswap.dll mise-hdreload.dll

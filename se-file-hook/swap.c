@@ -55,6 +55,7 @@ static MapEntry  g_map[MAP_MAX];
 static int       g_mapCount = 0;
 static unsigned  g_lastRoom = 0xffffffffu;
 static unsigned  g_d3dLo = 0, g_d3dHi = 0;
+static int       g_ctLogged = 0;    /* bound CreateTexture logging */
 
 /* --- logging --- */
 static void plog( const char *fmt, ... )
@@ -91,6 +92,7 @@ static void map_put( const char *path, void *tex, unsigned w, unsigned h, unsign
 		lstrcpynA( g_map[g_mapCount].path, path, sizeof( g_map[0].path ) );
 		g_map[g_mapCount].tex = tex; g_map[g_mapCount].w = w; g_map[g_mapCount].h = h; g_map[g_mapCount].fourCC = fourCC;
 		++g_mapCount;
+		plog( "  mapped[%d] %ux%u fcc=%08x tex=%p  %s\r\n", g_mapCount, w, h, fourCC, tex, path );
 	}
 }
 
@@ -120,6 +122,12 @@ static long __stdcall hook_CT( void *dev, UINT w, UINT h, UINT lv, DWORD usage, 
 static long __stdcall hook_CT( void *dev, UINT w, UINT h, UINT lv, DWORD usage, DWORD fmt, DWORD pool, void **ppTex, void *sh )
 {
 	long hr = g_realCT( dev, w, h, lv, usage, fmt, pool, ppTex, sh );
+	if( g_ctLogged < 120 )
+	{
+		plog( "  CreateTexture %ux%u lv=%u fmt=%08x pool=%u -> %p  lastDxt=%s\r\n",
+		      w, h, lv, fmt, pool, ( ppTex ? *ppTex : NULL ), g_lastDxt[0] ? g_lastDxt : "(none)" );
+		++g_ctLogged;
+	}
 	if( hr >= 0 && ppTex && *ppTex && g_lastDxt[0] )
 	{
 		map_put( g_lastDxt, *ppTex, w, h, fmt );
@@ -184,6 +192,11 @@ static void swap_one( const MapEntry *e )
 static void do_swaps( void )
 {
 	plog( "reload: %d mapped textures\r\n", g_mapCount );
+	if( g_mapCount == 0 )
+	{
+		plog( "  (no textures mapped — inject BEFORE entering the room, then walk in so each .dxt's\r\n"
+		      "   CreateTexture is observed; the CreateTexture/mapped lines above show what was seen.)\r\n" );
+	}
 	for( int i = 0; i < g_mapCount; ++i )
 	{
 		swap_one( &g_map[i] );
@@ -195,10 +208,12 @@ static void do_swaps( void )
 static void __cdecl handle_frame( void )
 {
 	unsigned room = *(unsigned char *)CURROOM;
-	if( room != g_lastRoom )     /* room changed — the old room's textures are being released */
+	if( room != g_lastRoom )     /* just log the room change; do NOT wipe the map — map_put re-keys by
+	                                path on re-entry, and swap_one skips any texture that was released
+	                                (is_d3d_obj). Wiping here was zeroing the map before a reload. */
 	{
+		plog( "room %u -> %u (map has %d textures)\r\n", g_lastRoom, room, g_mapCount );
 		g_lastRoom = room;
-		g_mapCount = 0;
 	}
 	int trig = 0;
 	if( g_event && WaitForSingleObject( g_event, 0 ) == WAIT_OBJECT_0 ) trig = 1;
