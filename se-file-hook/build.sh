@@ -50,5 +50,7 @@ WARN="-Wall -Wextra -Wno-unused-parameter"
 "$GCC" $WARN -O1 -fno-omit-frame-pointer -static -shared -o mise-hotreload.dll reload.c -lkernel32 -luser32
 "$GCC" $WARN -O2 -static -o mise-reload.exe reload-cli.c -lkernel32
 
+"$GCC" $WARN -O1 -static -shared -o mise-probe.dll probe.c -lkernel32 -luser32
+
 echo "built:"
-ls -la se-file-hook.dll se-inject.exe se-selftest.exe mise-hotreload.dll mise-reload.exe
+ls -la se-file-hook.dll se-inject.exe se-selftest.exe mise-hotreload.dll mise-reload.exe mise-probe.dll
