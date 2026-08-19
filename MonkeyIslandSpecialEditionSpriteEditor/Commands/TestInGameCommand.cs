@@ -43,8 +43,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 				? "No unsaved edits (textures are written on import). "
 				: string.Concat( "Wrote ", written.Count, " override", written.Count == 1 ? "" : "s", ": ", string.Join( ", ", written ), ". " );
 
-			// If mise-hotreload.dll is injected in the running game, refresh the edited room instantly
-			// (a real room bounce on the engine's own thread) instead of asking the modder to re-enter it.
+			// If mise-mreload.dll is injected in the running game, hot-reload the edited assets in place
+			// (evict [handle+4] + synchronous re-parse on the render thread, then rebuild) instead of
+			// asking the modder to re-enter the room. Reloads room/costume metadata (.room.xml/
+			// .costume.xml) and textures (.dxt) with no room change or interpreter disruption.
 			if( HotReloadClient.TrySignal() )
 			{
 				GameLauncher.FocusIfRunning();

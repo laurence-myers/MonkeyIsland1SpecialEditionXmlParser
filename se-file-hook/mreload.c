@@ -49,6 +49,7 @@
 
 #define EVENT_RELOAD  "Local\\MISE_MReload"
 #define EVENT_DUMP    "Local\\MISE_MDump"
+#define EVENT_EDITOR  "Local\\MISE_HotReload"   /* the editor's "Test in game" signals this */
 #define KEY_RELOAD    VK_F11
 #define KEY_DUMP      VK_F12
 
@@ -60,7 +61,7 @@ typedef int ( __stdcall *resget_t )( void *thisp, void *handle, unsigned flag, u
 #define resource_get ( (resget_t)RESGET_SITE )
 
 static HINSTANCE g_self;
-static HANDLE    g_evReload = NULL, g_evDump = NULL;
+static HANDLE    g_evReload = NULL, g_evDump = NULL, g_evEditor = NULL;
 static HANDLE    g_log = INVALID_HANDLE_VALUE;
 static CRITICAL_SECTION g_loglock, g_tablock;
 static volatile LONG g_seq = 0;
@@ -153,9 +154,11 @@ static int cur_room( void )
 	return ( roomObj != 0 && readable( (void *)( roomObj + ROOM_NUM_OFF ), 1 ) ) ? *(unsigned char *)( roomObj + ROOM_NUM_OFF ) : -1;
 }
 
-/* snapshot the metadata handles of interest out of the table (so we don't hold the lock across calls) */
+/* snapshot the handles of interest out of the table (so we don't hold the lock across calls). Matches
+   by path PREFIX so it covers both the .xml metadata and the .dxt textures of a room/costume; the same
+   evict + sync re-parse restores [handle+4] for either, and the rebuild re-binds from the fresh data. */
 typedef struct { void *h; char name[192]; } Snap;
-static int collect( Snap *out, int max, int want_room, int room, const char *needle )
+static int collect_prefix( Snap *out, int max, const char *prefix, const char *needle )
 {
 	int cnt = 0;
 	EnterCriticalSection( &g_tablock );
@@ -163,12 +166,12 @@ static int collect( Snap *out, int max, int want_room, int room, const char *nee
 	for( int i = 0; i < n && cnt < max; ++i )
 	{
 		const char *nm = g_tab[i].name;
-		int match;
-		if( want_room )
-			match = ends_ci( nm, ".room.xml" ) && starts_with( nm, "art/rooms/" ) && ( room < 0 || strstr( nm, needle ) != NULL );
-		else
-			match = ends_ci( nm, ".costume.xml" );
-		if( match ) { out[cnt].h = g_tab[i].h; lstrcpynA( out[cnt].name, nm, sizeof( out[cnt].name ) ); ++cnt; }
+		if( starts_with( nm, prefix ) && ( needle == NULL || strstr( nm, needle ) != NULL ) )
+		{
+			out[cnt].h = g_tab[i].h;
+			lstrcpynA( out[cnt].name, nm, sizeof( out[cnt].name ) );
+			++cnt;
+		}
 	}
 	LeaveCriticalSection( &g_tablock );
 	return cnt;
@@ -203,14 +206,25 @@ static void do_reload( void )
 	         seq, room, hd, resmgr, GetCurrentThreadId(), g_resgetTid );
 	if( hd == 0 || resmgr == 0 ) { logline( "  abort: HDobj/resmgr null\r\n" ); return; }
 
+	Snap snap[64];
 	char needle[24]; wsprintfA( needle, "/%d_", room );
-	Snap snap[32];
 
-	/* ROOM: re-parse then nudge a rebuild by emptying the node view */
-	int nr = collect( snap, 32, 1, room, needle );
-	logline( "  [room] %d .room.xml handle(s)\r\n", nr );
+	/* ROOM: reparse the .room.xml (robust at *(HDobj+0x984), works even if injected mid-room) + every
+	   captured current-room art/rooms/ .dxt, then nudge the node view so the scene rebuilds from the
+	   fresh data. (Reparse re-reads each file via 0x48c760 sync and the rebuild re-binds the on-screen
+	   chunks; a chunk that is off-screen at rebuild time keeps its old texture until it re-streams.) */
 	int anyRoom = 0;
-	for( int i = 0; i < nr; ++i ) anyRoom |= reparse_one( resmgr, snap[i].h, snap[i].name );
+	unsigned Hroom = *(unsigned *)( hd + NODEVIEW_OFF );
+	if( Hroom && readable( (void *)Hroom, 0x20 ) )
+	{
+		char *nm = *(char **)( Hroom + H_STRPTR_OFF );
+		if( readable( nm, 1 ) && ends_ci( nm, ".room.xml" ) )
+			anyRoom |= reparse_one( resmgr, (void *)Hroom, nm );
+	}
+	int nr = collect_prefix( snap, 64, "art/rooms/", room >= 0 ? needle : NULL );
+	for( int i = 0; i < nr; ++i )
+		if( (unsigned)snap[i].h != Hroom ) anyRoom |= reparse_one( resmgr, snap[i].h, snap[i].name );
+	logline( "  [room] .room.xml handle@0x984=%08x + %d captured art/rooms/ asset(s)\r\n", Hroom, nr );
 	if( anyRoom )
 	{
 		unsigned nv = *(unsigned *)( hd + NODEVIEW_OFF );
@@ -218,10 +232,15 @@ static void do_reload( void )
 		logline( "  [room] node view emptied (HDobj+0x984 %08x -> 0) to force rebuild\r\n", nv );
 	}
 
-	/* COSTUME: re-parse only; the per-frame scene builder re-resolves + rebuilds. NO node-view nudge. */
-	int nc = collect( snap, 32, 0, room, needle );
-	logline( "  [costume] %d .costume.xml handle(s)\r\n", nc );
+	/* COSTUME: reparse every captured art/costumes/ asset (.costume.xml + .dxt); the per-frame scene
+	   builder re-resolves + rebuilds each actor's cels from the fresh data (no node-view nudge). */
+	int nc = collect_prefix( snap, 64, "art/costumes/", NULL );
 	for( int i = 0; i < nc; ++i ) reparse_one( resmgr, snap[i].h, snap[i].name );
+	logline( "  [costume] %d captured art/costumes/ asset(s)\r\n", nc );
+
+	if( !anyRoom && nc == 0 )
+		logline( "  NOTE: nothing reloaded — no handles captured. Inject at the MENU/DOCK, then walk into\r\n"
+		         "  the room so the cold load captures the handles (or re-enter the room once).\r\n" );
 
 	logline( "=== end mreload #%d ===\r\n", seq );
 }
@@ -271,7 +290,9 @@ static void __cdecl handle_orch( void )
 {
 	if( ( g_evDump && WaitForSingleObject( g_evDump, 0 ) == WAIT_OBJECT_0 ) || ( GetAsyncKeyState( KEY_DUMP ) & 1 ) )
 		do_dump();
-	if( ( g_evReload && WaitForSingleObject( g_evReload, 0 ) == WAIT_OBJECT_0 ) || ( GetAsyncKeyState( KEY_RELOAD ) & 1 ) )
+	if( ( g_evReload && WaitForSingleObject( g_evReload, 0 ) == WAIT_OBJECT_0 ) ||
+	    ( g_evEditor && WaitForSingleObject( g_evEditor, 0 ) == WAIT_OBJECT_0 ) ||
+	    ( GetAsyncKeyState( KEY_RELOAD ) & 1 ) )
 		do_reload();
 }
 
@@ -346,6 +367,7 @@ static DWORD WINAPI worker( LPVOID unused )
 	         st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond );
 	g_evReload = CreateEventA( NULL, FALSE, FALSE, EVENT_RELOAD );
 	g_evDump   = CreateEventA( NULL, FALSE, FALSE, EVENT_DUMP );
+	g_evEditor = CreateEventA( NULL, FALSE, FALSE, EVENT_EDITOR );   /* editor's Test-in-game button */
 	install_hooks();
 	return 0;
 }
