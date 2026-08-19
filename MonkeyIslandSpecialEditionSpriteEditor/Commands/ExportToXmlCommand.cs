@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Windows.Forms;
-using System.Xml;
-using System.Xml.Xsl;
 using MonkeyIslandSpecialEditionSpriteEditor.UI;
 
 namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
@@ -36,14 +34,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 			}
 		}
 
-		private string XsltFileName
-		{
-			get
-			{
-				return this.xmlExportDialog.XsltFileName;
-			}
-		}
-
 		public ExportToXmlCommand(object objectToExport, string exportFileName)
 		{
 			this.ObjectToExport = objectToExport;
@@ -64,31 +54,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 			}
 
 			var exportFileName = this.ExportFileName;
-			var xsltFileName = this.XsltFileName;
 
 			Helper.WriteObjectToFile( exportFileName, this.ObjectToExport );
 
-			var isXsltFileNameValid
-				= !string.IsNullOrWhiteSpace( xsltFileName )
-				&& File.Exists( xsltFileName )
-				;
-			if( isXsltFileNameValid )
-			{
-				var xmlReaderSettings = new XmlReaderSettings()
-				{
-					DtdProcessing = DtdProcessing.Parse,
-				};
-				using( var reader = XmlReader.Create( xsltFileName, xmlReaderSettings ) )
-				{
-					var tempFileName = Path.GetTempFileName();
-					var transform = new XslCompiledTransform();
-					transform.Load( reader );
-					transform.Transform( exportFileName, tempFileName );
-					File.Copy( tempFileName, exportFileName, overwrite: true );
-					File.Delete( tempFileName );
-				}
-			}
-			
 			return CommandResult.Success($"Exported to XML: {exportFileName}");
 		}
 	}

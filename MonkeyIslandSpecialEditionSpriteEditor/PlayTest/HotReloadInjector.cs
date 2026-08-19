@@ -17,10 +17,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.PlayTest
 	/// </summary>
 	public static class HotReloadInjector
 	{
-		/// <summary>The 32-bit injector built by <c>se-file-hook/build.sh</c>.</summary>
+		/// <summary>The 32-bit injector built by <c>se-file-hook/build.ps1</c>.</summary>
 		public const string InjectorExe = "se-inject.exe";
 
-		/// <summary>The in-place hot-reload hook DLL built by <c>se-file-hook/build.sh</c>.</summary>
+		/// <summary>The in-place hot-reload hook DLL built by <c>se-file-hook/build.ps1</c>.</summary>
 		public const string ReloadDll = "mise-mreload.dll";
 
 		/// <summary>Optional override for the folder holding se-inject.exe + mise-mreload.dll.</summary>

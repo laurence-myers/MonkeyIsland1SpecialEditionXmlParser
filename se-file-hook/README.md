@@ -15,7 +15,9 @@ Two files, both 32-bit to match the game:
 | `mise-mreload.dll` | the hot-reload hook (injected into the game) |
 | `se-inject.exe` | `CreateRemoteThread(LoadLibraryA)` injector |
 
-Build (needs the MSYS2 i686 toolchain): `pacman -S --needed mingw-w64-i686-gcc`, then `bash build.sh`.
+Build: `.\se-file-hook\build.ps1` (PowerShell). It needs Visual Studio with the "Desktop development with C++"
+workload - the same VS that builds the editor; the toolset is located with vswhere, nothing else to install.
+The repo-root `build.ps1` runs it as part of a release build and packages both files next to the editor.
 
 ## Use it from the editor (automatic)
 

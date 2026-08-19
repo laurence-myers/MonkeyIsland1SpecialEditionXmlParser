@@ -31,9 +31,45 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			this.InitializeComponent();
 			this.InitializeGameMenu();
 
+			this.Paint += this.OpenOnStartup;
+		}
+
+		/// <summary>
+		/// First paint: reopens the most recently opened pak (the one at the top of File > Recent)
+		/// when it still exists, so the editor starts where the last session left off; otherwise
+		/// falls back to the quick start dialog, unless that has been turned off.
+		/// </summary>
+		private void OpenOnStartup( object sender, EventArgs args )
+		{
+			this.Paint -= this.OpenOnStartup;
+
+			if( this.TryOpenMostRecentPak() )
+			{
+				return;
+			}
+
 			if( !UserSettings.Instance.DontShowQuickStart )
 			{
-				this.Paint += this.OpenQuickStartDialog;
+				new OpenQuickStartDialogCommand().Execute();
+			}
+		}
+
+		private bool TryOpenMostRecentPak()
+		{
+			var fileName = UserSettings.Instance.RecentLPAKFileNames?.FirstOrDefault( File.Exists );
+			if( fileName == null )
+			{
+				return false;
+			}
+
+			try
+			{
+				return new OpenFileCommand( fileName ).Execute().IsSuccess;
+			}
+			catch( Exception exception )
+			{
+				this.SetStatusText( "Could not reopen " + fileName + ": " + exception.Message );
+				return false;
 			}
 		}
 
@@ -147,12 +183,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 		{
 			base.Dispose();
 			MainForm._instance = null;
-		}
-
-		private void OpenQuickStartDialog( object sender, EventArgs args )
-		{
-			this.Paint -= this.OpenQuickStartDialog;
-			new OpenQuickStartDialogCommand().Execute();
 		}
 
 		private void OpenFileWithDialog( object sender, EventArgs e )

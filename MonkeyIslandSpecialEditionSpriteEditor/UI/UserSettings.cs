@@ -34,12 +34,6 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			}
 		}
 
-		public string[]? RecentXsltFileNames
-		{
-			get;
-			set;
-		}
-
 		public string[]? RecentExportFileNames
 		{
 			get;

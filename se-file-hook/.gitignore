@@ -1,7 +1,11 @@
-# build outputs (produced by build.sh)
+# build outputs (produced by build.ps1)
 se-inject.exe
 mise-mreload.dll
-*.o
+obj/
+*.obj
+*.exp
+*.lib
+*.pdb
 
 # runtime / RE artifacts
 *.log

@@ -246,8 +246,7 @@ static void map_put( const char *path, void *tex, unsigned w, unsigned h, unsign
 
 typedef long ( __stdcall *CreateTex_t )( void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void * );
 static CreateTex_t g_realCT;
-static long __stdcall hook_CT( void *dev, UINT w, UINT h, UINT lv, DWORD usage, DWORD fmt, DWORD pool, void **ppTex, void *sh ) __attribute__((noinline));
-static long __stdcall hook_CT( void *dev, UINT w, UINT h, UINT lv, DWORD usage, DWORD fmt, DWORD pool, void **ppTex, void *sh )
+static __declspec(noinline) long __stdcall hook_CT( void *dev, UINT w, UINT h, UINT lv, DWORD usage, DWORD fmt, DWORD pool, void **ppTex, void *sh )
 {
 	long hr = g_realCT( dev, w, h, lv, usage, fmt, pool, ppTex, sh );
 	InterlockedIncrement( &g_ctCount );

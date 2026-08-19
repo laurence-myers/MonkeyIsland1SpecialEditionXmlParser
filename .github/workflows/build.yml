@@ -13,13 +13,24 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
       with:
-        vs-version: '[18,]'
+        dotnet-version: '10.0.x'
 
-    - name: Build
-      run: msbuild MonkeyIslandSpecialEditionSpriteEditor/MonkeyIslandSpecialEditionSpriteEditor.sln -p:Configuration=Release -t:build -restore
+    # Stamps today's date as the version, builds the solution and the in-game hot-reload tools
+    # (se-file-hook, 32-bit C compiled with the runner's Visual Studio C++ toolset), runs the tests,
+    # and packages everything into artifacts/MISESE_<yyyy-MM-dd>.zip.
+    - name: Build, test and package
+      shell: pwsh
+      run: |
+        ./build.ps1
+        $zip = Get-ChildItem artifacts/MISESE_*.zip | Select-Object -First 1
+        "PACKAGE_NAME=$($zip.BaseName)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-    - name: Test
-      run: dotnet test MonkeyIslandSpecialEditionSpriteEditor/MonkeyIslandSpecialEditionSpriteEditor.sln -c Release --no-build
+    - name: Upload package
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.PACKAGE_NAME }}
+        path: artifacts/MISESE_*.zip
+        if-no-files-found: error

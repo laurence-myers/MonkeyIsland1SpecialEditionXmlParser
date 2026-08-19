@@ -9,6 +9,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!--
+      The application version is the build date (yyyy.MM.dd.0), so every build - local or CI - is stamped
+      with the day it was made and a release zip is named after the same date (see build.ps1). Pass
+      -p:Version=... to pin a different one. AssemblyVersion / FileVersion derive from Version.
+    -->
+    <Version Condition="'$(Version)' == ''">$([System.DateTime]::Now.ToString('yyyy.MM.dd')).0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Emit app.config binding redirects instead of hand-maintaining them. -->
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
