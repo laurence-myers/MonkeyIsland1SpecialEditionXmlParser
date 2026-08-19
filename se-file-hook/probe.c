@@ -18,8 +18,9 @@
 #define SIG_ADDR    0x00475488u   /* CreateFileA call site: ff 15 30 a0 4d 00 (build check) */
 #define P_HDOBJ     0x005b988cu   /* -> HD engine/app object */
 #define P_DEVICE    0x005b9920u   /* -> IDirect3DDevice9 */
-#define C_ROOM      0x005b9c9cu   /* name-keyed room resource container */
-#define C_COSTUME   0x005b9c44u   /* name-keyed costume resource container */
+#define C_ROOM      0x005b9c9cu   /* -> "Room" category name atom (NOT a container, per dump #1) */
+#define C_COSTUME   0x005b9c44u   /* -> "Costume" category name atom */
+#define P_MGR       0x005b98e4u   /* -> the real HD resource manager */
 #define EVENT_NAME  "Local\\MISE_Probe"
 #define HOTKEY      VK_F12
 
@@ -91,47 +92,58 @@ static void hexdump( const char *label, unsigned addr, unsigned n )
 	}
 }
 
-/* Scan T for a pointer to an array of 0x2c-stride records whose [+0] is a D3D texture -> the holder
-   array. Logs every candidate offset so the exact holder base + stride is confirmed from real data. */
-static void find_texture_holder( unsigned T )
+/* Scan [base, base+n) for the GPU texture: a dword that IS a D3D COM object (vtable in d3d9), or
+   POINTS TO one, or points to an array whose [0] is one. Logs every hit + its offset/stride clue. */
+static void scan_d3d( const char *label, unsigned base, unsigned n )
 {
-	plog( "  holder search in T (looking for ptr -> [texture,...] stride 0x2c):\r\n" );
 	int found = 0;
-	for( unsigned o = 0; o <= 0xc0; o += 4 )
+	for( unsigned o = 0; o < n; o += 4 )
 	{
-		unsigned p = rd32( T + o );
-		if( !is_readable( p ) )
+		unsigned p = rd32( base + o );
+		if( is_d3d_obj( p ) )
 		{
-			continue;
-		}
-		/* case A: T+o IS the holder array base (entry[0][+0] is a texture) */
-		if( is_d3d_obj( rd32( p ) ) )
-		{
-			plog( "    T+%03x -> %08x : entry[0].tex=%08x (d3d) entry[1].tex=%08x  <-- holder-array candidate (stride 0x2c)\r\n",
-			      o, p, rd32( p ), rd32( p + 0x2c ) );
+			plog( "    %s+%03x = %08x  IS a D3D texture (d3d9 vtable %08x)\r\n", label, o, p, rd32( p ) );
 			found = 1;
 		}
-		/* case B: T+o points to a struct whose +0 is the holder base */
-		unsigned pp = rd32( p );
-		if( is_readable( pp ) && is_d3d_obj( rd32( pp ) ) )
+		else if( is_readable( p ) )
 		{
-			plog( "    T+%03x -> %08x -> %08x : tex=%08x (d3d)  <-- indirect holder candidate\r\n", o, p, pp, rd32( pp ) );
-			found = 1;
+			unsigned pp = rd32( p );
+			if( is_d3d_obj( pp ) )
+			{
+				plog( "    %s+%03x -> %08x -> D3D texture %08x  (next@+0x2c=%08x +0x4=%08x)\r\n",
+				      label, o, p, pp, rd32( p + 0x2c ), rd32( p + 4 ) );
+				found = 1;
+			}
 		}
 	}
 	if( !found )
 	{
-		plog( "    (no D3D-texture holder found within T+0..0xc0 — dump above for manual analysis)\r\n" );
+		plog( "    (%s: no D3D texture in +0..%x)\r\n", label, n );
 	}
 }
 
-static void dump_container( const char *name, unsigned cptr )
+/* Follow a resource object: dump it, scan it, then follow its +0x00 pointer (where the dump showed the
+   texture likely lives) one/two levels, scanning each for the actual IDirect3DTexture9. */
+static void probe_resource( unsigned res )
 {
-	unsigned c = rd32( cptr );
-	plog( "%s container *(%08x) = %08x\r\n", name, cptr, c );
-	if( c )
+	if( !is_readable( res ) )
 	{
-		hexdump( "container header", c, 0x60 );
+		return;
+	}
+	hexdump( "resObj +0x00..0x100", res, 0x100 );
+	scan_d3d( "resObj", res, 0x100 );
+	unsigned r0 = rd32( res + 0x00 );
+	if( is_readable( r0 ) && r0 != res )
+	{
+		plog( "  resObj[+0x00] = %08x — following:\r\n", r0 );
+		hexdump( "resObj[+0] +0x00..0x100", r0, 0x100 );
+		scan_d3d( "resObj[+0]", r0, 0x100 );
+		unsigned r00 = rd32( r0 + 0x00 );
+		if( is_readable( r00 ) && r00 != r0 && r00 != res )
+		{
+			hexdump( "resObj[+0][+0] +0x00..0x80", r00, 0x80 );
+			scan_d3d( "resObj[+0][+0]", r00, 0x80 );
+		}
 	}
 }
 
@@ -165,39 +177,31 @@ static void do_dump( void )
 	plog( "  sceneObj=HDobj+0x9a0: nodeArray[+10] count[+50]=%d vbuf[+84]=%08x backptr[+60]=%08x\r\n",
 	      nodeCount, rd32( sceneObj + 0x84 ), rd32( sceneObj + 0x60 ) );
 
-	/* walk the first node -> its draw-item vector -> the first draw item -> T */
-	unsigned T = 0;
-	for( unsigned k = 0; k < 16 && k < nodeCount && T == 0; ++k )
+	/* walk EACH node -> first draw item -> resource object, and hunt the GPU texture in each */
+	for( unsigned k = 0; k < 16 && k < nodeCount; ++k )
 	{
 		unsigned node = rd32( sceneObj + 0x10 + k * 4 );
-		if( !is_readable( node ) )
+		unsigned items = rd32( node + 0x8 );      /* draw-item vector data ptr */
+		unsigned icount = rd32( node + 0x18 );
+		plog( "\r\n  node[%d]=%08x vtbl=%08x items[+8]=%08x count[+18]=%d\r\n", k, node, rd32( node ), items, icount );
+		if( !is_readable( items ) || icount == 0 )
 		{
 			continue;
 		}
-		unsigned items = rd32( node + 0x8 );      /* draw-item vector data ptr */
-		unsigned icount = rd32( node + 0x18 );
-		plog( "  node[%d]=%08x vtbl=%08x items[+8]=%08x count[+18]=%d\r\n", k, node, rd32( node ), items, icount );
-		if( is_readable( items ) && icount )
-		{
-			hexdump( "drawItem[0] (0x1c)", items, 0x1c );
-			T = rd32( items + 0x8 );               /* draw item +0x8 = resolved texture object T */
-		}
+		hexdump( "drawItem[0] (0x1c)", items, 0x1c );
+		unsigned res = rd32( items + 0x8 );        /* draw item +0x8 = resource object */
+		plog( "  drawItem[0]+0x08 = resObj = %08x\r\n", res );
+		probe_resource( res );
 	}
 
-	if( T )
+	/* the REAL resource manager (0x5b9c9c/0x5b9c44 turned out to be the "Room"/"Costume" name atoms) */
+	unsigned mgr = rd32( P_MGR );
+	plog( "\r\nresource manager *(%08x) = %08x ; nameAtoms: Room=%08x Costume=%08x\r\n",
+	      P_MGR, mgr, rd32( C_ROOM ), rd32( C_COSTUME ) );
+	if( is_readable( mgr ) )
 	{
-		plog( "  --> T (resource object) = %08x ; width[+10]=%d height[+14]=%d holderCount[+b0]=%d\r\n",
-		      T, rd32( T + 0x10 ), rd32( T + 0x14 ), rd32( T + 0xb0 ) );
-		hexdump( "T+0x00..0x100", T, 0x100 );
-		find_texture_holder( T );
+		hexdump( "mgr +0x00..0x140", mgr, 0x140 );
 	}
-	else
-	{
-		plog( "  (could not reach a T via the scene — is the room fully built? retry after the room settles)\r\n" );
-	}
-
-	dump_container( "ROOM", C_ROOM );
-	dump_container( "COSTUME", C_COSTUME );
 	plog( "================= end dump #%d =================\r\n", (int)n );
 	FlushFileBuffers( g_log );
 }
