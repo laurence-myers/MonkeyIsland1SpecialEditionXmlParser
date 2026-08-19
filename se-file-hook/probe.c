@@ -177,21 +177,51 @@ static void do_dump( void )
 	plog( "  sceneObj=HDobj+0x9a0: nodeArray[+10] count[+50]=%d vbuf[+84]=%08x backptr[+60]=%08x\r\n",
 	      nodeCount, rd32( sceneObj + 0x84 ), rd32( sceneObj + 0x60 ) );
 
-	/* walk EACH node -> first draw item -> resource object, and hunt the GPU texture in each */
+	/* walk EACH node -> first draw item, and hunt the GPU texture: draw item +0x4 (material/page) and
+	   +0x8 (resObj) and +0x18 (subrect), following pointers and scanning for a d3d9 vtable object. */
 	for( unsigned k = 0; k < 16 && k < nodeCount; ++k )
 	{
 		unsigned node = rd32( sceneObj + 0x10 + k * 4 );
-		unsigned items = rd32( node + 0x8 );      /* draw-item vector data ptr */
+		unsigned vt = rd32( node );
+		plog( "\r\n  node[%d]=%08x vtbl=%08x\r\n", k, node, vt );
+		if( vt != 0x004ea5b8 )      /* only this vtable is a draw-item-bearing node */
+		{
+			plog( "    (node type %08x is not a draw-item node — skipping)\r\n", vt );
+			continue;
+		}
+		unsigned items = rd32( node + 0x8 );
 		unsigned icount = rd32( node + 0x18 );
-		plog( "\r\n  node[%d]=%08x vtbl=%08x items[+8]=%08x count[+18]=%d\r\n", k, node, rd32( node ), items, icount );
+		plog( "    items[+8]=%08x count[+18]=%d\r\n", items, icount );
 		if( !is_readable( items ) || icount == 0 )
 		{
 			continue;
 		}
 		hexdump( "drawItem[0] (0x1c)", items, 0x1c );
-		unsigned res = rd32( items + 0x8 );        /* draw item +0x8 = resource object */
-		plog( "  drawItem[0]+0x08 = resObj = %08x\r\n", res );
-		probe_resource( res );
+		scan_d3d( "drawItem", items, 0x1c );
+		unsigned mat = rd32( items + 0x4 );        /* draw item +0x4 = material/page (texture likely here) */
+		if( is_readable( mat ) )
+		{
+			plog( "  drawItem+0x04 (material/page) = %08x:\r\n", mat );
+			hexdump( "material +0x00..0x100", mat, 0x100 );
+			scan_d3d( "material", mat, 0x100 );
+			unsigned m0 = rd32( mat );
+			if( is_readable( m0 ) && m0 != mat )
+			{
+				hexdump( "material[+0] +0x00..0x80", m0, 0x80 );
+				scan_d3d( "material[+0]", m0, 0x80 );
+			}
+		}
+		plog( "  drawItem+0x08 (resObj) = %08x:\r\n", rd32( items + 0x8 ) );
+		probe_resource( rd32( items + 0x8 ) );
+	}
+
+	/* the vertex/quad buffer may hold the bound page texture */
+	unsigned vbuf = rd32( sceneObj + 0x84 );
+	if( is_readable( vbuf ) )
+	{
+		plog( "\r\nvbuf (sceneObj+0x84) = %08x:\r\n", vbuf );
+		hexdump( "vbuf +0x00..0x80", vbuf, 0x80 );
+		scan_d3d( "vbuf", vbuf, 0x80 );
 	}
 
 	/* the REAL resource manager (0x5b9c9c/0x5b9c44 turned out to be the "Room"/"Costume" name atoms) */
