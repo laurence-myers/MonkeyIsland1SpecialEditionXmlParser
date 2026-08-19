@@ -1,26 +1,12 @@
-# build outputs
-se-file-hook.dll
+# build outputs (produced by build.sh)
 se-inject.exe
-se-selftest.exe
+mise-mreload.dll
 *.o
 
-# runtime / test artifacts
-se-file-hook.log
-MISE.image.bin
+# runtime / RE artifacts
+*.log
 *.asm
 *.tmp
 build.err
 re/
-mise-hotreload.dll
-mise-reload.exe
-mise-probe.dll
-mise-probe.log
-mise-observe.dll
-mise-observe.log
-mise-hotswap.dll
-mise-hotswap.log
-mise-hdreload.dll
-mise-cprobe.dll
-mise-ctrace.dll
-mise-mreload.dll
-*.log
+MISE.image.bin

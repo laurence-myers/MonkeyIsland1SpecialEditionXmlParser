@@ -43,17 +43,23 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 				? "No unsaved edits (textures are written on import). "
 				: string.Concat( "Wrote ", written.Count, " override", written.Count == 1 ? "" : "s", ": ", string.Join( ", ", written ), ". " );
 
-			// If mise-mreload.dll is injected in the running game, hot-reload the edited assets in place
-			// (evict [handle+4] + synchronous re-parse on the render thread, then rebuild) instead of
-			// asking the modder to re-enter the room. Reloads room/costume metadata (.room.xml/
-			// .costume.xml) and textures (.dxt) with no room change or interpreter disruption.
-			if( HotReloadClient.TrySignal() )
+			// If the game is running, auto-inject mise-mreload.dll (once per session) and fire the in-place
+			// hot-reload: evict [handle+4] + synchronous re-parse on the render thread, then rebuild +
+			// LockRect the textures. Reloads room/costume metadata (.room.xml/.costume.xml) and textures
+			// (.dxt) with no room change or interpreter disruption.
+			if( GameLauncher.FocusIfRunning() )
 			{
-				GameLauncher.FocusIfRunning();
-				return CommandResult.Success( summary + "Hot-reloaded the running game." );
+				HotReloadInjector.TryEnsureInjected( out var injectMessage );
+				if( HotReloadClient.TrySignal() )
+				{
+					return CommandResult.Success( summary + "Hot-reloaded the running game." );
+				}
+
+				// injected just now (or could not) but nothing reloaded yet — usually not in a room
+				return CommandResult.Success( summary + injectMessage + " — enter the room (scroll it once), then Test in game." );
 			}
 
-			// Otherwise launch or focus the game; the modder re-enters the room to pick up the overrides.
+			// Not running — launch it; the DLL gets injected on the next Test in game once the game is up.
 			string outcome;
 			try
 			{
@@ -63,7 +69,7 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 			{
 				return CommandResult.Fail( "Overrides written, but the game could not be started: " + exception.Message );
 			}
-			return CommandResult.Success( summary + outcome );
+			return CommandResult.Success( summary + outcome + " Test in game again once you are in the room." );
 		}
 
 		private static void Collect( bool wasDirty, bool ok, string? resourcePath, List<string> written, List<string> failed )

@@ -1,164 +1,71 @@
-# MI1 Special Edition hot-reload tooling
+# MI1 Special Edition — in-place hot-reload
 
-This folder holds the tooling for making edited room art appear **immediately** in the running MI1
-Special Edition, instead of the modder walking the character out of the room and back in. Background
-and the full analysis: `docs/se-hot-reload-hooks.md`.
+Makes edited assets appear **immediately** in the running Monkey Island 1: Special Edition, with no room
+change and no interruption to the game script — instead of the modder walking the character out of the
+room and back in. Reloads all three edit classes in place:
 
-- **`mise-hotreload.dll` + `mise-reload.exe`** — the feature (below).
-- **`se-file-hook.dll` + `se-inject.exe` + `se-selftest.exe`** — the reconnaissance tool that mapped
-  the file access (further down).
+- **`.room.xml`** — room layout / object placement
+- **`.costume.xml`** — costume cel placement
+- **`.dxt`** — room-background and costume textures (on-screen *and* off-screen scrolling-room chunks)
 
-Build everything (32-bit, to match the game): `bash build.sh` (needs `mingw-w64-i686-gcc`).
-
-## Hot reload — `mise-hotreload.dll`
-
-Reloads the **current room's HD art** (`art\rooms\*.room.xml`, layer/object `*.dxt`) in the running
-game on demand. Mechanism (reverse-engineered from the DRM-free GOG build, which is byte-identical to
-the Steam build — same addresses, no ASLR, base `0x400000`): the HD renderer re-streams a room's art
-only when the room number changes, via the per-frame detector at `0x44e5c0(HDobj)` which compares the
-current room to `[HDobj+0x980]`. The DLL inline-hooks that function and, on request, writes `0xFF`
-into that byte so the detector sees a delta and re-streams the current room — re-reading the loose
-overrides from disk, on the render thread's own path (no actor reset, no room "bounce"). It refuses
-to patch anything but this exact build (13-byte signature + base check).
-
-```sh
-# 1. get into the room you're editing, then inject (same injector as the recon tool):
-./se-inject.exe mise-hotreload.dll MISE.exe
-# 2. edit art in the editor and save the loose override, then trigger a reload:
-./mise-reload.exe          # or press F11 in the game
-```
-
-The editor triggers the same reload by setting a named auto-reset event `Local\MISE_HotReload`
-(.NET: `EventWaitHandle.OpenExisting("Local\\MISE_HotReload").Set()`). Diagnostics: `mise-hotreload.log`
-next to the DLL. Scope: covers the HD art the editor edits; classic SCUMM data edits (`monkey1.001`)
-and — pending live confirmation — costume atlases may need the heavier "bounce" reload (a real room
-change), documented in `docs/se-hot-reload-hooks.md`.
-
----
-
-# se-file-hook — file reconnaissance (how the above was found)
-
-A tiny injected DLL that records **which files `MISE.exe` opens, when, and from where in its code**,
-so we could confirm the room-entry reload mechanism and locate the room-load routine.
-
-It is a read-only observer: it forwards every call unchanged and only logs it. It ships nothing from
-the game and modifies nothing on disk.
-
-## How it works
-
-`MISE.exe` opens every file through `kernel32!CreateFileA` and probes for loose overrides with
-`msvcr80!_access` — the whole file surface is just those two (verified: no `fopen`/`CreateFileW`).
-Both are ordinary IAT imports (`CreateFileA` at `MISE.exe+0xDA030`, `_access` at `+0xDA178`; the
-image is pinned at `0x400000`, no ASLR). The DLL walks the host module's import table, finds those
-two thunks **by name**, and repoints the IAT slots at its own functions. Each call is logged with the
-caller's return address as a module-relative offset (`MISE.exe+0xNNNNN`) — that offset lands inside
-the runtime-decrypted `.text` and is the seed for the Phase 2 reverse-engineering.
-
-The `_access` log is the prize: it shows every loose-override path the game *probes* on room entry —
-including files that don't exist yet — i.e. the game telling you the exact filename that overrides
-each asset.
-
-## Files
+Two files, both 32-bit to match the game:
 
 | File | What |
 |---|---|
-| `hook.c` | the injected DLL (`se-file-hook.dll`) |
-| `inject.c` | the injector (`se-inject.exe`) — `CreateRemoteThread(LoadLibraryA)` |
-| `selftest.c` | `se-selftest.exe` — a headless stand-in for `MISE.exe` to validate the tool |
-| `build.sh` | builds all three (32-bit) |
+| `mise-mreload.dll` | the hot-reload hook (injected into the game) |
+| `se-inject.exe` | `CreateRemoteThread(LoadLibraryA)` injector |
 
-## Build
+Build (needs the MSYS2 i686 toolchain): `pacman -S --needed mingw-w64-i686-gcc`, then `bash build.sh`.
 
-Needs the MSYS2 i686 (32-bit) toolchain — the game is 32-bit, so the DLL must be too:
+## Use it from the editor (automatic)
 
-```sh
-pacman -S --needed mingw-w64-i686-gcc      # one-time, in MSYS2
-bash build.sh                              # re-execs itself into the MSYS2 MINGW32 env
-```
+The editor's **Test in game** button (`TestInGameCommand`) writes the loose overrides, auto-injects
+`mise-mreload.dll` into the running game (via `HotReloadInjector`, which shells out to `se-inject.exe`),
+and signals the reload — no manual injection. The editor finds the two binaries next to itself, in a
+`se-file-hook` folder up the tree, or wherever `MISE_HOTRELOAD_DIR` points.
 
-Outputs `se-file-hook.dll`, `se-inject.exe`, `se-selftest.exe`. The DLL depends only on system DLLs
-(KERNEL32/USER32/msvcrt) — copy it and the injector wherever you like.
+Workflow: launch the game, get to the **menu**, click **Test in game** once (injects the DLL), then enter
+the room and **scroll it once** (this is what streams every chunk's texture so it can be mapped). From
+then on, edit → **Test in game** → the change appears instantly, repeatedly.
 
-### Validate without the game
-
-```sh
-./se-selftest.exe            # loads the DLL into itself, makes a few file calls
-cat se-file-hook.log         # should list the CreateFileA/_access calls with caller offsets
-```
-
-## Run against the real game
-
-1. Launch the SE and get it to the **main menu** (so the Steam DRM stub has decrypted `.text` and the
-   game is actually issuing file calls). Windowed helps: `%APPDATA%\LucasArts\The Secret of Monkey
-   Island Special Edition\Settings.ini` → `[display] windowed=1`.
-2. Inject (no admin needed if the game runs at your integrity level):
-   ```sh
-   ./se-inject.exe se-file-hook.dll MISE.exe
-   ```
-   It prints `ok: injected ... module=0x........`. The log is `se-file-hook.log` next to the DLL.
-3. In the game, **walk out of a room and back in** (or load an in-room save). Then read the log.
-
-If the game is elevated (launched by an elevated Steam), run the injector elevated too.
-
-## Reading the log
-
-```
-000042 14:03:11.887 tid=1a2c MISE.exe+0x07be14 _access mode=0 "art/rooms/room28.room.xml"
-000043 14:03:11.889 tid=1a2c MISE.exe+0x07be9a CreateFileA "F:\...\Monkey1.pak"
-```
-
-- `MISE.exe+0xNNNNN` is the **caller** — load `MISE.exe` at base `0x400000` in a disassembler on a
-  full memory dump (the on-disk `.text` is encrypted; dump the running process) and go to that offset
-  to find the room-load / resource code. Group the offsets that appear on a room re-entry: those are
-  Phase 2's targets.
-- `_access` lines are the loose-override probe paths (what the game looks for, existing or not).
-- `CreateFileA` lines are the actual opens (loose hits + the pak).
-- Each call is followed by an indented `stk:` line — module-relative offsets found by scanning the
-  stack for `.text` addresses (the release build omits frame pointers, so this is a scan, not an EBP
-  walk). The offsets that recur across a whole room load are the resolver → resource-loader →
-  room-load call chain above the file wrappers — Phase 2's targets.
-
-## Phase 2 output: the decrypted image (`MISE.image.bin`)
-
-On injection the DLL also writes `MISE.image.bin` next to itself — the host's **decrypted** in-memory
-image, RVA-aligned so a byte at file offset `X` is virtual address `0x400000 + X` (the on-disk
-`.text` is Steam-encrypted; this is the plaintext). Disassemble and jump to any logged offset:
+## Use it by hand
 
 ```sh
-objdump -D -b binary -mi386 --adjust-vma=0x400000 MISE.image.bin > MISE.asm   # ~large
-# e.g. the _access wrapper is around 0x470fca, CreateFileA around 0x475488
+# 1. launch the game, at the MENU inject the hook:
+./se-inject.exe mise-mreload.dll MISE.exe
+# 2. enter the room and scroll it fully (captures the resource handles + texture map)
+# 3. edit assets + save the loose overrides, then reload:
+#    press F11 in the game   (F12 = read-only diagnostic dump)
 ```
 
-This is what Phase 2 reverse-engineers to locate the room-load routine and drive a reload on demand.
-It is your own game's memory written to your own disk; nothing leaves the machine.
+The editor and F11 use the same named auto-reset event `Local\MISE_HotReload`. Diagnostics are written
+to `mise-mreload.log` next to the DLL. It refuses to patch anything but this exact build (image base +
+two code signatures).
 
-`analyze-image.sh` runs the first-pass RE automatically: it disassembles the dump and, from the known
-anchor strings (`classic/%s/%s`, `LoadRoom`, `ScummResources`, …) and the file wrappers, reports the
-two room loaders, the VFS wrappers, and function boundaries — then exports `entryof`/`callers`/`refs`
-helpers to climb to the room-entry driver and `_currentRoom`:
+## How it works
 
-```sh
-./analyze-image.sh MISE.image.bin       # prints the call-graph report
-source ./analyze-image.sh MISE.image.bin && callers 0x4XXXXX   # climb interactively
-```
+Reverse-engineered from the DRM-free GOG build, which is byte-identical to Steam (same addresses, no
+ASLR, base `0x400000`). Everything runs on the render thread by hooking the HD orchestrator `0x44c7be`,
+so the reload never races the engine:
 
-## Limitations
+- **Metadata (`.xml`).** The parsed node-list is cached at `[handle+0x4]` on the per-name resource handle
+  in the resource manager `*(0x5b98e4)`. The game's own refresh is asynchronous and never restores that
+  pointer (which orphaned earlier attempts), so we drive a **synchronous** re-parse ourselves:
+  `resource_get(0x48c760)(resmgr, handle, -1, 0, 0)` re-reads the edited file and stores the fresh parse
+  at `[handle+0x4]` — all in one tick so no frame ever sees it half-loaded. The room then nudges a
+  rebuild by emptying the node-view slot `[HDobj+0x984]`; costumes rebuild via the per-frame scene builder.
+- **Textures (`.dxt`).** Each chunk is one shared `D3DPOOL_MANAGED` `IDirect3DTexture9`, so we **LockRect
+  its blocks in place** (Flags=0, between frames) — every binding, visible or off-screen, updates with no
+  rebuild. The `.dxt → texture` map is built by hooking `CreateTexture` and tagging each texture with the
+  name of the `resource_get` handle whose load is in progress (the texture is created inside that call).
 
-- **IAT hooking only catches calls that read the IAT slot *after* injection.** If a piece of code
-  cached the imported pointer in a register/global before we patched, those specific calls are
-  missed. This is why we inject at the menu — the room-loader runs *later* and re-reads the patched
-  slot. (The self-test is built `-O0` precisely because at `-O2` its startup hoists the pointers into
-  registers and a later patch never sees the loop — the worst case; the real loader isn't shaped like
-  that.) If in practice some room-entry loads are missing, the escape hatch is an **inline hook** on
-  `kernel32!CreateFileA` (patch the function body via MinHook/Detours) which intercepts every caller
-  regardless of caching — more machinery, but caching-proof.
-- **Build-specific offsets.** The two IAT slots and every logged offset are for this exact `MISE.exe`
-  (Steam, 2009-07-08, `0x400000`, no ASLR). If Steam reships the exe, the slots are found by name
-  anyway, but the reported offsets must be re-mapped. To re-derive the slot RVAs:
-  `objdump -p MISE.exe | grep -E "CreateFileA|_access"`.
-- Windows-only; 32-bit throughout.
+Handles + the texture map fill only as resources load, so inject at the menu and scroll the room once.
 
-## Reverting
+## Notes / limitations
 
-The DLL restores the original IAT pointers on unload and the game frees it at exit; nothing persists.
-To stop observing, just close the game. Delete `se-file-hook.log` to clear captured data.
+- **Windows-only, 32-bit throughout.** Build-specific: the addresses are for this exact `MISE.exe`
+  (Steam/GOG 2009 build, base `0x400000`, no ASLR); the signature guard aborts cleanly on any other build.
+- If the game runs elevated, run the injector (or the editor) elevated too, or `OpenProcess` fails.
+- `re/` holds the reverse-engineering substrate used to derive all of the above: `gog.asm` (the GOG exe
+  disassembled with `objdump -d -M intel`, git-ignored — regenerate from the GOG `MISE.exe`) and
+  `nav.sh` (grep/xref helpers). Not needed to build or run; kept for maintenance.
