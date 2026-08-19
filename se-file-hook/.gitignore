@@ -15,3 +15,5 @@ mise-hotreload.dll
 mise-reload.exe
 mise-probe.dll
 mise-probe.log
+mise-observe.dll
+mise-observe.log
