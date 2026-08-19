@@ -43,23 +43,28 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 				? "No unsaved edits (textures are written on import). "
 				: string.Concat( "Wrote ", written.Count, " override", written.Count == 1 ? "" : "s", ": ", string.Join( ", ", written ), ". " );
 
-			// If the game is running, auto-inject mise-mreload.dll (once per session) and fire the in-place
-			// hot-reload: evict [handle+4] + synchronous re-parse on the render thread, then rebuild +
-			// LockRect the textures. Reloads room/costume metadata (.room.xml/.costume.xml) and textures
-			// (.dxt) with no room change or interpreter disruption.
+			// If the game is running, make sure the hot-reload DLL is injected and fire the in-place reload
+			// (evict [handle+4] + synchronous re-parse on the render thread, then rebuild + LockRect the
+			// textures) — room/costume metadata (.room.xml/.costume.xml) and .dxt with no room change.
 			if( GameLauncher.FocusIfRunning() )
 			{
+				// The hook must be active BEFORE a room loads to capture that room's resource handles.
+				// If it was already injected (at the menu, on a prior launch), the current room's handles
+				// were captured on entry and everything reloads. If we inject only now, mid-room, those
+				// handles were loaded before the hook, so .room.xml still reloads (read from a fixed
+				// address) but costumes/textures need one room re-entry to stream through the hook.
+				var wasActive = HotReloadClient.IsAvailable();
 				HotReloadInjector.TryEnsureInjected( out var injectMessage );
-				if( HotReloadClient.TrySignal() )
-				{
-					return CommandResult.Success( summary + "Hot-reloaded the running game." );
-				}
+				HotReloadClient.TrySignal();
 
-				// injected just now (or could not) but nothing reloaded yet — usually not in a room
-				return CommandResult.Success( summary + injectMessage + " — enter the room (scroll it once), then Test in game." );
+				return wasActive
+					? CommandResult.Success( summary + "Hot-reloaded the running game." )
+					: CommandResult.Success( summary + injectMessage
+						+ " — .room.xml reloaded; re-enter the room once so costumes/textures are captured, then Test in game again." );
 			}
 
-			// Not running — launch it; the DLL gets injected on the next Test in game once the game is up.
+			// Not running — launch it and inject at the MENU (before any room loads), in the background,
+			// so every resource including costumes is captured as the room streams in.
 			string outcome;
 			try
 			{
@@ -69,7 +74,9 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 			{
 				return CommandResult.Fail( "Overrides written, but the game could not be started: " + exception.Message );
 			}
-			return CommandResult.Success( summary + outcome + " Test in game again once you are in the room." );
+
+			HotReloadInjector.InjectWhenReady();
+			return CommandResult.Success( summary + outcome + " Hot-reload arms at the menu — enter the room, then Test in game to reload your edits." );
 		}
 
 		private static void Collect( bool wasDirty, bool ok, string? resourcePath, List<string> written, List<string> failed )

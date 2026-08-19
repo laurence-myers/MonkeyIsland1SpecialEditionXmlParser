@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MonkeyIslandSpecialEditionSpriteEditor.PlayTest
 {
@@ -91,6 +92,39 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.PlayTest
 				message = "hot-reload inject failed: " + exception.Message;
 				return false;
 			}
+		}
+
+		/// <summary>
+		/// Injects the hot-reload DLL as soon as a just-launched game has a window — i.e. at the menu,
+		/// before any room loads. This is what makes costumes (and textures) reload: the resource_get
+		/// hook must be active before the room streams its resources in, or their handles are never
+		/// captured (unlike .room.xml, which the DLL reads from a fixed address and so reloads either
+		/// way). Runs on a background thread so the editor UI does not block waiting for the game window.
+		/// </summary>
+		public static void InjectWhenReady( int timeoutMs = 30000 )
+		{
+			Task.Run( () =>
+			{
+				var deadline = Environment.TickCount + timeoutMs;
+				while( Environment.TickCount - deadline < 0 )
+				{
+					if( HotReloadClient.IsAvailable() )
+					{
+						return;   // already injected (this call or an earlier one)
+					}
+
+					using( var running = GameLauncher.FindRunning() )
+					{
+						if( running != null )
+						{
+							TryEnsureInjected( out _ );
+							return;
+						}
+					}
+
+					Thread.Sleep( 500 );
+				}
+			} );
 		}
 
 		private static string FirstLine( string text )
