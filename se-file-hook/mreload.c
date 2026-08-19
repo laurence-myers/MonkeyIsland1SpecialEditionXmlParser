@@ -37,6 +37,13 @@
 
 #define HDOBJ_PTR     0x005b988cu
 #define RESMGR_PTR    0x005b98e4u
+#define P_DEVICE      0x005b9920u   /* -> IDirect3DDevice9 */
+#define CT_SLOT       0x5c          /* IDirect3DDevice9::CreateTexture */
+#define LOCKRECT      0x4c          /* IDirect3DTexture9::LockRect */
+#define UNLOCKRECT    0x50          /* IDirect3DTexture9::UnlockRect */
+#define FOURCC_DXT5   0x35545844u
+#define FOURCC_DXT1   0x31545844u
+#define MAP_MAX       256
 #define NODEVIEW_OFF  0x984u
 #define ROOM_SEL      0x005b9944u
 #define ROOM_OBJ_A    0x005b9948u
@@ -77,6 +84,15 @@ typedef struct
 #define TAB_MAX 2048
 static HEntry g_tab[TAB_MAX];
 static volatile LONG g_ntab = 0;
+
+/* .dxt -> live IDirect3DTexture9 map for the in-place LockRect swap. The texture is created INSIDE the
+   .dxt's resource_get call, so we tag it by that handle's name (robust; no CreateFileA-adjacency guess). */
+typedef struct { char path[260]; void *tex; unsigned w, h, fourCC; } MapEntry;
+static MapEntry g_map[MAP_MAX];
+static int      g_mapCount = 0;         /* render-thread only (hook_CT + do_swaps) */
+static char     g_curDxt[260] = "";     /* name of the .dxt whose resource_get load is in progress */
+static unsigned g_d3dLo = 0, g_d3dHi = 0;
+static volatile LONG g_ctCount = 0;     /* CreateTexture calls seen (diagnostic) */
 
 static void logline( const char *fmt, ... )
 {
@@ -121,6 +137,17 @@ static void __cdecl record_get( unsigned *args )   /* args -> [0]=this [1]=handl
 	if( g_resgetTid == 0 ) g_resgetTid = (LONG)GetCurrentThreadId();
 	void *handle = (void *)args[1];
 	if( handle == NULL ) return;
+	/* tag the current .dxt so the CreateTexture fired downstream of this call maps to it */
+	if( readable( handle, 0x20 ) )
+	{
+		char *nm = *(char **)( (char *)handle + H_STRPTR_OFF );
+		if( readable( nm, 1 ) && ends_ci( nm, ".dxt" ) )
+		{
+			EnterCriticalSection( &g_tablock );
+			lstrcpynA( g_curDxt, nm, sizeof( g_curDxt ) );
+			LeaveCriticalSection( &g_tablock );
+		}
+	}
 	EnterCriticalSection( &g_tablock );
 	int n = (int)g_ntab, i;
 	for( i = 0; i < n; ++i )
@@ -196,6 +223,99 @@ static int reparse_one( unsigned resmgr, void *h, const char *name )
 	return 1;
 }
 
+/* --- in-place texture pixel-swap: LockRect the ONE IDirect3DTexture9 each .dxt maps to (shared by every
+   chunk binding) so on-screen AND off-screen chunks update with no rebuild (D3DPOOL_MANAGED, Flags=0). */
+static int is_d3d_obj( unsigned p )
+{
+	if( !readable( (void *)p, 4 ) ) return 0;
+	unsigned vt = *(unsigned *)p;
+	return vt >= g_d3dLo && vt < g_d3dHi;
+}
+
+static void map_put( const char *path, void *tex, unsigned w, unsigned h, unsigned fourCC )
+{
+	for( int i = 0; i < g_mapCount; ++i )
+		if( lstrcmpiA( g_map[i].path, path ) == 0 ) { g_map[i].tex = tex; g_map[i].w = w; g_map[i].h = h; g_map[i].fourCC = fourCC; return; }
+	if( g_mapCount < MAP_MAX )
+	{
+		lstrcpynA( g_map[g_mapCount].path, path, sizeof( g_map[0].path ) );
+		g_map[g_mapCount].tex = tex; g_map[g_mapCount].w = w; g_map[g_mapCount].h = h; g_map[g_mapCount].fourCC = fourCC;
+		++g_mapCount;
+	}
+}
+
+typedef long ( __stdcall *CreateTex_t )( void *, UINT, UINT, UINT, DWORD, DWORD, DWORD, void **, void * );
+static CreateTex_t g_realCT;
+static long __stdcall hook_CT( void *dev, UINT w, UINT h, UINT lv, DWORD usage, DWORD fmt, DWORD pool, void **ppTex, void *sh ) __attribute__((noinline));
+static long __stdcall hook_CT( void *dev, UINT w, UINT h, UINT lv, DWORD usage, DWORD fmt, DWORD pool, void **ppTex, void *sh )
+{
+	long hr = g_realCT( dev, w, h, lv, usage, fmt, pool, ppTex, sh );
+	InterlockedIncrement( &g_ctCount );
+	/* only the DXT-format MANAGED chunk textures; correlate to the in-progress .dxt resource_get */
+	if( hr >= 0 && ppTex && *ppTex && pool == 1 && ( fmt == FOURCC_DXT5 || fmt == FOURCC_DXT1 ) )
+	{
+		EnterCriticalSection( &g_tablock );
+		if( g_curDxt[0] ) { map_put( g_curDxt, *ppTex, w, h, fmt ); g_curDxt[0] = 0; }
+		LeaveCriticalSection( &g_tablock );
+	}
+	return hr;
+}
+
+typedef long ( __stdcall *LockRect_t )( void *, UINT, void *, const void *, DWORD );
+typedef long ( __stdcall *UnlockRect_t )( void *, UINT );
+
+static int swap_one( const MapEntry *e )
+{
+	if( !is_d3d_obj( (unsigned)e->tex ) ) return 0;    /* texture released/recreated since mapping — skip */
+	char full[MAX_PATH];
+	DWORD n = GetModuleFileNameA( NULL, full, MAX_PATH );
+	while( n > 0 && full[n - 1] != '\\' && full[n - 1] != '/' ) --n;
+	lstrcpynA( full + n, e->path, (int)( MAX_PATH - n ) );
+	HANDLE fh = CreateFileA( full, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL );
+	if( fh == INVALID_HANDLE_VALUE ) return 0;          /* not a loose override — nothing edited */
+	DWORD size = GetFileSize( fh, NULL );
+	if( size < 12 || size > 0x2000000 ) { CloseHandle( fh ); return 0; }
+	BYTE *buf = (BYTE *)HeapAlloc( GetProcessHeap(), 0, size );
+	DWORD got = 0;
+	if( !buf || !ReadFile( fh, buf, size, &got, NULL ) || got != size ) { CloseHandle( fh ); if( buf ) HeapFree( GetProcessHeap(), 0, buf ); return 0; }
+	CloseHandle( fh );
+	unsigned fcc = *(unsigned *)buf, fw = *(unsigned *)( buf + 4 ), fh2 = *(unsigned *)( buf + 8 );
+	if( fcc != e->fourCC || fw != e->w || fh2 != e->h )
+	{
+		logline( "  tex skip %s: file %ux%u fcc=%08x != %ux%u %08x\r\n", e->path, fw, fh2, fcc, e->w, e->h, e->fourCC );
+		HeapFree( GetProcessHeap(), 0, buf );
+		return 0;
+	}
+	void *vtbl = *(void **)e->tex;
+	LockRect_t lock = *(LockRect_t *)( (char *)vtbl + LOCKRECT );
+	UnlockRect_t unlock = *(UnlockRect_t *)( (char *)vtbl + UNLOCKRECT );
+	struct { int Pitch; void *pBits; } lr;
+	int done = 0;
+	if( lock( e->tex, 0, &lr, NULL, 0 ) >= 0 && lr.pBits )
+	{
+		int blockSize = ( e->fourCC == FOURCC_DXT5 ) ? 16 : 8;
+		int rowBlocks = (int)( ( e->w + 3 ) / 4 );
+		int blockRows = (int)( ( e->h + 3 ) / 4 );
+		int srcRow = rowBlocks * blockSize;
+		BYTE *src = buf + 12;
+		for( int r = 0; r < blockRows; ++r )
+			memcpy( (BYTE *)lr.pBits + (SIZE_T)r * lr.Pitch, src + (SIZE_T)r * srcRow, srcRow );  /* honor Pitch (pow2-padded) */
+		unlock( e->tex, 0 );
+		done = 1;
+	}
+	HeapFree( GetProcessHeap(), 0, buf );
+	return done;
+}
+
+static int do_swaps( void )
+{
+	int done = 0;
+	for( int i = 0; i < g_mapCount; ++i ) done += swap_one( &g_map[i] );
+	logline( "  [textures] LockRect-swapped %d of %d mapped .dxt  (CreateTexture calls seen: %ld)\r\n",
+	         done, g_mapCount, g_ctCount );
+	return done;
+}
+
 static void do_reload( void )
 {
 	int seq = (int)InterlockedIncrement( &g_seq );
@@ -238,9 +358,13 @@ static void do_reload( void )
 	for( int i = 0; i < nc; ++i ) reparse_one( resmgr, snap[i].h, snap[i].name );
 	logline( "  [costume] %d captured art/costumes/ asset(s)\r\n", nc );
 
-	if( !anyRoom && nc == 0 )
-		logline( "  NOTE: nothing reloaded — no handles captured. Inject at the MENU/DOCK, then walk into\r\n"
-		         "  the room so the cold load captures the handles (or re-enter the room once).\r\n" );
+	/* TEXTURES: LockRect every mapped .dxt in place — updates on-screen AND off-screen chunks (the
+	   reparse above already re-binds the on-screen ones; this closes the off-screen gap when mapped). */
+	int tex = do_swaps();
+
+	if( !anyRoom && nc == 0 && tex == 0 )
+		logline( "  NOTE: nothing reloaded — no handles/textures captured. Inject at the MENU/DOCK, walk\r\n"
+		         "  into the room and SCROLL it fully so every chunk's texture is created + mapped.\r\n" );
 
 	logline( "=== end mreload #%d ===\r\n", seq );
 }
@@ -270,6 +394,8 @@ static void do_dump( void )
 	         ( g_resgetTid != 0 && (LONG)GetCurrentThreadId() == g_resgetTid )
 	         ? "orchestrator hook is on the SAME thread as resource_get — sync call is safe"
 	         : "DIFFERENT threads (or resget not seen yet) — verify before F11" );
+	logline( "texture map: %d .dxt mapped, %ld CreateTexture calls seen (scroll the room to map every chunk)\r\n",
+	         g_mapCount, g_ctCount );
 
 	EnterCriticalSection( &g_tablock );
 	int n = (int)g_ntab, shown = 0;
@@ -305,6 +431,34 @@ static void place_jmp( unsigned site, void *dest, int stolen )
 	for( int i = 5; i < stolen; ++i ) p[i] = 0x90;
 	VirtualProtect( (void *)site, stolen, old, &old );
 	FlushInstructionCache( GetCurrentProcess(), p, stolen );
+}
+
+static void patch_ptr( void **slot, void *val, void **saveOrig )
+{
+	DWORD old;
+	VirtualProtect( slot, sizeof( void * ), PAGE_READWRITE, &old );
+	if( *saveOrig == NULL ) *saveOrig = *slot;
+	*slot = val;
+	VirtualProtect( slot, sizeof( void * ), old, &old );
+}
+
+/* hook IDirect3DDevice9::CreateTexture (device vtable) to build the .dxt->texture map; wait for device. */
+static void install_texture_hooks( void )
+{
+	HMODULE d3d = GetModuleHandleA( "d3d9.dll" );
+	if( d3d )
+	{
+		IMAGE_DOS_HEADER *dos = (IMAGE_DOS_HEADER *)d3d;
+		IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)( (char *)d3d + dos->e_lfanew );
+		g_d3dLo = (unsigned)d3d; g_d3dHi = (unsigned)d3d + nt->OptionalHeader.SizeOfImage;
+	}
+	unsigned dev = 0;
+	for( int tries = 0; tries < 6000 && !dev; ++tries ) { dev = *(unsigned *)P_DEVICE; if( !dev ) Sleep( 50 ); }
+	if( !dev ) { logline( "texture: device *(0x%x) null — .dxt LockRect disabled until in-game\r\n", P_DEVICE ); return; }
+	unsigned vtbl = *(unsigned *)dev;
+	patch_ptr( (void **)( vtbl + CT_SLOT ), (void *)hook_CT, (void **)&g_realCT );
+	logline( "texture: CreateTexture hooked (device %08x vtbl %08x, d3d9=[%08x,%08x)). LockRect swap armed.\r\n",
+	         dev, vtbl, g_d3dLo, g_d3dHi );
 }
 
 static int install_hooks( void )
@@ -368,7 +522,8 @@ static DWORD WINAPI worker( LPVOID unused )
 	g_evReload = CreateEventA( NULL, FALSE, FALSE, EVENT_RELOAD );
 	g_evDump   = CreateEventA( NULL, FALSE, FALSE, EVENT_DUMP );
 	g_evEditor = CreateEventA( NULL, FALSE, FALSE, EVENT_EDITOR );   /* editor's Test-in-game button */
-	install_hooks();
+	if( install_hooks() )
+		install_texture_hooks();
 	return 0;
 }
 
