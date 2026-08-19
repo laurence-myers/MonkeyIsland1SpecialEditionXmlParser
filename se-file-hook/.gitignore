@@ -17,3 +17,5 @@ mise-probe.dll
 mise-probe.log
 mise-observe.dll
 mise-observe.log
+mise-hotswap.dll
+mise-hotswap.log
