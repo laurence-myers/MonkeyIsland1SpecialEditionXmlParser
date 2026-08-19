@@ -1,35 +1,28 @@
-# Hooking the SE runtime for on-demand loose-file reload
+# In-place hot-reload of edited assets in the running Special Edition
 
-*August 2026. Question: can we make an edit in the editor show up in the **running** Special
-Edition immediately, instead of the modder walking out of the room and back in? The play-test
-loop today writes loose overrides and relies on the verified fact that the SE re-reads them on
-room re-entry (`se-loose-override-loading-verified`). This note is the static analysis of
-`MISE.exe` that decides whether a DLL hook can (a) confirm **which** functions load those files
-and **when**, and (b) **trigger** that reload on demand. All facts below come from reading the
-on-disk `MISE.exe` with `objdump`/`strings` — no code was run or patched.*
+*August 2026. Goal: make an edit in the editor show up in the **running** Special Edition immediately,
+instead of the modder walking the character out of the room and back in. **This is shipped** —
+`se-file-hook/mise-mreload.dll`, auto-injected by the editor's "Test in game" button. This note keeps the
+static analysis of `MISE.exe` that got us there (§1–3) and documents the mechanism that was actually
+built (§4), which is quite different from — and better than — the original plan.*
 
-Binary analysed: `F:\Games\Steam\steamapps\common\The Secret of Monkey Island Special Edition\MISE.exe`
-(1,359,872 bytes, PE32 i386, linked 2009-07-08, MSVC 8.0 / 2005 runtime).
+## 0. Bottom line (what shipped)
 
-## 0. Bottom line
-
-- **The hypothesis is right.** Room entry drives the loads. The SE carries a **classic SCUMM
-  Resource Manager** (`classic/%s/%s`, `XXX.lfl`) *and* an **"Async Resources Fiber Manager"**
-  that runs a `LoadRoom` pulling `ScummResources` / `Bundle` / HD textures. Both are keyed by
-  room, and both re-probe loose files each entry — which is exactly the reload we already
-  observed.
-- **Reconnaissance is cheap and the user's instinct is correct** — a file hook is not just
-  convenient, it is *required*, because the game's code section is encrypted on disk (Steam DRM)
-  so there is nothing to disassemble statically. But the hook target is a gift: **no ASLR,
-  relocations stripped, image pinned at `0x400000`, and a fully intact import table.** All file
-  I/O goes through `kernel32!CreateFileA` (game IAT slot at the fixed VA **`0x4DA030`**), so one
-  inline hook logs every path and, via caller return addresses, points straight at the room-load
-  code inside the decrypted `.text`.
-- **"Immediate" is the hard half.** Serving edited bytes through the hook only changes what the
-  *next* load sees; the room's assets are already cached in memory, so a true in-place refresh
-  means making the loader run again for the current room. That function must be located at
-  runtime (RE on a memory dump — the recon hook localises it first). Lower-effort substitutes
-  exist (drive a room re-enter, or a programmatic quick-load) if full RE is not worth it.
+- **Fully in-place, no room change, no interpreter disruption.** The editor writes loose overrides,
+  injects `mise-mreload.dll`, and signals a reload. On the game's own render thread the DLL re-parses the
+  edited **`.room.xml` / `.costume.xml`** metadata and **LockRect-swaps** the edited **`.dxt`** textures
+  in place. Actor state, script state, scroll position, and the camera are untouched. Verified in-game
+  for room layout, costume placement, and room/costume textures (on-screen and off-screen chunks).
+- **The reload is NOT a room re-entry.** The original plan (below, §4 history) was to drive the engine's
+  own room-entry — an interpreter poke or a save/reload. That turned out to be unnecessary: the parsed
+  resource can be evicted and re-parsed directly, and textures updated in their existing GPU objects, so
+  nothing about the scene/actors is rebuilt from scratch. This avoids the flicker and the crash surface
+  of forcing a scene change.
+- **Static RE became possible via the GOG build.** The Steam exe's `.text` is DRM-encrypted (nothing to
+  disassemble on disk), but the **DRM-free GOG `MISE.exe` is byte-identical** — same build, plaintext
+  `.text`, same addresses (no ASLR, base `0x400000`). So the whole thing was reverse-engineered
+  statically from the GOG disassembly (`se-file-hook/re/gog.asm`), with read-only runtime probes to
+  confirm struct offsets. Injection still targets whichever copy the user runs (Steam or GOG).
 
 ## 1. What the binary is (facts from `MISE.exe`)
 
@@ -37,159 +30,118 @@ Binary analysed: `F:\Games\Steam\steamapps\common\The Secret of Monkey Island Sp
 |---|---|---|
 | Image base | `0x00400000` | Fixed. |
 | `DllCharacteristics` | `0x0000` (no ASLR/DEP) | Addresses are identical every run — no slide to compute. |
-| Relocations | **stripped** | Can only load at `0x400000`; reinforces the above. |
-| Entry point | `0x005CC2ED` — inside **`.bind`** | Execution starts in the Steam DRM stub, which decrypts `.text` and jumps to the real OEP. |
-| `.text` | `0x401000`, 888 KB | **Encrypted on disk** — disassembles to garbage (`js`/`outsb`/`repnz mov` with random immediates). No static code RE possible. |
-| `.rdata` / `.data` / `.rsrc` | plaintext | Strings, imports, format strings, the few RTTI names are all readable (this is where every fact here comes from). |
-| `.bind` | 344 KB, CODE+DATA | SteamStub wrapper. Anti-tamper protects the *file*; it does not stop DLL injection into the *running* process. |
+| Relocations | **stripped** | Loads only at `0x400000`. |
+| Entry point | `0x005CC2ED` — inside **`.bind`** | Steam builds start in the SteamStub DRM wrapper, which decrypts `.text` and jumps to the real OEP. |
+| `.text` | `0x401000`, 888 KB | **Encrypted on disk in the Steam build** (garbage to a disassembler). **Plaintext in the GOG build** — same bytes once decrypted. |
+| `.rdata` / `.data` / `.rsrc` | plaintext | Strings, imports, format strings, RTTI names — the anchors for RE. |
 
-Corollary: **the on-disk file cannot be usefully reverse-engineered.** Everything code-level has
-to be done on a dump taken *after* the stub decrypts `.text` (i.e. once the game is at the menu),
-or live via an injected hook. This is the concrete reason the "DLL intercepting hook" is the
-right first tool.
+**The GOG unblock.** The user owns the GOG copy (`MISE.exe`, no `.bind` section, plaintext `.text`),
+verified byte-identical to Steam: identical IAT slots and identical anchor-string VAs. So static RE is
+done on the GOG exe (`objdump -d -M intel` → `se-file-hook/re/gog.asm`, git-ignored; helpers in
+`re/nav.sh`), and every address is valid in the running Steam game too. The code is heavy C++ with vtable
+/ function-pointer indirection (namespace `lec`); call-graph climbing anchors on data (globals, strings)
+and the SCUMM v5 structure. Runtime struct offsets were confirmed with read-only probes (static RE was
+repeatedly wrong on layout), never trusted blind.
 
-## 2. The import table is intact and unbound — the file hook is trivial to target
+## 2. The file surface — one choke point, intact imports
 
-SteamStub left the imports readable and unbound (`Bound-To` empty, Bound Import Directory = 0),
-so the Windows loader resolves them normally at startup and the IAT holds real kernel32 addresses
-at runtime. The file surface (RVA in the file; VA = base + RVA at the fixed `0x400000`):
+SteamStub left the imports readable and unbound, so the IAT holds real kernel32 addresses at runtime. The
+game opens **every** file through `kernel32!CreateFileA` (game IAT slot `0x4DA030`) and probes for loose
+overrides with `msvcr80!_access` (`0x4DA178`) — verified: no `fopen`/`_open`/`CreateFileW`, so those two
+slots are the *complete* file surface. Injection uses a plain `CreateRemoteThread(LoadLibraryA)`
+injector (`se-inject.exe`); `IsDebuggerPresent` (`0x4DA07C`) is a retail anti-debug check that does not
+block DLL injection.
 
-| Function | Module | IAT VA | Role |
-|---|---|---|---|
-| `CreateFileA` | KERNEL32 | **`0x4DA030`** | **The choke point — every file open.** |
-| `GetFileSize` | KERNEL32 | `0x4DA038` | pak-index / asset sizing |
-| `ReadFile` | KERNEL32 | `0x4DA03C` | bulk reads |
-| `SetFilePointer` | KERNEL32 | `0x4DA0E4` | pak seek-to-entry |
-| `CloseHandle` | KERNEL32 | `0x4DA034` | |
-| `_access` | MSVCR80 | `0x4DA178` | **loose-file existence probe** (the "is there an override?" test) |
-| `fread` | MSVCR80 | `0x4DA238` | CRT read path |
+## 3. The resource architecture (two loaders, both room-keyed)
 
-Notes that shape the hook design:
-- **No `LoadLibrary`/`GetProcAddress` in the game's imports** — the game never resolves APIs
-  dynamically, so nothing escapes an import-level view. (`GetModuleHandleA` is present but only
-  returns a base.)
-- **The game has no `fopen`/`_open`/`CreateFileW` — it opens every file through `CreateFileA` and
-  probes overrides with `_access`.** (`fread` is imported but there is no CRT `fopen` path.) So
-  patching the game's own two IAT slots (`0x4DA030`, `0x4DA178`) is the *complete* view of its file
-  access — there is no CRT-open route bypassing the IAT to worry about. This is what Phase 1
-  implements (`se-file-hook/`): a name-based IAT walk that repoints those two slots, so every caller
-  offset it logs lands in the game's own decrypted `.text` — exactly the Phase 2 seed we want.
-- **IAT hooking's one caveat: caching.** An IAT patch only affects calls that *re-read* the slot
-  after the patch. Code that hoisted the imported pointer into a register/global beforehand keeps
-  calling the original. This is why we inject at the menu — the room-loader runs *later* and re-reads
-  the patched slot when it runs. If some room-entry loads still turn up missing, the escape hatch is
-  an **inline hook** on `kernel32!CreateFileA` (patch the function body, MinHook/Detours), which is
-  caching-proof because it intercepts wherever execution lands, not which pointer you called through.
-- `IsDebuggerPresent` is imported (`0x4DA07C`) — a retail anti-debug check. Injection is not
-  debugging, so it does not block a `LoadLibrary` injector; only attaching a debugger would trip
-  it. [twevs/MISEPatcher](https://github.com/twevs/MISEPatcher) already patches this exact game
-  at runtime, proving injection works here.
+- **Classic SCUMM side:** the original interpreter's `Resource Manager` (`classic/%s/%s`, `XXX.lfl`)
+  reading `classic/<lang>/monkey1.000/001`.
+- **HD side:** an `Async Resources Fiber Manager` streaming HD assets — `LoadRoom`, `ScummResources`,
+  `Bundle`, scene-node types (`GlobalsNode`, `ObjectNode`, `AnimationNode`, …) via `lec::FileStream` /
+  `lec::CompressedStream`, from `Monkey1.pak` or the loose `art/...` tree.
 
-## 3. The resource architecture (from `.rdata` strings) — two loaders, both room-keyed
+A room change fans out into both a classic room-block load and an HD `LoadRoom`; the loose-override
+reload the play-test loop relies on is these paths re-probing on each entry. **All the editor's edits are
+HD-side** (`art/rooms/*.room.xml`, `*.dxt`, `art/costumes/*`), so hot-reload is entirely about the HD
+resource system — which is what §4 drives directly, without a room change.
 
-Readable strings map the whole loading system:
+## 4. Implementation (shipped) — `mise-mreload.dll`
 
-- **Classic SCUMM side:** `Resource Manager` (`0xDAF50`), `classic/%s/%s` (`0xEBFE8`),
-  `XXX.lfl` (`0xEC020`). This is the original interpreter's resource manager reading
-  `classic/<lang>/monkey1.000/001`. Loose classic overrides live under `classic/`.
-- **HD side:** **`Async Resources Fiber Manager`** (`0xEBFB8`) — HD assets stream in on a
-  dedicated fiber (this is why the exe imports `ConvertThreadToFiber`/`CreateFiber`/
-  `SwitchToFiber`). `LoadRoom` (`0xEA7DC`), `ScummResources` (`0xEB050`), `Bundle`/`bundle`,
-  `monkey1_retail.scumm.xml`, and the scene-node types (`GlobalsNode`, `ObjectNode`,
-  `PointLightNode`, `AnimationNode`, …). Reads go through `lec::FileStream` /
-  `lec::CompressedStream` (the only RTTI descriptor in the file confirms the `lec` namespace and
-  per-chunk compression), pulling from `Monkey1.pak` or the loose `art/...` tree.
-- Both are driven by the room number, so a room change fans out into a classic room-block load
-  **and** an HD `LoadRoom`. The loose-override reload we verified is these two paths re-running
-  their `_access`/`CreateFileA` probes on each entry. No built-in file-watch or hot-reload string
-  exists — nothing like `watch`/`reload`/`refresh` for assets — so the game will not reload on
-  its own; we have to make a load happen.
+Reverse-engineered from `re/gog.asm`; all offsets below are for this exact build. Everything runs **on
+the render thread** by inline-hooking the HD orchestrator `0x44c7be` (which owns the resource system), so
+the reload never races the engine. A read-only diagnostic dump is on **F12**; the reload is on **F11** or
+the editor's event.
 
-## 4. Plan
+### 4.1 Metadata (`.room.xml`, `.costume.xml`) — evict + synchronous re-parse
 
-### Phase 1 — Recon hook — **BUILT** (`se-file-hook/`)
+The scene builder `0x4484e0` never parses — it rebuilds draw items from an **already-parsed node-list**.
+That parsed node-list is the resource's loaded data, cached at **`[handle+0x4]`** on the per-name
+resource handle held by the resource manager `*(0x5b98e4)`; `[handle+0xc]` is the loader factory. The
+resource fetch `resource_get 0x48c760` gates on `[handle+0x4]` (nonzero → return cached).
 
-A small injected DLL that IAT-hooks the game's `CreateFileA` + `_access` slots and logs, per call:
-the path, the caller's return address (as `MISE.exe+0xNNNNN`), the thread id, and a timestamp.
-Injected with a `CreateRemoteThread(LoadLibrary)` injector once the game is at the menu (so `.text`
-is decrypted). Built 32-bit (MSYS2 i686); the DLL depends only on system DLLs. Validated headlessly
-via a stand-in target (`se-selftest.exe`): the self-load path captures `CreateFileA`/`_access` with
-caller offsets, and real cross-process injection captures a moving target's post-injection calls.
-See `se-file-hook/README.md` to build and run it. Left as a hook and injector rather than an inline
-hook because the game has no CRT-open path (so the two IAT slots are the complete file surface); the
-inline hook is the documented escape hatch if caching hides any loads.
+So a re-parse is: zero `[handle+0x4]`, then **drive the fetch synchronously** —
+`resource_get(0x48c760)(resmgr, handle, 0xffffffff /*=-1*/, 0, 0)`. Flag `-1` takes the synchronous
+branch that re-reads the edited file and stores the fresh parse back at `[handle+0x4]` (`0x48c907`); any
+other flag takes the **async** branch that enqueues and does *not* restore `[handle+0x4]`. The game's own
+refresh paths pass `0xc0000000` (async), which is exactly why an earlier "evict and let the game
+reload it" attempt left the resource unloaded and crashed — we must drive the sync path ourselves, all in
+one tick so no frame ever observes `[handle+0x4] == 0`.
 
-What it settles, in one afternoon:
-1. **Proves the hypothesis** — walk out of a room and back in, watch the exact set of files the SE
-   opens (pak seeks vs. loose `art/…` / `classic/…` reads) and confirm it happens on entry.
-2. **Localises the loader** — the logged return addresses are addresses *inside the decrypted
-   `.text`*. Grouped by room-entry, they are the call sites of the room-load / async-resource
-   code — the seed for Phase 2 with zero blind searching.
-3. **Independently upgrades the play-test loop** even if we stop here: the editor could watch the
-   hook's log to *detect* when the SE has reloaded and report "change is now live" instead of
-   telling the modder to guess.
+Then rebuild:
+- **Room:** empty the node-view slot `[HDobj+0x984]` so the orchestrator re-resolves the room by name and
+  rebuilds via `0x4484e0` from the fresh parse. The `.room.xml` handle is reachable robustly at
+  `*(HDobj+0x984)` (so this works even if injected mid-room).
+- **Costume:** no nudge — the per-frame scene builder `0x453590 → 0x460be0` re-resolves each actor's
+  costume every frame and rebuilds its cels from the fresh `[handle+0x4]`.
 
-This is also the natural home for a **file-redirect** later (serve the editor's unsaved bytes
-straight from memory, so the modder need not even write loose files) — but note redirect alone
-does **not** make edits immediate; it only changes what the *next* load reads.
+Handles are captured by hooking `resource_get 0x48c760` (the name is a `char*` at `handle+0x18`).
 
-### Phase 2 — Trigger the reload on demand
+### 4.2 Textures (`.dxt`) — in-place LockRect
 
-The room's assets are cached in memory after the first load, so "immediate" means re-running the
-load for the *current* room. **What Phase 1 established in-game (room 28 log):** every open funnels
-through one `_access` probe wrapper (`+0x70fca`) and one `CreateFileA` wrapper (`+0x75488`); the
-resolution order is `art\rooms\<lang>.<name>.room.xml` → `art\rooms\<name>.room.xml` → `monkey1.pak`;
-and **one room entry drives both loaders** (the classic `classic\en\monkey1.001`/pak block *and* the
-HD DXT/costume stream) on a single thread. So the reload lever is the room-entry itself.
+Each room/costume chunk is exactly **one shared `D3DPOOL_MANAGED` `IDirect3DTexture9`**, so overwriting
+its DXT blocks with `LockRect`/memcpy/`UnlockRect` (Flags = 0, on the render thread between frames)
+updates **every** binding of that texture — on-screen *and* off-screen scrolling-room chunks — with no
+rebuild. This mirrors what the game's own loader does to populate the texture, so it is maximally
+compatible.
 
-**Design (adversarially reviewed).** The one hard runtime lesson on record is that forcing a scene
-change out-of-band crashed the engine once (ScummVM `error()`→`exit`). That dominates the choice: use
-the engine's *own* in-band room-entry machinery, on the interpreter's *own* thread, at a safe point.
+The texture is **not** reachable from the `.dxt` handle by any fixed offset (it lives in a device-side,
+name-keyed draw cache). The reliable `.dxt → texture` map is behavioural: hook
+`IDirect3DDevice9::CreateTexture` (device `*(0x5b9920)`, vtable `+0x5c`; only `pool == 1` DXT5/DXT1), and
+tag each created texture with the name of the `resource_get` handle whose load is in progress — the
+texture is created *inside* that call, so the correlation is exact (this replaced a fragile
+"last CreateFileA" guess that produced an empty map). The swap validates fourCC + width + height and
+honours the locked `Pitch` (chunks are power-of-two padded).
 
-- **PRIMARY — interpreter-poke.** Set the classic interpreter's "requested/pending room" to the room
-  it is already in and raise the transition flag, then let the interpreter run its own
-  `startScene`-equivalent on its own thread. One re-entry fans out to *both* loaders exactly like a
-  doorway does — the reload we verified — while keeping live actor/game state, no menu, no flicker.
-  Crash-safety: do what the engine does — take `LockScummMutex`, write the state, let the main loop
-  consume it at its top-of-frame boundary; never call into a loader mid-load. If the build has no
-  deferred pending-room flag (room changes are opcode-only), escalate *within* this approach: call
-  the `startScene`-equivalent directly but marshalled onto the interpreter thread under the mutex.
-  (Calling the HD `LoadRoom` in isolation is the trap — it likely runs on the resources fiber and
-  would refresh only the HD half, leaving the classic block stale/racing.)
-- **FALLBACK — save-reload.** If the pending-room lever doesn't cleanly re-fan to the HD side, use the
-  engine's most crash-safe first-class op: auto-save to an editor-owned slot, then load it (loading
-  re-runs `startScene`). Works in every room, restores actor state, but costs a visible load
-  transition and needs a save/load trigger (an RE'd callable entry, or synthesised menu input).
-- **Not chosen:** standalone direct-call of a loader (most RE, partial-reload hazard); input
-  synthesis of walk-out/walk-in (unreliable, room-geometry dependent, drags the actor off-spot) —
-  manual last resort only.
+### 4.3 Trigger + workflow
 
-**First-pass RE (automated by `se-file-hook/analyze-image.sh` over `MISE.image.bin`):** disassemble
-the decrypted dump; xref the anchor strings to pin the two loaders (`classic/%s/%s` @ `0x4EBFE8` →
-classic path builder; `LoadRoom` @ `0x4EA7DC` / `ScummResources` @ `0x4EB050` → HD loader); confirm
-the `+0x70fca`/`+0x75488` wrappers and their loose-override callers; the function that calls **both**
-loaders — and that recurs in the Phase-1 `stk:` chains for one entry — is the room-entry driver; the
-room number it stores on entry is `_currentRoom`; a `cmp`/`jne` on `_currentRoom` at the top of the
-interpreter loop (found via the `LockScummMutex` string xref) is the deferred poke target, if one
-exists.
+The reload fires on the named auto-reset event `Local\MISE_HotReload` (the editor's `HotReloadClient`
+sets it) or **F11**; **F12** dumps a read-only diagnostic (handle state, thread check, texture-map
+counts). The editor's **Test in game** (`TestInGameCommand`) writes the overrides, auto-injects the DLL
+(`HotReloadInjector` → `se-inject.exe`, once per session), and signals — so it is one button.
 
-### Risks / caveats
+Because handles + the texture map fill only as resources stream in, the one-time setup is: **inject at
+the menu, enter the room, and scroll it once.** After that, edit → reload, repeatedly, with no re-entry.
 
-- A native crash in an injected hook takes the game down (not the editor — separate process,
-  which is *better* isolation than the in-process ScummVM route). Anti-tamper is on the file, not
-  on in-memory injection, but keep the hook minimal and reversible.
-- This is Windows-only and tied to this exact build; the fixed addresses (`0x4DA030` etc.) are a
-  build-specific convenience and would need re-deriving if Steam reships MISE.exe. The kernel32
-  export hook and the string anchors are build-independent.
-- Purely a modding aid for the user's own installed game — read-then-serve of their own files; it
-  ships nothing from the game.
+### 4.4 What was rejected (history)
 
-## 5. How this fits the existing work
+The original plan here was to re-run the engine's room entry — an **interpreter poke** (set the pending
+room + transition flag under `LockScummMutex`) or a **save/reload** — because an out-of-band scene change
+had once crashed the engine. A working **`startScene` bounce** (leave to a scratch room and back on the
+SCUMM thread) was even shipped as an interim (`reload.c`, now removed). All of these are room re-entries:
+they reload everything but re-run entry scripts and flash. The in-place re-parse + LockRect approach in
+§4.1–4.2 supersedes them — it refreshes exactly the edited resources with no scene rebuild, so it needs
+neither a room change nor the interpreter. Also removed: the Phase-1 recon hook and the diagnostic probes
+that mapped all of the above; their findings are baked into `mise-mreload.dll` and the memory notes.
 
-This is the real-SE counterpart to the demoted in-process ScummVM "Show this room" jump
-(`live-preview-status-2026-08`): same idea (re-enter the current room to reload), but in the SE's
-own HD renderer instead of ScummVM's classic framebuffer, and without the mid-cutscene
-`startScene` crash that sank the ScummVM jump — because we would be poking the SE's *own*
-interpreter with its own mutex, not forcing a scene change through a second engine. It upgrades
-the play-test loop (`se-loose-override-loading-verified`) from "walk out and back in (~5 s)" to
-"the editor triggers the reload," keeping the real renderer as ground truth.
+## 5. Status & fit
+
+Shipped and verified in-game (2026-08-19): `.room.xml`, `.costume.xml`, room `.dxt`, and costume `.dxt`
+all hot-reload in place from the editor's Test-in-game button. This is the real-SE counterpart to the
+in-process ScummVM "Show this room" jump (`live-preview-status-2026-08`) — same goal (see the edit live in
+the real renderer) but without a scene change: we refresh the SE's own HD resources on its own render
+thread rather than forcing a re-entry through a second engine.
+
+**Caveats.** Windows-only, 32-bit; the addresses are for this exact 2009 build (Steam/GOG), and the DLL's
+signature guard aborts cleanly on any other build. A native crash in the injected hook takes the game
+down (not the editor — separate process). Purely a modding aid for the user's own installed game.
+Build + usage: `se-file-hook/README.md`. Full RE trail: the `se-file-hook-analysis` memory note.
