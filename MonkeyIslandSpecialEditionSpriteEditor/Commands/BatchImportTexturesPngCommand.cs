@@ -78,9 +78,13 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 				) );
 			}
 
+			// with auto-write on, one reload after the whole batch picks everything up without F5/F11
+			var hotReloaded = importedCount > 0 && PlayTest.AutoHotReload.SignalIfEnabled();
+
 			var summary = string.Concat(
 				"Imported ", importedCount, " texture override(s) from ", directoryPath,
-				unmatchedCount > 0 ? string.Concat( " (", unmatchedCount, " PNG(s) had no matching texture)" ) : ""
+				unmatchedCount > 0 ? string.Concat( " (", unmatchedCount, " PNG(s) had no matching texture)" ) : "",
+				hotReloaded ? ". Hot-reloaded the running game" : ""
 			);
 			return failures.Count == 0
 				? CommandResult.Success( summary )

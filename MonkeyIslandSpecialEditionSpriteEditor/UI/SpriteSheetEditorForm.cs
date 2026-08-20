@@ -3685,9 +3685,10 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 				this.autoWriteTimer.Tick += delegate
 				{
 					this.autoWriteTimer!.Stop();
-					if( this.dirty && !this.IsDisposed )
+					if( this.dirty && !this.IsDisposed && this.TrySaveOverride( silent: true )
+						&& PlayTest.AutoHotReload.SignalIfEnabled() )
 					{
-						this.TrySaveOverride( silent: true );
+						MainForm.Instance.SetStatusText( "Auto-wrote the override and hot-reloaded the running game." );
 					}
 				};
 			}

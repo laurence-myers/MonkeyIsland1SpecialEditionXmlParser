@@ -15,7 +15,12 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.Commands
 	{
 		protected override CommandResult InnerExecute()
 		{
-			return ImportTexturePngCommand.Import( lpakFile, resourcePath, pngFileName );
+			var result = ImportTexturePngCommand.Import( lpakFile, resourcePath, pngFileName );
+
+			// with auto-write on, the running game picks the texture up without F5/F11
+			return result.IsSuccess && PlayTest.AutoHotReload.SignalIfEnabled()
+				? CommandResult.Success( result.Value + " Hot-reloaded the running game." )
+				: result;
 		}
 
 		/// <summary>

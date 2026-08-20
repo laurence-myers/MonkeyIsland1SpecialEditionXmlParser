@@ -96,14 +96,14 @@ namespace MonkeyIslandSpecialEditionSpriteEditor.UI
 			{
 				CheckOnClick = true,
 				Checked = UserSettings.Instance.AutoWriteOverrides,
-				ToolTipText = "Every edit is written to the game folder shortly after you make it - just re-enter the room in game.",
+				ToolTipText = "Every edit is written to the game folder shortly after you make it, and a running game with hot-reload armed refreshes by itself - no F5 or F11 needed.",
 			};
 			this.autoWriteMenuItem.CheckedChanged += delegate
 			{
 				UserSettings.Instance.AutoWriteOverrides = this.autoWriteMenuItem.Checked;
 				UserSettings.Instance.Save();
 				this.SetStatusText( this.autoWriteMenuItem.Checked
-					? "Auto-write on: edits are written to the game folder as you make them."
+					? "Auto-write on: edits are written to the game folder as you make them, and a running game hot-reloads them automatically."
 					: "Auto-write off: use Save override or Test in game (F5) to write edits." );
 			};
 
